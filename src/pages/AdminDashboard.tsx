@@ -48,6 +48,10 @@ interface PendingUser {
   website_url: string | null;
   services: string | null;
   research_areas: string | null;
+  region: string | null;
+  distribution_capacity: string | null;
+  years_of_experience: number | null;
+  verification_document_url: string | null;
 }
 
 interface InviteConfig {
@@ -161,7 +165,7 @@ const AdminDashboard = () => {
     const { data: distributors } = await supabase
       .from("profiles")
       .select("*")
-      .eq("user_type", "distributor" as any)
+      .eq("user_type", "distributor")
       .order("full_name");
     
     setAllAdvisors(advisors || []);
@@ -761,7 +765,7 @@ const AdminDashboard = () => {
                       {allDistributors
                         .filter(d => distributorStatusFilter === "all" || d.approval_status === distributorStatusFilter)
                         .map((dist) => (
-                        <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist as any)}>
+                        <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist as PendingUser)}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8">
@@ -773,7 +777,7 @@ const AdminDashboard = () => {
                           </TableCell>
                           <TableCell className="text-muted-foreground">{dist.email}</TableCell>
                           <TableCell>{dist.organisation || "-"}</TableCell>
-                          <TableCell>{(dist as any).region || "-"}</TableCell>
+                          <TableCell>{dist.region || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               dist.approval_status === "approved" ? "default" :

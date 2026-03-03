@@ -32,10 +32,10 @@ interface PendingUser {
   website_url: string | null;
   services: string | null;
   research_areas: string | null;
-  region?: string | null;
-  distribution_capacity?: string | null;
-  years_of_experience?: number | null;
-  verification_document_url?: string | null;
+  region: string | null;
+  distribution_capacity: string | null;
+  years_of_experience: number | null;
+  verification_document_url: string | null;
 }
 
 interface PendingUserDetailModalProps {
@@ -351,36 +351,36 @@ export function PendingUserDetailModal({
               <h3 className="font-heading text-lg font-semibold text-foreground mb-4">Distribution Details</h3>
               <div className="grid gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(user as any).region && (
+                  {user.region && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <MapPin className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Region</p>
-                        <p className="font-medium text-foreground">{(user as any).region}</p>
+                        <p className="font-medium text-foreground">{user.region}</p>
                       </div>
                     </div>
                   )}
-                  {(user as any).distribution_capacity && (
+                  {user.distribution_capacity && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Truck className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Distribution Capacity</p>
-                        <p className="font-medium text-foreground">{(user as any).distribution_capacity}</p>
+                        <p className="font-medium text-foreground">{user.distribution_capacity}</p>
                       </div>
                     </div>
                   )}
-                  {(user as any).years_of_experience && (
+                  {user.years_of_experience && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Briefcase className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground mb-1">Years of Experience</p>
-                        <p className="font-medium text-foreground">{(user as any).years_of_experience}</p>
+                        <p className="font-medium text-foreground">{user.years_of_experience}</p>
                       </div>
                     </div>
                   )}
@@ -390,14 +390,14 @@ export function PendingUserDetailModal({
           )}
 
           {/* Verification Document */}
-          {(user as any).verification_document_url && (
+          {user.verification_document_url && (
             <div className="bg-muted rounded-xl p-6">
               <h3 className="font-heading text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
                 <FileText className="h-5 w-5" /> Verification Document
               </h3>
               <Button
                 variant="outline"
-                onClick={() => window.open((user as any).verification_document_url, '_blank')}
+                onClick={() => window.open(user.verification_document_url!, '_blank')}
                 className="gap-2"
               >
                 <FileText className="h-4 w-4" />
