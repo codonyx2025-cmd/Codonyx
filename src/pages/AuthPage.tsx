@@ -52,7 +52,8 @@ export default function AuthPage() {
           .maybeSingle();
 
         if (profile?.approval_status === "approved") {
-          navigate("/dashboard");
+          navigate("/dashboard", { replace: true });
+          return;
         } else if (profile?.approval_status === "pending") {
           await supabase.auth.signOut();
           toast({
@@ -105,6 +106,20 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
+      // Check if session already exists before attempting sign in
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession) {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("approval_status")
+          .eq("user_id", existingSession.user.id)
+          .maybeSingle();
+        if (existingProfile?.approval_status === "approved") {
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,

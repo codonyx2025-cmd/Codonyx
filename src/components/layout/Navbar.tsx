@@ -36,21 +36,33 @@ export function Navbar() {
   const profileFetched = useRef(false);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    if (profileFetched.current) return;
+    if (profileFetched.current && profile) return;
     profileFetched.current = true;
-    const { data } = await supabase
-      .from("profiles")
-      .select("full_name, email, avatar_url")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (data) {
-      setProfile(data);
-      setIsLoggedIn(true);
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, email, avatar_url")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (data) {
+        setProfile(data);
+        setIsLoggedIn(true);
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, []);
+  }, [profile]);
 
   useEffect(() => {
+    // Check session immediately on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        fetchProfile(session.user.id);
+      }
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")) {
         await fetchProfile(session.user.id);
@@ -58,12 +70,6 @@ export function Navbar() {
         profileFetched.current = false;
         setProfile(null);
         setIsLoggedIn(false);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        fetchProfile(session.user.id);
       }
     });
 
