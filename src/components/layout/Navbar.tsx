@@ -36,7 +36,7 @@ export function Navbar() {
   const profileFetched = useRef(false);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    if (profileFetched.current && profile) return;
+    if (profileFetched.current) return;
     profileFetched.current = true;
     try {
       const { data } = await supabase
@@ -50,20 +50,23 @@ export function Navbar() {
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
+      profileFetched.current = false;
     } finally {
       setIsLoading(false);
     }
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
-    // Check session immediately on mount
+    let mounted = true;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+      if (session && mounted) {
         fetchProfile(session.user.id);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")) {
         await fetchProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
@@ -73,7 +76,10 @@ export function Navbar() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const handleNavClick = useCallback((href: string) => {
