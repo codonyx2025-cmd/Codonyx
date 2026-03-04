@@ -51,14 +51,28 @@ export default function AuthPage() {
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-        if (profile?.approval_status === "approved") {
+        if (!profile) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Account Not Found",
+            description: "No account exists with this email. Please register first or contact us for an invite.",
+            variant: "destructive",
+          });
+        } else if (profile.approval_status === "approved") {
           navigate("/dashboard", { replace: true });
           return;
-        } else if (profile?.approval_status === "pending") {
+        } else if (profile.approval_status === "pending") {
           await supabase.auth.signOut();
           toast({
             title: "Pending Approval",
             description: "Your account is still pending admin approval.",
+          });
+        } else if (profile.approval_status === "rejected") {
+          await supabase.auth.signOut();
+          toast({
+            title: "Access Denied",
+            description: "Your registration request was rejected.",
+            variant: "destructive",
           });
         }
       }
@@ -77,15 +91,25 @@ export default function AuthPage() {
               .eq("user_id", session.user.id)
               .maybeSingle();
 
-            if (profile?.approval_status === "approved") {
+            if (!profile) {
+              await supabase.auth.signOut();
+              toast({
+                title: "Account Not Found",
+                description: "No account exists with this email. Please register first or contact us for an invite.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            if (profile.approval_status === "approved") {
               navigate("/dashboard");
-            } else if (profile?.approval_status === "pending") {
+            } else if (profile.approval_status === "pending") {
               await supabase.auth.signOut();
               toast({
                 title: "Pending Approval",
                 description: "Your account is still pending admin approval.",
               });
-            } else if (profile?.approval_status === "rejected") {
+            } else if (profile.approval_status === "rejected") {
               await supabase.auth.signOut();
               toast({
                 title: "Access Denied",
