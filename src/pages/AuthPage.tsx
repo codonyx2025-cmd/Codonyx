@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 import { toast } from "@/hooks/use-toast";
 import { ArrowRight, Target, MessageCircle, Handshake, Loader2, Eye, EyeOff } from "lucide-react";
@@ -41,6 +42,10 @@ export default function AuthPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [isSendingReset, setIsSendingReset] = useState(false);
 
+  const signOutLocally = async () => {
+    await supabase.auth.signOut({ scope: "local" });
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -52,26 +57,26 @@ export default function AuthPage() {
           .maybeSingle();
 
         if (!profile) {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
             title: "Account Not Found",
-            description: "No account exists with this email. Please register first or contact us for an invite.",
+            description: "No approved account exists with this email. Please register first or contact us for an invite.",
             variant: "destructive",
           });
         } else if (profile.approval_status === "approved") {
           navigate("/dashboard", { replace: true });
           return;
         } else if (profile.approval_status === "pending") {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
             title: "Pending Approval",
             description: "Your account is still pending admin approval.",
           });
         } else if (profile.approval_status === "rejected") {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
-            title: "Access Denied",
-            description: "Your registration request was rejected.",
+            title: "Account Not Found",
+            description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
             variant: "destructive",
           });
         }
@@ -92,10 +97,10 @@ export default function AuthPage() {
               .maybeSingle();
 
             if (!profile) {
-              await supabase.auth.signOut();
+              await signOutLocally();
               toast({
                 title: "Account Not Found",
-                description: "No account exists with this email. Please register first or contact us for an invite.",
+                description: "No approved account exists with this email. Please register first or contact us for an invite.",
                 variant: "destructive",
               });
               return;
@@ -104,16 +109,16 @@ export default function AuthPage() {
             if (profile.approval_status === "approved") {
               navigate("/dashboard");
             } else if (profile.approval_status === "pending") {
-              await supabase.auth.signOut();
+              await signOutLocally();
               toast({
                 title: "Pending Approval",
                 description: "Your account is still pending admin approval.",
               });
             } else if (profile.approval_status === "rejected") {
-              await supabase.auth.signOut();
+              await signOutLocally();
               toast({
-                title: "Access Denied",
-                description: "Your registration request was rejected.",
+                title: "Account Not Found",
+                description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
                 variant: "destructive",
               });
             }
@@ -174,17 +179,17 @@ export default function AuthPage() {
           .maybeSingle();
 
         if (!profile) {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
-            title: "Account not found",
-            description: "No account exists with this email. Please register first.",
+            title: "Account Not Found",
+            description: "No approved account exists with this email. Please register first.",
             variant: "destructive",
           });
           return;
         }
 
         if (profile.approval_status === "pending") {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
             title: "Pending Approval",
             description: "Your account is still pending admin approval. You'll receive an email once approved.",
@@ -193,10 +198,10 @@ export default function AuthPage() {
         }
 
         if (profile.approval_status === "rejected") {
-          await supabase.auth.signOut();
+          await signOutLocally();
           toast({
-            title: "Access Denied",
-            description: "Your registration request was rejected.",
+            title: "Account Not Found",
+            description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
             variant: "destructive",
           });
           return;
@@ -273,10 +278,10 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin,
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+        extraParams: {
+          prompt: "select_account",
         },
       });
       if (error) {

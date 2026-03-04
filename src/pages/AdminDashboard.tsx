@@ -336,8 +336,23 @@ const AdminDashboard = () => {
     setProcessingId(null);
   };
 
-  const handleViewPendingUser = (user: PendingUser) => {
-    setSelectedPendingUser(user);
+  const handleViewPendingUser = async (user: PendingUser) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load profile details.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedPendingUser((data as PendingUser) || user);
     setIsModalOpen(true);
   };
 
@@ -754,7 +769,7 @@ const AdminDashboard = () => {
                       {allDistributors
                         .filter(d => distributorStatusFilter === "all" || d.approval_status === distributorStatusFilter)
                         .map((dist) => (
-                        <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist as PendingUser)}>
+                        <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist)}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8">
