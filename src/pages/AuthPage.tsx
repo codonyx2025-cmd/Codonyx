@@ -269,6 +269,26 @@ export default function AuthPage() {
     }
   };
 
+  // Auto-refresh after 1 second if stuck on loading
+  useEffect(() => {
+    if (!isCheckingAuth) return;
+    const hasRefreshed = sessionStorage.getItem("auth_page_refreshed");
+    const timer = setTimeout(() => {
+      if (isCheckingAuth && !hasRefreshed) {
+        sessionStorage.setItem("auth_page_refreshed", "true");
+        window.location.reload();
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [isCheckingAuth]);
+
+  // Clear refresh flag when auth check completes
+  useEffect(() => {
+    if (!isCheckingAuth) {
+      sessionStorage.removeItem("auth_page_refreshed");
+    }
+  }, [isCheckingAuth]);
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

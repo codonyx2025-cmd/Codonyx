@@ -565,17 +565,6 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            <PendingUserDetailModal
-              user={selectedPendingUser}
-              isOpen={isModalOpen}
-              onClose={() => {
-                setIsModalOpen(false);
-                setSelectedPendingUser(null);
-              }}
-              onApprove={(userId, profileId) => handleApproval(userId, profileId, true)}
-              onReject={(userId, profileId) => handleApproval(userId, profileId, false)}
-              isProcessing={processingId !== null}
-            />
           </TabsContent>
 
           {/* Advisors Tab */}
@@ -1144,6 +1133,18 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <PendingUserDetailModal
+          user={selectedPendingUser}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedPendingUser(null);
+          }}
+          onApprove={(userId, profileId) => handleApproval(userId, profileId, true)}
+          onReject={(userId, profileId) => handleApproval(userId, profileId, false)}
+          isProcessing={processingId !== null}
+        />
       </main>
       <Footer />
     </div>
