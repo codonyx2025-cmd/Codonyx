@@ -46,6 +46,8 @@ interface Profile {
   id: string;
   full_name: string;
   organisation: string | null;
+  user_type: "advisor" | "laboratory" | "distributor";
+  approval_status: "approved" | "pending" | "rejected";
 }
 
 export default function DistributorDashboard() {
@@ -91,11 +93,16 @@ export default function DistributorDashboard() {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("id, full_name, organisation")
+      .select("id, full_name, organisation, user_type, approval_status")
       .eq("user_id", session.user.id)
       .maybeSingle();
 
-    if (!profileData) { navigate("/auth"); return; }
+    if (!profileData || profileData.approval_status !== "approved" || profileData.user_type !== "distributor") {
+      await supabase.auth.signOut({ scope: "local" });
+      navigate("/auth");
+      return;
+    }
+
     setProfile(profileData);
 
     // Fetch published deals (for bidding)

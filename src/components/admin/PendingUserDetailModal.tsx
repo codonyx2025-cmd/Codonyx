@@ -100,7 +100,7 @@ export function PendingUserDetailModal({
   const isDistributor = user.user_type === "distributor";
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -373,7 +373,7 @@ export function PendingUserDetailModal({
                       </div>
                     </div>
                   )}
-                  {user.years_of_experience && (
+                  {user.years_of_experience !== null && (
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Briefcase className="h-4 w-4 text-primary" />

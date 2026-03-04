@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 interface Profile {
   full_name: string;
   email: string;
-  user_type: string;
+  user_type: "advisor" | "laboratory" | "distributor";
   organisation: string | null;
+  approval_status: "pending" | "approved" | "rejected";
 }
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -30,15 +31,25 @@ export default function DashboardPage() {
       }
       const {
         data: profileData
-      } = await supabase.from("profiles").select("full_name, email, user_type, organisation").eq("user_id", session.user.id).maybeSingle();
-      if (profileData) {
-        // Redirect distributors to their dedicated dashboard
-        if (profileData.user_type === "distributor") {
-          navigate("/distributor-dashboard");
-          return;
-        }
-        setProfile(profileData);
+      } = await supabase
+        .from("profiles")
+        .select("full_name, email, user_type, organisation, approval_status")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (!profileData || profileData.approval_status !== "approved") {
+        await supabase.auth.signOut({ scope: "local" });
+        navigate("/auth", { replace: true });
+        return;
       }
+
+      // Redirect distributors to their dedicated dashboard
+      if (profileData.user_type === "distributor") {
+        navigate("/distributor-dashboard");
+        return;
+      }
+
+      setProfile(profileData);
       setIsLoading(false);
     };
     checkAuthAndLoadProfile();

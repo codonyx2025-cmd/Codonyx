@@ -24,6 +24,7 @@ interface UserProfile {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  approval_status: "pending" | "approved" | "rejected";
 }
 
 export function Navbar() {
@@ -41,12 +42,19 @@ export function Navbar() {
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, email, avatar_url")
+        .select("full_name, email, avatar_url, approval_status")
         .eq("user_id", userId)
         .maybeSingle();
-      if (data) {
-        setProfile(data);
+
+      if (data?.approval_status === "approved") {
+        const { full_name, email, avatar_url } = data;
+        setProfile({ full_name, email, avatar_url, approval_status: data.approval_status });
         setIsLoggedIn(true);
+      } else {
+        profileFetched.current = false;
+        setProfile(null);
+        setIsLoggedIn(false);
+        await supabase.auth.signOut({ scope: "local" });
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
@@ -90,7 +98,7 @@ export function Navbar() {
   }, [location.pathname]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     navigate("/");
   };
 
