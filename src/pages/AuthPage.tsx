@@ -242,22 +242,86 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     hasShownUnauthorizedToast.current = false;
     setIsGoogleLoading(true);
+
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth`,
-        extraParams: {
-          prompt: "select_account",
-        },
-      });
-      if (error) {
-        toast({ title: "Google Sign-In Failed", description: error.message || "An error occurred.", variant: "destructive" });
-        setIsGoogleLoading(false);
+      const hostname = window.location.hostname;
+      const isLovableHosted =
+        hostname.endsWith(".lovable.app") ||
+        hostname.endsWith(".lovableproject.com") ||
+        hostname === "localhost";
+
+      if (isLovableHosted) {
+        const { error } = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: `${window.location.origin}/auth`,
+          extraParams: {
+            prompt: "select_account",
+          },
+        });
+
+        if (error) {
+          toast({
+            title: "Google Sign-In Failed",
+            description: error.message || "An error occurred.",
+            variant: "destructive",
+          });
+        }
+
         return;
       }
-      // OAuth will redirect, the onAuthStateChange listener handles the rest
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: {
+            prompt: "select_account",
+          },
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: error.message || "An error occurred.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!data?.url) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: "Could not start Google sign-in.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const oauthUrl = new URL(data.url);
+      const backendAuthHost = new URL(import.meta.env.VITE_SUPABASE_URL).hostname;
+
+      if (
+        oauthUrl.hostname !== backendAuthHost &&
+        !oauthUrl.hostname.endsWith(".supabase.co") &&
+        oauthUrl.hostname !== "accounts.google.com"
+      ) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: "Invalid OAuth redirect URL.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      window.location.assign(data.url);
     } catch (error: any) {
       console.error("Google sign-in error:", error);
-      toast({ title: "Google Sign-In Failed", description: "An unexpected error occurred.", variant: "destructive" });
+      toast({
+        title: "Google Sign-In Failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
     } finally {
       setIsGoogleLoading(false);
     }
