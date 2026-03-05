@@ -368,7 +368,7 @@ export default function AuthPage() {
             Welcome back
           </h1>
           <p className="text-muted-foreground font-body mb-8">
-            Advisors and Laboratories can sign in below.
+            Advisors, Laboratories and Distributor can sign in below.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
