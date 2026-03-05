@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,43 +42,62 @@ export default function AuthPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [isSendingReset, setIsSendingReset] = useState(false);
 
-  const signOutLocally = async () => {
-    await supabase.auth.signOut({ scope: "local" });
+  const unauthorizedDescription = "No approved account exists with this email. Please register first or contact support.";
+  const hasShownUnauthorizedToast = useRef(false);
+
+  const showAccountNotFoundToast = () => {
+    if (hasShownUnauthorizedToast.current) return;
+    hasShownUnauthorizedToast.current = true;
+    toast({
+      title: "Account Not Found",
+      description: unauthorizedDescription,
+      variant: "destructive",
+    });
+  };
+
+  const signOutUnauthorized = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      await supabase.auth.signOut({ scope: "local" });
+    }
+    showAccountNotFoundToast();
+  };
+
+  const isSessionApproved = async (userId: string) => {
+    const { data: isApproved, error } = await supabase.rpc("is_user_approved", {
+      _user_id: userId,
+    });
+
+    if (error) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("approval_status")
+        .eq("user_id", userId)
+        .maybeSingle();
+      return profile?.approval_status === "approved";
+    }
+
+    return Boolean(isApproved);
+  };
+
+  const validateApprovedSession = async (userId: string) => {
+    const approved = await isSessionApproved(userId);
+    if (!approved) {
+      await signOutUnauthorized();
+      return false;
+    }
+    return true;
   };
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("approval_status")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-
-        if (!profile) {
-          await signOutLocally();
-          toast({
-            title: "Account Not Found",
-            description: "No approved account exists with this email. Please register first or contact us for an invite.",
-            variant: "destructive",
-          });
-        } else if (profile.approval_status === "approved") {
+        const approved = await validateApprovedSession(session.user.id);
+        if (approved) {
           navigate("/dashboard", { replace: true });
           return;
-        } else if (profile.approval_status === "pending") {
-          await signOutLocally();
-          toast({
-            title: "Pending Approval",
-            description: "Your account is still pending admin approval.",
-          });
-        } else if (profile.approval_status === "rejected") {
-          await signOutLocally();
-          toast({
-            title: "Account Not Found",
-            description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
-            variant: "destructive",
-          });
         }
       }
       setIsCheckingAuth(false);
@@ -86,46 +105,25 @@ export default function AuthPage() {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("approval_status")
-              .eq("user_id", session.user.id)
-              .maybeSingle();
-
-            if (!profile) {
-              await signOutLocally();
-              toast({
-                title: "Account Not Found",
-                description: "No approved account exists with this email. Please register first or contact us for an invite.",
-                variant: "destructive",
-              });
-              return;
-            }
-
-            if (profile.approval_status === "approved") {
-              navigate("/dashboard");
-            } else if (profile.approval_status === "pending") {
-              await signOutLocally();
-              toast({
-                title: "Pending Approval",
-                description: "Your account is still pending admin approval.",
-              });
-            } else if (profile.approval_status === "rejected") {
-              await signOutLocally();
-              toast({
-                title: "Account Not Found",
-                description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
-                variant: "destructive",
-              });
-            }
-          }, 0);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        if (event === "SIGNED_OUT") {
+          setIsCheckingAuth(false);
         }
+        return;
       }
-    );
+
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        setTimeout(async () => {
+          const approved = await validateApprovedSession(session.user.id);
+          if (approved) {
+            navigate("/dashboard", { replace: true });
+            return;
+          }
+          setIsCheckingAuth(false);
+        }, 0);
+      }
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -133,17 +131,14 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    hasShownUnauthorizedToast.current = false;
 
     try {
       // Check if session already exists before attempting sign in
       const { data: { session: existingSession } } = await supabase.auth.getSession();
       if (existingSession) {
-        const { data: existingProfile } = await supabase
-          .from("profiles")
-          .select("approval_status")
-          .eq("user_id", existingSession.user.id)
-          .maybeSingle();
-        if (existingProfile?.approval_status === "approved") {
+        const approved = await validateApprovedSession(existingSession.user.id);
+        if (approved) {
           navigate("/dashboard", { replace: true });
           return;
         }
@@ -171,43 +166,12 @@ export default function AuthPage() {
         return;
       }
 
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("approval_status")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
-
-        if (!profile) {
-          await signOutLocally();
-          toast({
-            title: "Account Not Found",
-            description: "No approved account exists with this email. Please register first.",
-            variant: "destructive",
-          });
+      if (data.session) {
+        const approved = await validateApprovedSession(data.session.user.id);
+        if (!approved) {
           return;
         }
-
-        if (profile.approval_status === "pending") {
-          await signOutLocally();
-          toast({
-            title: "Pending Approval",
-            description: "Your account is still pending admin approval. You'll receive an email once approved.",
-          });
-          return;
-        }
-
-        if (profile.approval_status === "rejected") {
-          await signOutLocally();
-          toast({
-            title: "Account Not Found",
-            description: "No approved account exists with this email. Please contact support if you think this is a mistake.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        navigate("/dashboard");
+        navigate("/dashboard", { replace: true });
       }
     } catch (error: any) {
       console.error("Sign in error:", error);
@@ -236,10 +200,10 @@ export default function AuthPage() {
         check_email: trimmedEmail,
       });
 
-      if (checkError || !exists) {
-        toast({
-          title: "Email not found",
-          description: "No account exists with this email address in our database.",
+        if (checkError || !exists) {
+          toast({
+            title: "Account Not Found",
+            description: "No approved account exists with this email address.",
           variant: "destructive",
         });
         setIsSendingReset(false);
@@ -276,6 +240,7 @@ export default function AuthPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    hasShownUnauthorizedToast.current = false;
     setIsGoogleLoading(true);
     try {
       const { error } = await lovable.auth.signInWithOAuth("google", {
