@@ -50,12 +50,19 @@ interface Profile {
   approval_status: "approved" | "pending" | "rejected";
 }
 
+interface AggregateStats {
+  unique_bidders: number;
+  total_subscription: number;
+  total_target: number;
+}
+
 export default function DistributorDashboard() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [myBids, setMyBids] = useState<Bid[]>([]);
+  const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, total_subscription: 0, total_target: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [bidAmount, setBidAmount] = useState("");
