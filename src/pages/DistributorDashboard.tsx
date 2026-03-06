@@ -150,6 +150,12 @@ export default function DistributorDashboard() {
       setMyBids(enriched);
     }
 
+    // Fetch aggregate stats (same numbers as admin dashboard)
+    const { data: statsData } = await supabase.rpc('get_deal_aggregate_stats');
+    if (statsData) {
+      setAggregateStats(statsData as unknown as AggregateStats);
+    }
+
     setIsLoading(false);
   };
 
