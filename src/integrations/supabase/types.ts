@@ -438,6 +438,7 @@ export type Database = {
     }
     Functions: {
       check_email_exists: { Args: { check_email: string }; Returns: boolean }
+      get_deal_aggregate_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
