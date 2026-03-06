@@ -41,6 +41,11 @@ export default function AuthPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetStep, setResetStep] = useState<"email" | "otp" | "password">("email");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const unauthorizedDescription = "No approved account exists with this email. Please register first or contact support.";
   const hasShownUnauthorizedToast = useRef(false);
@@ -190,53 +195,91 @@ export default function AuthPage() {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedEmail = forgotEmail.trim().toLowerCase();
-    if (!trimmedEmail) return;
 
-    setIsSendingReset(true);
-    try {
-      // Check if email exists using SECURITY DEFINER function (bypasses RLS)
-      const { data: exists, error: checkError } = await supabase.rpc("check_email_exists", {
-        check_email: trimmedEmail,
-      });
+    if (resetStep === "email") {
+      const trimmedEmail = forgotEmail.trim().toLowerCase();
+      if (!trimmedEmail) return;
 
-        if (checkError || !exists) {
-          toast({
-            title: "Account Not Found",
-            description: "No approved account exists with this email address.",
-          variant: "destructive",
+      setIsSendingReset(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("reset-password-otp", {
+          body: { action: "send", email: trimmedEmail },
         });
+
+        if (error || data?.error) {
+          toast({
+            title: "Error",
+            description: data?.error || error?.message || "Failed to send reset code.",
+            variant: "destructive",
+          });
+        } else {
+          toast({ title: "Code sent", description: "Check your email for a 6-digit verification code." });
+          setResetStep("otp");
+        }
+      } catch {
+        toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+      } finally {
         setIsSendingReset(false);
+      }
+      return;
+    }
+
+    if (resetStep === "otp") {
+      if (resetOtp.length !== 6) {
+        toast({ title: "Invalid code", description: "Please enter the 6-digit code.", variant: "destructive" });
+        return;
+      }
+      setResetStep("password");
+      return;
+    }
+
+    if (resetStep === "password") {
+      if (resetPassword.length < 6) {
+        toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
+        return;
+      }
+      if (resetPassword !== resetConfirmPassword) {
+        toast({ title: "Passwords don't match", description: "Please make sure both passwords are the same.", variant: "destructive" });
         return;
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      setIsSendingReset(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("reset-password-otp", {
+          body: { action: "verify", email: forgotEmail.trim().toLowerCase(), code: resetOtp, newPassword: resetPassword },
+        });
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Reset link sent",
-          description: "Check your email for a password reset link.",
-        });
-        setShowForgotPassword(false);
-        setForgotEmail("");
+        if (error || data?.error) {
+          toast({
+            title: "Error",
+            description: data?.error || error?.message || "Failed to reset password.",
+            variant: "destructive",
+          });
+          // If code was invalid, go back to OTP step
+          if (data?.error?.includes("Invalid") || data?.error?.includes("expired")) {
+            setResetStep("otp");
+            setResetOtp("");
+          }
+        } else {
+          toast({ title: "Password updated!", description: "You can now sign in with your new password." });
+          closeForgotPasswordDialog();
+        }
+      } catch {
+        toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+      } finally {
+        setIsSendingReset(false);
       }
-    } catch {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSendingReset(false);
     }
+  };
+
+  const closeForgotPasswordDialog = () => {
+    setShowForgotPassword(false);
+    setForgotEmail("");
+    setResetStep("email");
+    setResetOtp("");
+    setResetPassword("");
+    setResetConfirmPassword("");
+    setShowResetPassword(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -488,34 +531,105 @@ export default function AuthPage() {
       </div>
 
       {/* Forgot Password Dialog */}
-      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+      <Dialog open={showForgotPassword} onOpenChange={(open) => { if (!open) closeForgotPasswordDialog(); else setShowForgotPassword(true); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-display">Reset Password</DialogTitle>
             <DialogDescription>
-              Enter your email address and we'll send you a password reset link.
+              {resetStep === "email" && "Enter your email address and we'll send you a verification code."}
+              {resetStep === "otp" && "Enter the 6-digit code sent to your email."}
+              {resetStep === "password" && "Set your new password."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleForgotPassword} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="forgot-email">Email</Label>
-              <Input
-                id="forgot-email"
-                type="email"
-                placeholder="Enter your email"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                className="h-12"
-                required
-              />
-            </div>
+            {resetStep === "email" && (
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Email</Label>
+                <Input
+                  id="forgot-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="h-12"
+                  required
+                />
+              </div>
+            )}
+
+            {resetStep === "otp" && (
+              <div className="space-y-2">
+                <Label htmlFor="reset-otp">Verification Code</Label>
+                <Input
+                  id="reset-otp"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter 6-digit code"
+                  value={resetOtp}
+                  onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="h-12 text-center text-2xl tracking-[0.5em] font-mono"
+                  required
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">Code sent to {forgotEmail}</p>
+              </div>
+            )}
+
+            {resetStep === "password" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-new-password">New Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="reset-new-password"
+                      type={showResetPassword ? "text" : "password"}
+                      placeholder="Enter new password"
+                      value={resetPassword}
+                      onChange={(e) => setResetPassword(e.target.value)}
+                      className="h-12 pr-12"
+                      required
+                    />
+                    <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                      {showResetPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-confirm-password">Confirm Password</Label>
+                  <Input
+                    id="reset-confirm-password"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={resetConfirmPassword}
+                    onChange={(e) => setResetConfirmPassword(e.target.value)}
+                    className="h-12"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
             <Button type="submit" variant="primary" className="w-full h-12" disabled={isSendingReset}>
               {isSendingReset ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</>
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+              ) : resetStep === "email" ? (
+                "Send Verification Code"
+              ) : resetStep === "otp" ? (
+                "Verify Code"
               ) : (
-                "Send Reset Link"
+                "Update Password"
               )}
             </Button>
+
+            {resetStep !== "email" && (
+              <Button type="button" variant="ghost" className="w-full" onClick={() => {
+                if (resetStep === "otp") { setResetStep("email"); setResetOtp(""); }
+                else if (resetStep === "password") { setResetStep("otp"); }
+              }}>
+                Back
+              </Button>
+            )}
           </form>
         </DialogContent>
       </Dialog>

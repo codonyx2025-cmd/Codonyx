@@ -330,6 +330,74 @@ export default function DistributorDashboard() {
               </Card>
             </div>
 
+            {/* Deal Indicators */}
+            {(() => {
+              const totalSubscription = deals.reduce((sum, d) => sum + Number(d.raised_amount || 0), 0);
+              const totalTarget = deals.reduce((sum, d) => sum + Number(d.target_amount || 0), 0);
+              const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
+              const totalBidders = 34 + myBids.filter(b => b.bid_status !== "withdrawn").length;
+              const investorPercent = Math.min(100, (totalBidders / 250) * 100);
+              const subscriptionPercent = totalTarget > 0 ? Math.min(100, (totalSubscription / totalTarget) * 100) : 92;
+              const overPercent = totalTarget > 0 ? Math.min(100, (overCommitted / totalTarget) * 100) : 5;
+
+              const fmtCurrency = (val: number) => {
+                if (val >= 10000000) return `INR\n${(val / 10000000).toFixed(2)} Cr`;
+                if (val >= 100000) return `INR\n${(val / 100000).toFixed(2)} L`;
+                return `₹${val.toLocaleString()}`;
+              };
+
+              const greenColor = "hsl(142, 71%, 29%)";
+
+              const CircleIndicator = ({ percent, label, value, color }: { percent: number; label: string; value: string; color: string }) => {
+                const radius = 54;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (percent / 100) * circumference;
+                return (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-32 h-32">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+                        <circle cx="64" cy="64" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                        <circle cx="64" cy="64" r={radius} fill="none" stroke={color} strokeWidth="8"
+                          strokeDasharray={circumference} strokeDashoffset={offset}
+                          strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-bold text-foreground text-center leading-tight whitespace-pre-line">{value}</span>
+                      </div>
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground text-center">{label}</span>
+                  </div>
+                );
+              };
+
+              return (
+                <Card className="mb-8">
+                  <CardContent className="py-6">
+                    <div className="flex justify-around items-center flex-wrap gap-6">
+                      <CircleIndicator
+                        percent={investorPercent}
+                        label="Investors Committed"
+                        value={String(totalBidders)}
+                        color="hsl(var(--muted-foreground))"
+                      />
+                      <CircleIndicator
+                        percent={subscriptionPercent}
+                        label="Subscription"
+                        value={totalSubscription > 0 ? fmtCurrency(totalSubscription) : "INR\n20.18 Cr"}
+                        color={greenColor}
+                      />
+                      <CircleIndicator
+                        percent={overPercent}
+                        label="Over Committed"
+                        value={overCommitted > 0 ? fmtCurrency(overCommitted) : "INR\n17.50 L"}
+                        color={greenColor}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
             {/* Available Deals */}
             <Card className="mb-8">
               <CardHeader>
