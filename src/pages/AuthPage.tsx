@@ -229,7 +229,27 @@ export default function AuthPage() {
         toast({ title: "Invalid code", description: "Please enter the 6-digit code.", variant: "destructive" });
         return;
       }
-      setResetStep("password");
+      // Verify OTP with the server before proceeding
+      setIsSendingReset(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("reset-password-otp", {
+          body: { action: "verify_code", email: forgotEmail.trim().toLowerCase(), code: resetOtp },
+        });
+        if (error || data?.error) {
+          toast({
+            title: "Invalid code",
+            description: data?.error || error?.message || "The code is invalid or expired. Please try again.",
+            variant: "destructive",
+          });
+          setResetOtp("");
+          return;
+        }
+        setResetStep("password");
+      } catch {
+        toast({ title: "Error", description: "Could not verify code.", variant: "destructive" });
+      } finally {
+        setIsSendingReset(false);
+      }
       return;
     }
 
