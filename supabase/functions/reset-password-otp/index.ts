@@ -136,6 +136,39 @@ serve(async (req: Request) => {
       );
     }
 
+    if (action === "verify_code") {
+      const { code } = body;
+      if (!code) {
+        return new Response(
+          JSON.stringify({ error: "Code is required" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      const { data: otpRecord } = await supabaseAdmin
+        .from("password_reset_otps")
+        .select("*")
+        .eq("email", trimmedEmail)
+        .eq("code", code)
+        .eq("used", false)
+        .gte("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!otpRecord) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired code. Please request a new one." }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     if (action === "verify") {
       const { code, newPassword } = body;
 
