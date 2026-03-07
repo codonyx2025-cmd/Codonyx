@@ -151,10 +151,17 @@ serve(async (req: Request) => {
         .eq("email", trimmedEmail)
         .eq("code", code)
         .eq("used", false)
-        .gte("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      // Check expiration in code to avoid clock skew issues
+      if (otpRecord && new Date(otpRecord.expires_at) < new Date()) {
+        return new Response(
+          JSON.stringify({ error: "Code has expired. Please request a new one." }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
 
       if (!otpRecord) {
         return new Response(
@@ -193,10 +200,17 @@ serve(async (req: Request) => {
         .eq("email", trimmedEmail)
         .eq("code", code)
         .eq("used", false)
-        .gte("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      // Check expiration in code to avoid clock skew issues
+      if (otpRecord && new Date(otpRecord.expires_at) < new Date()) {
+        return new Response(
+          JSON.stringify({ error: "Code has expired. Please request a new one." }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
 
       if (!otpRecord) {
         return new Response(
