@@ -111,7 +111,7 @@ export function Navbar() {
       <div className="container mx-auto px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link to="/" onClick={(e) => { if (location.pathname === "/") e.preventDefault(); }} className="flex items-center gap-3">
+          <Link to="/" onClick={() => handleNavClick("/")} className="flex items-center gap-3">
             <img src={codonyxLogo} alt="Codonyx" className="h-10 w-10 object-contain" />
             <span className="font-heading text-2xl font-semibold text-white tracking-tight">
               Codonyx
