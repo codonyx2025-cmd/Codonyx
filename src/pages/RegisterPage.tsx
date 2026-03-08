@@ -10,6 +10,7 @@ import { ArrowRight, Target, MessageCircle, Handshake, CheckCircle, Loader2, XCi
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
+import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 const features = [
   {
