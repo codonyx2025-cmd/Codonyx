@@ -133,43 +133,15 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      let userId: string;
+      const { userId, error: registrationError } = await ensureRegistrationUser(email, password);
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/` },
-      });
-
-      if (authError) {
-        // Handle case where user exists in auth (e.g. from Google Sign-In) but has no profile
-        if (authError.message?.includes("already registered") || (authError as any)?.code === "user_already_exists") {
-          const { data: fnData, error: fnError } = await supabase.functions.invoke("handle-existing-auth-user", {
-            body: { email, password },
-          });
-
-          if (fnError || !fnData?.user_id) {
-            let errorMsg = "This email is already registered. Please try signing in instead.";
-            if (fnError) {
-              try {
-                const bodyText = await (fnError as any)?.context?.json?.() ?? JSON.parse(await (fnError as any)?.context?.text?.());
-                if (bodyText?.error) errorMsg = bodyText.error;
-              } catch { /* use default */ }
-            }
-            toast({ title: "Registration failed", description: errorMsg, variant: "destructive" });
-            return;
-          }
-
-          userId = fnData.user_id;
-        } else {
-          toast({ title: "Registration failed", description: authError.message || "Could not create account.", variant: "destructive" });
-          return;
-        }
-      } else if (!authData.user) {
-        toast({ title: "Registration failed", description: "Could not create account.", variant: "destructive" });
+      if (!userId) {
+        toast({
+          title: "Registration failed",
+          description: registrationError || "Could not create account.",
+          variant: "destructive",
+        });
         return;
-      } else {
-        userId = authData.user.id;
       }
 
       let uploadedAvatarUrl = null;
