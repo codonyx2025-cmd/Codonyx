@@ -73,6 +73,7 @@ const AdminDashboard = () => {
   const [inviteConfig, setInviteConfig] = useState<InviteConfig | null>(null);
   const [deals, setDeals] = useState<any[]>([]);
   const [dealBids, setDealBids] = useState<any[]>([]);
+  const [aggregateStats, setAggregateStats] = useState<{ approved_distributors: number; unique_bidders: number; total_subscription: number; total_target: number }>({ approved_distributors: 0, unique_bidders: 0, total_subscription: 0, total_target: 0 });
   const [loading, setLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -195,6 +196,12 @@ const AdminDashboard = () => {
       .select("*, profiles:distributor_profile_id(id, full_name, organisation, avatar_url)")
       .order("created_at", { ascending: false });
     setDealBids(bidsData || []);
+
+    // Fetch aggregate stats via RPC for consistent indicators
+    const { data: statsData } = await supabase.rpc('get_deal_aggregate_stats');
+    if (statsData) {
+      setAggregateStats(statsData as unknown as typeof aggregateStats);
+    }
   };
 
   const handleDealDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -814,10 +821,10 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               {/* Deal Indicators */}
               {(() => {
-                const approvedDistributors = allDistributors.filter(d => d.approval_status === "approved").length;
+                const approvedDistributors = aggregateStats.approved_distributors;
                 const totalBidders = 34 + approvedDistributors;
-                const totalSubscription = dealBids.reduce((sum: number, b: any) => sum + Number(b.bid_amount || 0), 0);
-                const totalTarget = deals.reduce((sum: number, d: any) => sum + Number(d.target_amount || 0), 0);
+                const totalSubscription = aggregateStats.total_subscription;
+                const totalTarget = aggregateStats.total_target;
                 const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
                 // Investors: full circle at 250
                 const investorPercent = Math.min(100, (totalBidders / 250) * 100);
