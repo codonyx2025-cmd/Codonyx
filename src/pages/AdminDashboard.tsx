@@ -73,6 +73,7 @@ const AdminDashboard = () => {
   const [inviteConfig, setInviteConfig] = useState<InviteConfig | null>(null);
   const [deals, setDeals] = useState<any[]>([]);
   const [dealBids, setDealBids] = useState<any[]>([]);
+  const [aggregateStats, setAggregateStats] = useState<{ approved_distributors: number; unique_bidders: number; total_subscription: number; total_target: number }>({ approved_distributors: 0, unique_bidders: 0, total_subscription: 0, total_target: 0 });
   const [loading, setLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
