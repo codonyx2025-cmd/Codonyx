@@ -20,7 +20,7 @@ export default function AboutPage() {
         {/* Hero Banner */}
         <section className="relative pt-20 overflow-hidden">
           <div className="absolute inset-0">
-            <img src={dnaHelixBg} alt="" className="w-full h-full object-cover" aria-hidden="true" />
+            <img src={dnaHelixBg} alt="" className="w-full h-full object-cover animate-dna-drift" aria-hidden="true" />
             <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/85 to-navy/70" />
           </div>
           <div
