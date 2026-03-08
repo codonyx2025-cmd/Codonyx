@@ -101,30 +101,42 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Authenticate the caller
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    const userId = claimsData.claims.sub;
     const data: NotificationRequest = await req.json();
+
+    if (!data.recipientEmail || !data.recipientName || !data.type) {
+      return new Response(
+        JSON.stringify({ error: "recipientEmail, recipientName, and type are required." }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // registration_submitted is sent right after signup — no auth needed
+    let userId: string | null = null;
+
+    if (data.type !== "registration_submitted") {
+      // Authenticate the caller for all other types
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims?.sub) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+      userId = claimsData.claims.sub as string;
+    }
 
     if (!data.recipientEmail || !data.recipientName || !data.type) {
       return new Response(
@@ -135,6 +147,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     // For admin-only notification types, verify admin role server-side
     if (ADMIN_ONLY_TYPES.includes(data.type)) {
+      if (!userId) {
+        return new Response(JSON.stringify({ error: "Forbidden: Admin role required" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
       const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const { data: roleData } = await supabaseAdmin
         .from("user_roles")
