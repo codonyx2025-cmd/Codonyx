@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { UserCheck, Mail, ShieldCheck, Globe, Brain, FlaskConical, Microscope } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import heroHealthcare2 from "@/assets/hero-healthcare-2.jpg";
 import chromosomesImg from "@/assets/chromosomes.jpg";
 
@@ -14,18 +15,25 @@ const benefits = [
 ];
 
 const BecomeAdvisorPage = () => {
+  const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation();
+  const { ref: ctaRef, isVisible: ctaVisible } = useScrollAnimation();
+  const { ref: benefitsRef, isVisible: benefitsVisible } = useScrollAnimation();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        {/* Hero Banner */}
+        {/* Combined Hero + Invitation CTA */}
         <section className="relative pt-20 overflow-hidden">
           <div className="absolute inset-0">
             <img src={heroHealthcare2} alt="" className="w-full h-full object-cover" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/80 to-navy/60" />
+            <div className="absolute inset-0 bg-gradient-to-b from-navy/90 via-navy/80 to-navy/95" />
           </div>
-          <div className="container mx-auto px-6 lg:px-8 relative z-10 py-20 lg:py-32">
-            <div className="max-w-2xl">
+          <div className="container mx-auto px-6 lg:px-8 relative z-10 py-16 lg:py-24">
+            <div
+              ref={heroRef}
+              className={`max-w-3xl mb-16 transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+            >
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 backdrop-blur-sm mb-6">
                 <UserCheck className="w-8 h-8 text-emerald-glow" />
               </div>
@@ -36,43 +44,43 @@ const BecomeAdvisorPage = () => {
                 Join our exclusive network of world-class advisors shaping the future of molecular science, AI-driven healthcare, and sustainable innovation.
               </p>
             </div>
-          </div>
-        </section>
 
-        {/* Invitation CTA */}
-        <section className="relative py-20 lg:py-28 overflow-hidden">
-          <div className="absolute inset-0">
-            <img src={chromosomesImg} alt="" className="w-full h-full object-cover" aria-hidden="true" />
-            <div className="absolute inset-0 bg-navy/85" />
-          </div>
-          <div className="container mx-auto px-6 lg:px-8 relative z-10 max-w-3xl text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-glow/20 backdrop-blur-sm mb-6">
-              <ShieldCheck className="w-8 h-8 text-emerald-glow" />
+            {/* Invitation CTA inline */}
+            <div
+              ref={ctaRef}
+              className={`max-w-2xl mx-auto text-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-10 lg:p-14 transition-all duration-700 ${ctaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-glow/20 mb-6">
+                <ShieldCheck className="w-7 h-7 text-emerald-glow" />
+              </div>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-white mb-5">
+                Invitation-Only Registration
+              </h2>
+              <p className="text-white/70 font-body text-base leading-relaxed mb-4">
+                We maintain the highest standards by operating on an invitation-only basis.
+                To ensure quality and trust within our advisor network, registration is exclusively
+                available through a personal invitation from the Codonyx team.
+              </p>
+              <p className="text-white/70 font-body text-base leading-relaxed mb-8">
+                If you are a seasoned professional in life sciences, biotechnology, pharmaceutical development,
+                or AI-driven healthcare and wish to contribute as an advisor, please reach out to us.
+              </p>
+              <Link to="/contact">
+                <Button variant="primary" size="lg" className="gap-2 text-base px-8 py-4">
+                  <Mail className="w-5 h-5" />
+                  Contact Us for Registration
+                </Button>
+              </Link>
             </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-white mb-6">
-              Invitation-Only Registration
-            </h2>
-            <p className="text-white/70 font-body text-lg leading-relaxed mb-6">
-              We maintain the highest standards by operating on an invitation-only basis. 
-              To ensure quality and trust within our advisor network, registration is exclusively 
-              available through a personal invitation from the Codonyx team.
-            </p>
-            <p className="text-white/70 font-body text-lg leading-relaxed mb-10">
-              If you are a seasoned professional in life sciences, biotechnology, pharmaceutical development, 
-              or AI-driven healthcare and wish to contribute as an advisor, please reach out to us.
-            </p>
-            <Link to="/contact">
-              <Button variant="primary" size="lg" className="gap-2 text-base px-8 py-4">
-                <Mail className="w-5 h-5" />
-                Contact Us for Registration
-              </Button>
-            </Link>
           </div>
         </section>
 
         {/* Benefits Grid */}
         <section className="py-20 lg:py-28 bg-background">
-          <div className="container mx-auto px-6 lg:px-8">
+          <div
+            ref={benefitsRef}
+            className={`container mx-auto px-6 lg:px-8 transition-all duration-700 ${benefitsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          >
             <p className="text-primary font-body text-sm font-semibold tracking-[0.2em] uppercase mb-4 text-center">
               Why Join Us
             </p>

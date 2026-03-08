@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MapPin, Phone, Loader2, CheckCircle } from "lucide-react";
+import { Mail, Loader2, CheckCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import dnaHelixBg from "@/assets/dna-helix-bg.jpg";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -18,6 +20,8 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation();
+  const { ref: formRef, isVisible: formVisible } = useScrollAnimation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,67 +55,63 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-20">
+      <main>
+        {/* Hero Banner */}
+        <section className="relative pt-20 overflow-hidden">
+          <div className="absolute inset-0">
+            <img src={dnaHelixBg} alt="" className="w-full h-full object-cover" aria-hidden="true" />
+            <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/85 to-navy/70" />
+          </div>
+          <div
+            ref={heroRef}
+            className={`container mx-auto px-6 lg:px-8 relative z-10 py-20 lg:py-28 transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          >
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 backdrop-blur-sm mb-6">
+                <Mail className="w-8 h-8 text-emerald-glow" />
+              </div>
+              <h1 className="font-display text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Contact <span className="text-emerald-glow">Us</span>
+              </h1>
+              <p className="text-white/80 text-lg lg:text-xl font-body leading-relaxed">
+                Have questions about Codonyx? We'd love to hear from you. Reach out and our team will get back to you promptly.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Form Section */}
         <section className="py-16 lg:py-24">
-          <div className="container mx-auto px-6 lg:px-8">
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-12 lg:mb-16">
-                <h1 className="font-display text-4xl lg:text-5xl font-medium text-foreground mb-4 animate-fade-in">
-                  Contact Us
-                </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-body animate-fade-in-delayed">
-                  Have questions about Codonyx? We'd love to hear from you.
-                </p>
+          <div
+            ref={formRef}
+            className={`container mx-auto px-6 lg:px-8 transition-all duration-700 ${formVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+          >
+            <div className="max-w-2xl mx-auto">
+              {/* Email info */}
+              <div className="flex items-center gap-4 mb-10 p-5 bg-card border border-divider rounded-xl">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-medium text-foreground">Email us directly</h3>
+                  <p className="text-muted-foreground font-body text-sm">info@codonyx.org</p>
+                </div>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-                {/* Contact Info */}
-                <div className="space-y-8">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-lg font-medium text-foreground mb-1">Email</h3>
-                      <p className="text-muted-foreground font-body">info@codonyx.org</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-lg font-medium text-foreground mb-1">Phone</h3>
-                      <p className="text-muted-foreground font-body">+1 (555) 123-4567</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-lg font-medium text-foreground mb-1">Office</h3>
-                      <p className="text-muted-foreground font-body">
-                        123 Innovation Drive<br />
-                        San Francisco, CA 94102
-                      </p>
-                    </div>
-                  </div>
+              {/* Form */}
+              {isSubmitted ? (
+                <div className="flex flex-col items-center justify-center text-center space-y-4 py-16 bg-card border border-divider rounded-2xl">
+                  <CheckCircle className="w-16 h-16 text-primary" />
+                  <h3 className="font-display text-2xl font-medium text-foreground">Message Sent!</h3>
+                  <p className="text-muted-foreground font-body">We'll get back to you as soon as possible.</p>
+                  <Button variant="outline" onClick={() => setIsSubmitted(false)} className="mt-4">
+                    Send Another Message
+                  </Button>
                 </div>
-
-                {/* Contact Form */}
-                {isSubmitted ? (
-                  <div className="flex flex-col items-center justify-center text-center space-y-4 py-12">
-                    <CheckCircle className="w-16 h-16 text-primary" />
-                    <h3 className="font-display text-2xl font-medium text-foreground">Message Sent!</h3>
-                    <p className="text-muted-foreground font-body">We'll get back to you as soon as possible.</p>
-                    <Button variant="outline" onClick={() => setIsSubmitted(false)} className="mt-4">
-                      Send Another Message
-                    </Button>
-                  </div>
-                ) : (
+              ) : (
+                <div className="bg-card border border-divider rounded-2xl p-8 lg:p-10">
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">Send us a message</h2>
+                  <p className="text-muted-foreground font-body text-sm mb-8">Fill out the form below and we'll respond within 24 hours.</p>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -141,7 +141,7 @@ export default function ContactPage() {
                       <Label htmlFor="organisation">Organisation</Label>
                       <Input
                         id="organisation"
-                        placeholder="Your organisation"
+                        placeholder="Your organisation (optional)"
                         value={formData.organisation}
                         onChange={(e) => setFormData({ ...formData, organisation: e.target.value })}
                       />
@@ -159,16 +159,16 @@ export default function ContactPage() {
                       />
                     </div>
 
-                    <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
+                    <Button type="submit" variant="primary" size="lg" className="w-full gap-2" disabled={isSubmitting}>
                       {isSubmitting ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</>
+                        <><Loader2 className="w-4 h-4 animate-spin" />Sending...</>
                       ) : (
-                        "Send Message"
+                        <><Send className="w-4 h-4" />Send Message</>
                       )}
                     </Button>
                   </form>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
