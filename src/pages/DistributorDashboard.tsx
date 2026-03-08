@@ -52,6 +52,7 @@ interface Profile {
 
 interface AggregateStats {
   unique_bidders: number;
+  approved_distributors: number;
   total_subscription: number;
   total_target: number;
 }
