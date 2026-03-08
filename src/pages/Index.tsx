@@ -4,8 +4,6 @@ import { Footer } from "@/components/layout/Footer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { PhilosophySection } from "@/components/home/PhilosophySection";
 
-import { TinyGiantsSection } from "@/components/home/TinyGiantsSection";
-import { AIIntegrationSection } from "@/components/home/AIIntegrationSection";
 import { IndustryTrustSection } from "@/components/home/IndustryTrustSection";
 
 // Prefetch key routes after home page loads for instant navigation
@@ -40,8 +38,6 @@ const Index = () => {
       <main>
         <HeroSection />
         <PhilosophySection />
-        <TinyGiantsSection />
-        <AIIntegrationSection />
         <IndustryTrustSection />
       </main>
       <Footer />

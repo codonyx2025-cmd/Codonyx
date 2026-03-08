@@ -39,29 +39,6 @@ const BecomeAdvisorPage = () => {
           </div>
         </section>
 
-        {/* Benefits Grid */}
-        <section className="py-20 lg:py-28 bg-background">
-          <div className="container mx-auto px-6 lg:px-8">
-            <p className="text-primary font-body text-sm font-semibold tracking-[0.2em] uppercase mb-4 text-center">
-              Why Join Us
-            </p>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-16 text-center">
-              Benefits of Being an Advisor
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {benefits.map((b) => (
-                <div key={b.title} className="bg-card border border-divider rounded-xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all duration-300 group">
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-5 group-hover:bg-primary/20 transition-colors">
-                    <b.icon className="w-7 h-7 text-primary" />
-                  </div>
-                  <h3 className="font-heading text-lg font-semibold text-card-foreground mb-2">{b.title}</h3>
-                  <p className="text-muted-foreground font-body text-sm leading-relaxed">{b.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Invitation CTA */}
         <section className="relative py-20 lg:py-28 overflow-hidden">
           <div className="absolute inset-0">
@@ -90,6 +67,29 @@ const BecomeAdvisorPage = () => {
                 Contact Us for Registration
               </Button>
             </Link>
+          </div>
+        </section>
+
+        {/* Benefits Grid */}
+        <section className="py-20 lg:py-28 bg-background">
+          <div className="container mx-auto px-6 lg:px-8">
+            <p className="text-primary font-body text-sm font-semibold tracking-[0.2em] uppercase mb-4 text-center">
+              Why Join Us
+            </p>
+            <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-16 text-center">
+              Benefits of Being an Advisor
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {benefits.map((b) => (
+                <div key={b.title} className="bg-card border border-divider rounded-xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all duration-300 group">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-5 group-hover:bg-primary/20 transition-colors">
+                    <b.icon className="w-7 h-7 text-primary" />
+                  </div>
+                  <h3 className="font-heading text-lg font-semibold text-card-foreground mb-2">{b.title}</h3>
+                  <p className="text-muted-foreground font-body text-sm leading-relaxed">{b.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </main>
