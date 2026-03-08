@@ -115,7 +115,7 @@ export default function AboutPage() {
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-emerald-glow mt-2.5 shrink-0" />
-                  <span className="text-white/80 font-body text-base">{item}</span>
+                  <span className="text-white/90 font-body text-base">{item}</span>
                 </div>
               ))}
             </div>
