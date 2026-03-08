@@ -123,7 +123,7 @@ export default function RegisterLaboratoryPage() {
       const locationStr = [city, country].filter(Boolean).join(", ");
 
       const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: authData.user.id,
+        user_id: userId,
         full_name: fullName,
         email,
         contact_number: contactNumber || null,
