@@ -10,6 +10,7 @@ import { CheckCircle, Loader2, Eye, EyeOff, Upload, User, FlaskConical } from "l
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
+import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 export default function RegisterLaboratoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
