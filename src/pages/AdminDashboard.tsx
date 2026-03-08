@@ -196,6 +196,12 @@ const AdminDashboard = () => {
       .select("*, profiles:distributor_profile_id(id, full_name, organisation, avatar_url)")
       .order("created_at", { ascending: false });
     setDealBids(bidsData || []);
+
+    // Fetch aggregate stats via RPC for consistent indicators
+    const { data: statsData } = await supabase.rpc('get_deal_aggregate_stats');
+    if (statsData) {
+      setAggregateStats(statsData as unknown as typeof aggregateStats);
+    }
   };
 
   const handleDealDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
