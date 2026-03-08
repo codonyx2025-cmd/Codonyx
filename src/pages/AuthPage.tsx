@@ -206,10 +206,25 @@ export default function AuthPage() {
           body: { action: "send", email: trimmedEmail },
         });
 
-        if (error || data?.error) {
+        if (error) {
+          // Edge function returned non-2xx — parse the structured error from context
+          let errorMsg = "Failed to send reset code.";
+          try {
+            const bodyText = await (error as any)?.context?.json?.() 
+              ?? JSON.parse(await (error as any)?.context?.text?.());
+            if (bodyText?.error) errorMsg = bodyText.error;
+          } catch {
+            // fallback
+          }
+          toast({
+            title: "Account Not Found",
+            description: errorMsg,
+            variant: "destructive",
+          });
+        } else if (data?.error) {
           toast({
             title: "Error",
-            description: data?.error || error?.message || "Failed to send reset code.",
+            description: data.error,
             variant: "destructive",
           });
         } else {
