@@ -119,7 +119,7 @@ export default function RegisterDistributorPage() {
       let verificationDocUrl = null;
       if (verificationDoc) {
         const fileExt = verificationDoc.name.split(".").pop();
-        const filePath = `${authData.user.id}/verification.${fileExt}`;
+        const filePath = `${userId}/verification.${fileExt}`;
         const { error: uploadError } = await supabase.storage.from("verification-documents").upload(filePath, verificationDoc, { upsert: true });
         if (!uploadError) {
           // Store the file path (not a public URL since bucket is private)
