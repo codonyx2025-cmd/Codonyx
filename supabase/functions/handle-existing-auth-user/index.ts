@@ -25,18 +25,32 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check if user exists in auth
-    const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-    if (listError) {
-      return new Response(
-        JSON.stringify({ error: "Failed to check existing users." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Check if user exists in auth (paginate to avoid missing users beyond first page)
+    const normalizedEmail = email.toLowerCase();
+    let existingUser: { id: string; email?: string } | undefined;
+    let page = 1;
+    const perPage = 200;
 
-    const existingUser = usersData.users.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase()
-    );
+    while (!existingUser) {
+      const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage,
+      });
+
+      if (listError) {
+        return new Response(
+          JSON.stringify({ error: "Failed to check existing users." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      existingUser = usersData.users.find(
+        (u) => u.email?.toLowerCase() === normalizedEmail
+      );
+
+      if (existingUser || usersData.users.length < perPage) break;
+      page += 1;
+    }
 
     if (!existingUser) {
       return new Response(
