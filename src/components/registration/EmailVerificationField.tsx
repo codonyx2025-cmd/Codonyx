@@ -36,17 +36,29 @@ export default function EmailVerificationField({
         body: { email: email.trim().toLowerCase() },
       });
 
+      // Handle non-2xx responses (409 email_exists comes back as error with context)
       if (error) {
-        toast({ title: "Failed to send code", description: error?.message || "Please try again.", variant: "destructive" });
+        // Try to parse the error context for structured errors like email_exists
+        const errorMessage = (error as any)?.context?.body
+          ? await (error as any).context.text().catch(() => null)
+          : null;
+        
+        if (errorMessage) {
+          try {
+            const parsed = JSON.parse(errorMessage);
+            if (parsed?.error === "email_exists") {
+              toast({ title: "Email already registered", description: parsed.message || "This email is already registered. Please use a different email.", variant: "destructive" });
+              return;
+            }
+          } catch {}
+        }
+        
+        toast({ title: "Failed to send code", description: "Please try again.", variant: "destructive" });
         return;
       }
       
       if (!data?.success) {
-        if (data?.error === "email_exists") {
-          toast({ title: "Email already exists", description: data.message || "This email is already registered with another account. Please try with a different email.", variant: "destructive" });
-        } else {
-          toast({ title: "Failed to send code", description: data?.message || data?.error || "Please try again.", variant: "destructive" });
-        }
+        toast({ title: "Failed to send code", description: data?.message || data?.error || "Please try again.", variant: "destructive" });
         return;
       }
 
