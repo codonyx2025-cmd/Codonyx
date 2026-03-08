@@ -124,9 +124,7 @@ export default function RegisterDistributorPage() {
         return;
       }
 
-      await supabase.auth.signOut();
-
-      // Send registration submitted email
+      // Send registration submitted email before signing out
       try {
         await supabase.functions.invoke("send-notification-email", {
           body: {
@@ -139,6 +137,8 @@ export default function RegisterDistributorPage() {
       } catch (emailErr) {
         console.error("Failed to send confirmation email:", emailErr);
       }
+
+      await supabase.auth.signOut();
 
       setIsRegistered(true);
     } catch (error) {

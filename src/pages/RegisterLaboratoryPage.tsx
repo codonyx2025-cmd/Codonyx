@@ -121,8 +121,7 @@ export default function RegisterLaboratoryPage() {
         return;
       }
 
-      await supabase.auth.signOut();
-
+      // Send registration submitted email before signing out
       try {
         await supabase.functions.invoke("send-notification-email", {
           body: {
@@ -135,6 +134,8 @@ export default function RegisterLaboratoryPage() {
       } catch (emailErr) {
         console.error("Failed to send confirmation email:", emailErr);
       }
+
+      await supabase.auth.signOut();
 
       setIsRegistered(true);
     } catch (error) {
