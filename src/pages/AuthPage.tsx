@@ -296,14 +296,26 @@ export default function AuthPage() {
           body: { action: "verify", email: forgotEmail.trim().toLowerCase(), code: resetOtp, newPassword: resetPassword },
         });
 
-        if (error || data?.error) {
+        let errorMsg = "";
+        if (error) {
+          try {
+            const bodyText = await (error as any)?.context?.json?.()
+              ?? JSON.parse(await (error as any)?.context?.text?.());
+            if (bodyText?.error) errorMsg = bodyText.error;
+          } catch {
+            errorMsg = "Failed to reset password. Please try again.";
+          }
+        } else if (data?.error) {
+          errorMsg = data.error;
+        }
+
+        if (errorMsg) {
           toast({
-            title: "Error",
-            description: data?.error || error?.message || "Failed to reset password.",
+            title: "Password Reset Failed",
+            description: errorMsg,
             variant: "destructive",
           });
-          // If code was invalid, go back to OTP step
-          if (data?.error?.includes("Invalid") || data?.error?.includes("expired")) {
+          if (errorMsg.includes("Invalid") || errorMsg.includes("expired")) {
             setResetStep("otp");
             setResetOtp("");
           }

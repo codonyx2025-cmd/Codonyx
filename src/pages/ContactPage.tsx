@@ -32,7 +32,16 @@ export default function ContactPage() {
         body: formData,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Extract meaningful message from edge function error
+        let errorMsg = "Something went wrong. Please try again or email us directly.";
+        try {
+          const bodyText = await (error as any)?.context?.json?.()
+            ?? JSON.parse(await (error as any)?.context?.text?.());
+          if (bodyText?.error) errorMsg = bodyText.error;
+        } catch {}
+        throw new Error(errorMsg);
+      }
 
       setIsSubmitted(true);
       toast({

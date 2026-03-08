@@ -78,8 +78,21 @@ export default function EmailVerificationField({
         body: { email: email.trim().toLowerCase(), action: "verify", code: verificationCode },
       });
 
-      if (error || !data?.success) {
-        toast({ title: "Invalid code", description: data?.error || "The code you entered is incorrect. Please try again.", variant: "destructive" });
+      let errorMsg = "";
+      if (error) {
+        try {
+          const bodyText = await (error as any)?.context?.json?.()
+            ?? JSON.parse(await (error as any)?.context?.text?.());
+          if (bodyText?.error) errorMsg = bodyText.error;
+        } catch {
+          errorMsg = "The verification code is incorrect. Please try again.";
+        }
+      } else if (data && !data.success) {
+        errorMsg = data.error || "The verification code is incorrect. Please try again.";
+      }
+
+      if (errorMsg) {
+        toast({ title: "Incorrect Code", description: errorMsg, variant: "destructive" });
         return;
       }
 
