@@ -821,10 +821,10 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               {/* Deal Indicators */}
               {(() => {
-                const approvedDistributors = allDistributors.filter(d => d.approval_status === "approved").length;
+                const approvedDistributors = aggregateStats.approved_distributors;
                 const totalBidders = 34 + approvedDistributors;
-                const totalSubscription = dealBids.reduce((sum: number, b: any) => sum + Number(b.bid_amount || 0), 0);
-                const totalTarget = deals.reduce((sum: number, d: any) => sum + Number(d.target_amount || 0), 0);
+                const totalSubscription = aggregateStats.total_subscription;
+                const totalTarget = aggregateStats.total_target;
                 const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
                 // Investors: full circle at 250
                 const investorPercent = Math.min(100, (totalBidders / 250) * 100);
