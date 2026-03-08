@@ -149,6 +149,13 @@ const AdminDashboard = () => {
 
   const fetchAllUsers = async () => {
     setUsersLoading(true);
+
+    // Fetch admin user IDs to exclude from listings
+    const { data: adminRoles } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    const adminUserIds = new Set((adminRoles || []).map((r) => r.user_id));
     
     const { data: advisors } = await supabase
       .from("profiles")
@@ -168,9 +175,11 @@ const AdminDashboard = () => {
       .eq("user_type", "distributor")
       .order("full_name");
     
-    setAllAdvisors(advisors || []);
-    setAllLabs(labs || []);
-    setAllDistributors(distributors || []);
+    const filterAdmins = (users: any[]) => users.filter((u) => !adminUserIds.has(u.user_id));
+    
+    setAllAdvisors(filterAdmins(advisors || []));
+    setAllLabs(filterAdmins(labs || []));
+    setAllDistributors(filterAdmins(distributors || []));
     setUsersLoading(false);
   };
 
