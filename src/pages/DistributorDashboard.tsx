@@ -52,6 +52,7 @@ interface Profile {
 
 interface AggregateStats {
   unique_bidders: number;
+  approved_distributors: number;
   total_subscription: number;
   total_target: number;
 }
@@ -62,7 +63,7 @@ export default function DistributorDashboard() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [myBids, setMyBids] = useState<Bid[]>([]);
-  const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, total_subscription: 0, total_target: 0 });
+  const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, approved_distributors: 0, total_subscription: 0, total_target: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [bidAmount, setBidAmount] = useState("");
@@ -345,8 +346,8 @@ export default function DistributorDashboard() {
 
             {/* Deal Indicators */}
             {(() => {
-              const uniqueBidders = aggregateStats.unique_bidders;
-              const totalBidders = 34 + uniqueBidders;
+               const approvedDistributors = aggregateStats.approved_distributors;
+               const totalBidders = 34 + approvedDistributors;
               const totalSubscription = aggregateStats.total_subscription;
               const totalTarget = aggregateStats.total_target;
               const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
