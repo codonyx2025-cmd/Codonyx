@@ -180,7 +180,11 @@ export function DashboardNavbar() {
           <div className="container mx-auto px-6 py-4 space-y-4">
             {/* Profile info in mobile menu */}
             {profile && (
-              <div className="flex items-center gap-3 pb-4 border-b border-divider">
+              <Link 
+                to={`/profile/${profile.id}`} 
+                className="flex items-center gap-3 pb-4 border-b border-divider"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
@@ -191,7 +195,7 @@ export function DashboardNavbar() {
                   <p className="font-medium text-sm text-foreground">{profile.full_name}</p>
                   <p className="text-xs text-muted-foreground">{profile.email}</p>
                 </div>
-              </div>
+              </Link>
             )}
             {navLinks.map((link) => (
               <Link
