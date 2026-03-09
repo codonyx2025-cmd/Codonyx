@@ -63,15 +63,21 @@ export function AdvisorCard({
           <img
             src={avatarUrl}
             alt={fullName}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPhotoOpen(true);
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-            <Avatar className="h-20 w-20">
-              <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                {getInitials(fullName)}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarLightbox
+              src={avatarUrl}
+              alt={fullName}
+              fallback={getInitials(fullName)}
+              className="h-20 w-20"
+              fallbackClassName="text-2xl bg-primary text-primary-foreground"
+            />
           </div>
         )}
       </div>
