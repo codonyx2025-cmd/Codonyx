@@ -130,12 +130,18 @@ export function DashboardNavbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
-                <div className="flex items-center justify-start gap-2 p-2">
+                <Link to={`/profile/${profile?.id}`} className="flex items-center justify-start gap-2 p-2 cursor-pointer hover:bg-accent rounded-md transition-colors">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.full_name} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {profile?.full_name ? getInitials(profile.full_name) : <User className="h-3 w-3" />}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium">{profile?.full_name}</p>
                     <p className="text-xs text-muted-foreground">{profile?.email}</p>
                   </div>
-                </div>
+                </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to={`/profile/${profile?.id}`} className="cursor-pointer">
