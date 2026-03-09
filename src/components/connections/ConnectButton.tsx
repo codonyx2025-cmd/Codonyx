@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Clock, Check, X, Loader2 } from "lucide-react";
+import { UserPlus, Clock, Check, X, Loader2, MoreVertical, UserMinus } from "lucide-react";
 import { useConnections } from "@/hooks/useConnections";
 import {
   AlertDialog,
@@ -12,6 +12,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ConnectButtonProps {
   currentProfileId: string | null;
@@ -30,6 +36,7 @@ export function ConnectButton({
 }: ConnectButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showWithdrawDialog, setShowWithdrawDialog] = useState(false);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
   const {
     getConnectionStatus,
     sendConnectionRequest,
@@ -73,6 +80,17 @@ export function ConnectButton({
     }
   };
 
+  const handleDisconnect = async () => {
+    if (!connectionId) return;
+    setShowDisconnectDialog(false);
+    setIsLoading(true);
+    try {
+      await withdrawConnection(connectionId);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Button variant={variant} size={size} disabled className={className}>
@@ -81,7 +99,7 @@ export function ConnectButton({
     );
   }
 
-  // Check cooldown
+  // Check cooldown (3 weeks)
   if (cooldownUntil && new Date(cooldownUntil) > new Date()) {
     const daysLeft = Math.ceil((new Date(cooldownUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return (
@@ -95,14 +113,50 @@ export function ConnectButton({
   switch (status) {
     case "accepted":
       return (
-        <Button
-          variant="outline"
-          size={size}
-          className={`gap-2 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 ${className}`}
-        >
-          <Check className="w-4 h-4" />
-          Connected
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size={size}
+            className={`gap-2 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 cursor-default ${className}`}
+          >
+            <Check className="w-4 h-4" />
+            Connected
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => setShowDisconnectDialog(true)}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <UserMinus className="mr-2 h-4 w-4" />
+                Disconnect
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AlertDialog open={showDisconnectDialog} onOpenChange={setShowDisconnectDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Disconnect from this profile?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  If you disconnect, there will be a <span className="font-semibold">3-week cooldown</span> before you can send a new connection request to this person.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDisconnect} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Disconnect
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       );
 
     case "pending_sent":
@@ -123,7 +177,7 @@ export function ConnectButton({
               <AlertDialogHeader>
                 <AlertDialogTitle>Withdraw invitation</AlertDialogTitle>
                 <AlertDialogDescription>
-                  If you withdraw now, you won't be able to resend to this person for up to 2 weeks.
+                  If you withdraw now, you won't be able to resend to this person for up to 3 weeks.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
