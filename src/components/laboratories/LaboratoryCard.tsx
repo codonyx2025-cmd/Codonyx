@@ -151,5 +151,16 @@ export function LaboratoryCard({
         </div>
       </CardContent>
     </Card>
+
+    {/* Photo Lightbox */}
+    {avatarUrl && (
+      <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+        <DialogContent className="max-w-lg p-0 bg-transparent border-none shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">
+          <VisuallyHidden><DialogTitle>{fullName}</DialogTitle></VisuallyHidden>
+          <img src={avatarUrl} alt={fullName} className="w-full h-auto rounded-xl object-contain max-h-[80vh]" />
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   );
 }
