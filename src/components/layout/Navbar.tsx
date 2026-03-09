@@ -96,6 +96,8 @@ export function Navbar() {
         await fetchProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
         profileFetched.current = false;
+        cachedProfile = null;
+        cachedUserId = null;
         setProfile(null);
         setIsLoggedIn(false);
       }
