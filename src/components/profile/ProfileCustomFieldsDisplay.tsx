@@ -119,8 +119,8 @@ export function ProfileCustomFieldsDisplay({ profileId, userType }: ProfileCusto
 
             {field.fieldType === "tags" ? (
               <div className="flex flex-wrap gap-2">
-                {parseTags(field.value).map((tag) => (
-                  <Badge key={`${field.id}-${tag}`} variant="secondary" className="font-medium">
+                {parseTags(field.value).map((tag, index) => (
+                  <Badge key={`${field.id}-${tag}`} variant="secondary" className={`${tagColors[index % tagColors.length]} text-black font-medium hover:opacity-90`}>
                     {tag}
                   </Badge>
                 ))}
