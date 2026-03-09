@@ -288,6 +288,18 @@ export default function ProfileDetailPage() {
                 <h2 className="font-heading text-xl font-semibold text-foreground mb-6">Professional Details</h2>
                 
                 <div className="grid gap-6">
+                  {profile.education && (
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Education Institute</p>
+                        {renderTags(profile.education)}
+                      </div>
+                    </div>
+                  )}
+
                   {profile.experience && (
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
