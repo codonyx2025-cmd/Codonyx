@@ -41,7 +41,7 @@ export function DashboardNavbar() {
       if (session) {
         const { data } = await supabase
           .from("profiles")
-          .select("full_name, avatar_url, user_type, email")
+          .select("id, full_name, avatar_url, user_type, email")
           .eq("user_id", session.user.id)
           .maybeSingle();
         if (data) {
