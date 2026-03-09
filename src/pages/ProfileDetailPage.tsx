@@ -9,6 +9,7 @@ import { AvatarLightbox } from "@/components/ui/avatar-lightbox";
 import { ConnectButton } from "@/components/connections/ConnectButton";
 import { ConnectionsSection } from "@/components/connections/ConnectionsSection";
 import { ProfilePublications } from "@/components/publications/ProfilePublications";
+import { ProfileCustomFieldsDisplay } from "@/components/profile/ProfileCustomFieldsDisplay";
 import { 
   Loader2, 
   ArrowLeft, 
@@ -23,7 +24,8 @@ import {
   Users,
   Calendar,
   Beaker,
-  Wrench
+  Wrench,
+  BookOpen
 } from "lucide-react";
 
 interface Profile {
@@ -36,7 +38,7 @@ interface Profile {
   organisation: string | null;
   contact_number: string | null;
   avatar_url: string | null;
-  user_type: "advisor" | "laboratory";
+  user_type: "advisor" | "laboratory" | "distributor";
   created_at: string;
   linkedin_url: string | null;
   education: string | null;
@@ -286,6 +288,18 @@ export default function ProfileDetailPage() {
                 <h2 className="font-heading text-xl font-semibold text-foreground mb-6">Professional Details</h2>
                 
                 <div className="grid gap-6">
+                  {profile.education && (
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Education Institute</p>
+                        {renderTags(profile.education)}
+                      </div>
+                    </div>
+                  )}
+
                   {profile.experience && (
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -419,6 +433,9 @@ export default function ProfileDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Admin-defined Custom Fields */}
+            <ProfileCustomFieldsDisplay profileId={profile.id} userType={profile.user_type} />
 
             {/* Publications Section */}
             <ProfilePublications profileId={profile.id} />

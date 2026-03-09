@@ -244,25 +244,34 @@ export default function EditProfilePage() {
         variant: "destructive",
       });
     } else {
-      // Save custom field values
+      // Save custom field values in a single upsert for reliability and performance
+      let customValuesError: Error | null = null;
       if (profileId && Object.keys(customFieldValues).length > 0) {
         const upserts = Object.entries(customFieldValues).map(([fieldId, value]) => ({
           profile_id: profileId,
           field_id: fieldId,
-          value: value || null,
+          value: value.trim() || null,
         }));
 
-        for (const upsert of upserts) {
-          await supabase
-            .from("custom_profile_values")
-            .upsert(upsert, { onConflict: "profile_id,field_id" });
-        }
+        const { error: upsertError } = await supabase
+          .from("custom_profile_values")
+          .upsert(upserts, { onConflict: "profile_id,field_id" });
+
+        customValuesError = upsertError;
       }
 
-      toast({
-        title: "Success",
-        description: "Your profile has been updated.",
-      });
+      if (customValuesError) {
+        toast({
+          title: "Partial update",
+          description: "Profile updated, but additional details could not be saved. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Your profile has been updated.",
+        });
+      }
     }
 
     setIsSaving(false);

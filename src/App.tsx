@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,11 +46,58 @@ const queryClient = new QueryClient({
   },
 });
 
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-  </div>
-);
+const BUFFER_RECOVERY_KEY = "page_buffer_recovery_once";
+
+const PageLoader = () => {
+  useEffect(() => {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const stored = sessionStorage.getItem(BUFFER_RECOVERY_KEY);
+
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as { path: string; timestamp: number };
+        const isSamePath = parsed.path === currentPath;
+        const isRecent = Date.now() - parsed.timestamp < 5 * 60 * 1000;
+        if (isSamePath && isRecent) return;
+      } catch {
+        sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
+      }
+    }
+
+    const timer = window.setTimeout(() => {
+      sessionStorage.setItem(
+        BUFFER_RECOVERY_KEY,
+        JSON.stringify({ path: currentPath, timestamp: Date.now() })
+      );
+      window.location.reload();
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      const stored = sessionStorage.getItem(BUFFER_RECOVERY_KEY);
+      if (!stored) return;
+
+      try {
+        const parsed = JSON.parse(stored) as { path: string; timestamp: number };
+        if (parsed.path === currentPath) {
+          sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
+        }
+      } catch {
+        sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
+      }
+    };
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
+};
 
 const App = () => (
   <ErrorBoundary>
