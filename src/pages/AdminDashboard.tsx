@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PendingUserDetailModal } from "@/components/admin/PendingUserDetailModal";
+import { CustomFieldsManager } from "@/components/admin/CustomFieldsManager";
 import { BackButton } from "@/components/layout/BackButton";
 
 interface PendingUser {
