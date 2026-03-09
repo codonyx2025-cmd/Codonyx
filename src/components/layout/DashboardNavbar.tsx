@@ -144,6 +144,12 @@ export function DashboardNavbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/edit-profile" className="cursor-pointer">
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/connections" className="cursor-pointer">
                     <Users className="mr-2 h-4 w-4" />
                     Connections
