@@ -115,7 +115,7 @@ export function HeroSection() {
       </div>
 
       {/* Biological floating elements */}
-      <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden hidden sm:block">
+      <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
         <svg className="absolute top-[8%] right-[12%] w-20 h-40 opacity-20 animate-float-slow" viewBox="0 0 40 100">
           <path d="M10,0 Q30,12 10,25 Q-10,38 10,50 Q30,62 10,75 Q-10,88 10,100" fill="none" stroke="hsl(var(--emerald-glow))" strokeWidth="1.5"/>
           <path d="M30,0 Q10,12 30,25 Q50,38 30,50 Q10,62 30,75 Q50,88 30,100" fill="none" stroke="hsl(var(--emerald-glow))" strokeWidth="1.5"/>

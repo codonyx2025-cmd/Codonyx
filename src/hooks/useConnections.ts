@@ -28,7 +28,7 @@ interface Connection {
   };
 }
 
-const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+const THREE_WEEKS_MS = 21 * 24 * 60 * 60 * 1000;
 
 export function useConnections(currentProfileId: string | null) {
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -93,7 +93,7 @@ export function useConnections(currentProfileId: string | null) {
     // Check if this was a withdrawn connection with active cooldown
     if (connection.withdrawn_at) {
       const withdrawnDate = new Date(connection.withdrawn_at).getTime();
-      const cooldownEnd = withdrawnDate + TWO_WEEKS_MS;
+      const cooldownEnd = withdrawnDate + THREE_WEEKS_MS;
       if (Date.now() < cooldownEnd) {
         return { 
           status: "none", 
@@ -128,7 +128,7 @@ export function useConnections(currentProfileId: string | null) {
       );
 
       if (existingConn?.withdrawn_at) {
-        const cooldownEnd = new Date(existingConn.withdrawn_at).getTime() + TWO_WEEKS_MS;
+        const cooldownEnd = new Date(existingConn.withdrawn_at).getTime() + THREE_WEEKS_MS;
         if (Date.now() < cooldownEnd) {
           const daysLeft = Math.ceil((cooldownEnd - Date.now()) / (1000 * 60 * 60 * 24));
           toast({
@@ -323,7 +323,7 @@ export function useConnections(currentProfileId: string | null) {
 
       toast({
         title: "Request Withdrawn",
-        description: "Your connection request has been withdrawn. You can resend after 2 weeks.",
+        description: "Connection has been disconnected. You can reconnect after 3 weeks.",
       });
       
       await fetchConnections();
