@@ -11,6 +11,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// --- In-memory rate limiter ---
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX_SEND = 3;
+const RATE_LIMIT_MAX_VERIFY = 5;
+
+function isRateLimited(key: string, max: number): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+  entry.count++;
+  return entry.count > max;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 5 * 60_000);
+// --- End rate limiter ---
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,6 +54,17 @@ serve(async (req: Request) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+
+    // Rate limit by action + email
+    const isVerify = action === "verify" || action === "verify_code";
+    const rateLimitKey = isVerify ? `pwd-verify:${trimmedEmail}` : `pwd-send:${trimmedEmail}`;
+    const rateLimitMax = isVerify ? RATE_LIMIT_MAX_VERIFY : RATE_LIMIT_MAX_SEND;
+    if (isRateLimited(rateLimitKey, rateLimitMax)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait a moment and try again." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     if (action === "send") {
       // Check if approved account exists
