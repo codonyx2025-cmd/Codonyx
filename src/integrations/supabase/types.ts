@@ -59,6 +59,87 @@ export type Database = {
           },
         ]
       }
+      custom_profile_fields: {
+        Row: {
+          applies_to: Database["public"]["Enums"]["user_type"]
+          created_at: string
+          display_order: number
+          field_label: string
+          field_name: string
+          field_type: string
+          id: string
+          is_required: boolean
+          placeholder: string | null
+          updated_at: string
+        }
+        Insert: {
+          applies_to: Database["public"]["Enums"]["user_type"]
+          created_at?: string
+          display_order?: number
+          field_label: string
+          field_name: string
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          placeholder?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: Database["public"]["Enums"]["user_type"]
+          created_at?: string
+          display_order?: number
+          field_label?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean
+          placeholder?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      custom_profile_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          id: string
+          profile_id: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          id?: string
+          profile_id: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          id?: string
+          profile_id?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_profile_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_profile_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_profile_values_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_bids: {
         Row: {
           bid_amount: number
