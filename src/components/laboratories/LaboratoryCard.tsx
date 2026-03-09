@@ -34,6 +34,7 @@ export function LaboratoryCard({
   linkedinUrl,
 }: LaboratoryCardProps) {
   const navigate = useNavigate();
+  const [photoOpen, setPhotoOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name
