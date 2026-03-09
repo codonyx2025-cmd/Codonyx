@@ -92,6 +92,7 @@ export default function EditProfilePage() {
 
       if (profileData) {
         setProfile(profileData as Profile);
+        setProfileId(profileData.id);
         setFullName(profileData.full_name || "");
         setHeadline(profileData.headline || "");
         setBio(profileData.bio || "");
