@@ -91,6 +91,7 @@ const AdminDashboard = () => {
   const [newDealDescription, setNewDealDescription] = useState("");
   const [newDealTarget, setNewDealTarget] = useState("");
   const [newDealDocFile, setNewDealDocFile] = useState<File | null>(null);
+  const [newDealMinBid, setNewDealMinBid] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
