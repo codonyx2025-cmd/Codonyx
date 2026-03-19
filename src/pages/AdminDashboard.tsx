@@ -913,6 +913,10 @@ const AdminDashboard = () => {
                       <Input type="number" placeholder="e.g. 10000000" value={newDealTarget} onChange={(e) => setNewDealTarget(e.target.value)} />
                     </div>
                     <div className="space-y-2">
+                      <Label>Minimum Bid Amount (₹)</Label>
+                      <Input type="number" placeholder="e.g. 500000" value={newDealMinBid} onChange={(e) => setNewDealMinBid(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
                       <Label>Description</Label>
                       <Input placeholder="Brief description" value={newDealDescription} onChange={(e) => setNewDealDescription(e.target.value)} />
                     </div>
