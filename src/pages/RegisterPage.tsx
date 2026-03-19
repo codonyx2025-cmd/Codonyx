@@ -137,6 +137,14 @@ export default function RegisterPage() {
       toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
+    if (!expertise.trim()) {
+      toast({ title: "Areas of Expertise required", description: "Please add at least one area of expertise.", variant: "destructive" });
+      return;
+    }
+    if (!experience.trim()) {
+      toast({ title: "Experience / Background required", description: "Please add at least one experience entry.", variant: "destructive" });
+      return;
+    }
 
     setIsSubmitting(true);
 
