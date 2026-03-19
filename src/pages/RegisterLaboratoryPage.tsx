@@ -273,11 +273,11 @@ export default function RegisterLaboratoryPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="researchAreas" className="text-xs uppercase tracking-wider font-medium">Research Areas *</Label>
-                <Input id="researchAreas" placeholder="e.g., Oncology, Neuroscience, Immunology" value={researchAreas} onChange={(e) => setResearchAreas(e.target.value)} className="h-12" required />
+                <TagInput id="researchAreas" value={researchAreas} onChange={setResearchAreas} placeholder="Add research area (e.g., Oncology, Neuroscience)" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="services" className="text-xs uppercase tracking-wider font-medium">Services Offered *</Label>
-                <Textarea id="services" placeholder="Describe the services your laboratory offers..." value={services} onChange={(e) => setServices(e.target.value)} className="min-h-[80px]" required />
+                <TagInput id="services" value={services} onChange={setServices} placeholder="Add service (e.g., Gene Sequencing, Bioanalysis)" />
               </div>
             </div>
 

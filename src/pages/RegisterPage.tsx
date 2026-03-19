@@ -342,11 +342,6 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="organisation" className="text-xs uppercase tracking-wider font-medium">Organisation / Company *</Label>
-              <Input id="organisation" placeholder="Enter your organisation" value={organisation} onChange={(e) => setOrganisation(e.target.value)} className="h-12" required />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="linkedinUrl" className="text-xs uppercase tracking-wider font-medium">LinkedIn Profile *</Label>
               <Input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/yourprofile" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="h-12" required />
             </div>

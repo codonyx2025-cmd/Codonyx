@@ -260,12 +260,12 @@ export default function RegisterDistributorPage() {
 
             <div className="space-y-2">
               <Label htmlFor="distributionCapacity" className="text-xs uppercase tracking-wider font-medium">Distribution Capacity *</Label>
-              <Input id="distributionCapacity" placeholder="e.g. National, Regional, International" value={distributionCapacity} onChange={(e) => setDistributionCapacity(e.target.value)} className="h-12" required />
+              <TagInput id="distributionCapacity" value={distributionCapacity} onChange={setDistributionCapacity} placeholder="Add capacity (e.g., National, Regional, International)" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="bio" className="text-xs uppercase tracking-wider font-medium">About Your Business</Label>
-              <Textarea id="bio" placeholder="Brief description of your distribution business..." value={bio} onChange={(e) => setBio(e.target.value)} className="min-h-[80px]" />
+              <TagInput id="bio" value={bio} onChange={setBio} placeholder="Add keyword (e.g., Pharmaceutical Distribution, Cold Chain)" />
             </div>
 
             <div className="space-y-2">
