@@ -274,7 +274,7 @@ export default function DistributorDashboard() {
     .filter(b => b.bid_status === "accepted" || b.bid_status === "pending")
     .reduce((sum, b) => sum + b.bid_amount, 0);
 
-  const activeBids = myBids.filter(b => b.bid_status === "pending").length;
+  const activeBids = myBids.filter(b => b.bid_status === "accepted" && b.deal_status !== "closed").length;
   const acceptedBids = myBids.filter(b => b.bid_status === "accepted").length;
 
   return (
@@ -504,7 +504,7 @@ export default function DistributorDashboard() {
                               <Pencil className="w-3 h-3 mr-1" /> Edit
                             </Button>
                           )}
-                          {bid.bid_status === "pending" && bid.deal_status !== "closed" && (
+                          {bid.bid_status === "accepted" && bid.deal_status !== "closed" && (
                             <Button variant="outline" size="sm" onClick={() => handleWithdrawBid(bid.id)}>
                               Withdraw
                             </Button>
