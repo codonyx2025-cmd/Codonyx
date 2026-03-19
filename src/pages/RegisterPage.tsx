@@ -73,13 +73,19 @@ export default function RegisterPage() {
       }
 
       try {
+        // Clear any stale auth session that might interfere with the query
+        await supabase.auth.signOut();
+
         const { data, error } = await supabase
           .from("invite_tokens")
           .select("id, is_active, expires_at, used_at")
           .eq("token", inviteToken)
           .maybeSingle();
 
-        if (error || !data) {
+        if (error) {
+          console.error("Token validation error:", error);
+          setIsTokenValid(false);
+        } else if (!data) {
           setIsTokenValid(false);
         } else if (!data.is_active || data.used_at || new Date(data.expires_at) < new Date()) {
           setIsTokenValid(false);
@@ -87,7 +93,8 @@ export default function RegisterPage() {
           setIsTokenValid(true);
           setTokenId(data.id);
         }
-      } catch {
+      } catch (err) {
+        console.error("Token validation exception:", err);
         setIsTokenValid(false);
       } finally {
         setIsValidatingToken(false);
