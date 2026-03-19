@@ -29,6 +29,7 @@ interface Deal {
   raised_amount: number;
   deal_status: string;
   created_at: string;
+  min_bid_amount: number | null;
 }
 
 interface Bid {
