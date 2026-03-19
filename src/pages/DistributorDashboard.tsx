@@ -274,7 +274,7 @@ export default function DistributorDashboard() {
     .filter(b => b.bid_status === "accepted" || b.bid_status === "pending")
     .reduce((sum, b) => sum + b.bid_amount, 0);
 
-  const activeBids = myBids.filter(b => b.bid_status === "pending").length;
+  const activeBids = myBids.filter(b => b.bid_status === "accepted" && b.deal_status !== "closed").length;
   const acceptedBids = myBids.filter(b => b.bid_status === "accepted").length;
 
   return (

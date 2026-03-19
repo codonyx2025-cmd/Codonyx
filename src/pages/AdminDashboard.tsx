@@ -1034,16 +1034,7 @@ const AdminDashboard = () => {
                               </TableCell>
                               <TableCell className="text-muted-foreground text-xs font-mono">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
                               <TableCell>
-                                {bid.bid_status === "pending" && (
-                                  <div className="flex gap-2">
-                                    <Button size="sm" variant="default" onClick={() => handleBidAction(bid.id, "accepted")}>
-                                      <Check className="h-4 w-4 mr-1" /> Accept
-                                    </Button>
-                                    <Button size="sm" variant="destructive" onClick={() => handleBidAction(bid.id, "rejected")}>
-                                      <X className="h-4 w-4 mr-1" /> Reject
-                                    </Button>
-                                  </div>
-                                )}
+                                <span className="text-xs text-muted-foreground">Auto-accepted</span>
                               </TableCell>
                             </TableRow>
                           );
