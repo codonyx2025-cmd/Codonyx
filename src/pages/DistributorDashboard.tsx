@@ -169,6 +169,16 @@ export default function DistributorDashboard() {
       return;
     }
 
+    const minBid = selectedDeal.min_bid_amount ? Number(selectedDeal.min_bid_amount) : 0;
+    if (minBid > 0 && amount < minBid) {
+      toast({
+        title: "Bid amount too low",
+        description: `Minimum bid for this deal is ₹${minBid.toLocaleString()}. You can't bid less than this amount.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmittingBid(true);
     const { error } = await supabase.from("deal_bids").insert({
       deal_id: selectedDeal.id,
