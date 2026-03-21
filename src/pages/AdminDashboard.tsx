@@ -772,6 +772,7 @@ const AdminDashboard = () => {
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="deactivated">Deactivated</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
