@@ -17,7 +17,7 @@ interface PendingUser {
   location: string | null;
   headline: string | null;
   bio: string | null;
-  approval_status: "pending" | "approved" | "rejected";
+  approval_status: "pending" | "approved" | "rejected" | "deactivated";
   avatar_url: string | null;
   company_type: string | null;
   linkedin_url: string | null;
