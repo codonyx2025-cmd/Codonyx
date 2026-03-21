@@ -889,6 +889,7 @@ const AdminDashboard = () => {
                         <TableHead>Region</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Joined</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
