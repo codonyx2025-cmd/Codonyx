@@ -48,14 +48,15 @@ export default function AuthPage() {
   const [showResetPassword, setShowResetPassword] = useState(false);
 
   const unauthorizedDescription = "No approved account exists with this email. Please register first or contact support.";
+  const deactivatedDescription = "Your account has been deactivated by an administrator. Please contact support for assistance.";
   const hasShownUnauthorizedToast = useRef(false);
 
-  const showAccountNotFoundToast = () => {
+  const showAccountNotFoundToast = (isDeactivated = false) => {
     if (hasShownUnauthorizedToast.current) return;
     hasShownUnauthorizedToast.current = true;
     toast({
-      title: "Account Not Found",
-      description: unauthorizedDescription,
+      title: isDeactivated ? "Account Deactivated" : "Account Not Found",
+      description: isDeactivated ? deactivatedDescription : unauthorizedDescription,
       variant: "destructive",
     });
   };
