@@ -471,7 +471,7 @@ export default function DistributorDashboard() {
                               {existingBid ? (
                                 <p className="text-sm text-muted-foreground">
                                   You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount)}</span>
-                                  {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status}</Badge>
+                                  {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status === "accepted" ? "Submitted" : existingBid.bid_status}</Badge>
                                 </p>
                               ) : (
                                 <Button className="w-full" onClick={() => setSelectedDeal(deal)}>
