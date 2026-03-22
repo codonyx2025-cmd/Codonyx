@@ -338,7 +338,7 @@ export default function DistributorDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{acceptedBids}</p>
-                    <p className="text-sm text-muted-foreground">Accepted Bids</p>
+                    <p className="text-sm text-muted-foreground">Submitted Bids</p>
                   </div>
                 </CardContent>
               </Card>
