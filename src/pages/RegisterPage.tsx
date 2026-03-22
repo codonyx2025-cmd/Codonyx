@@ -141,10 +141,7 @@ export default function RegisterPage() {
       toast({ title: "Areas of Expertise required", description: "Please add at least one area of expertise.", variant: "destructive" });
       return;
     }
-    if (!experience.trim()) {
-      toast({ title: "Experience / Background required", description: "Please add at least one experience entry.", variant: "destructive" });
-      return;
-    }
+    // Experience is now optional
 
     setIsSubmitting(true);
 
