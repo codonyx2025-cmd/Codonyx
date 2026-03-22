@@ -1163,12 +1163,12 @@ const AdminDashboard = () => {
                                   bid.bid_status === "accepted" ? "default" :
                                   bid.bid_status === "rejected" ? "destructive" : "secondary"
                                 }>
-                                  {bid.bid_status}
+                                  {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-muted-foreground text-xs font-mono">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
                               <TableCell>
-                                <span className="text-xs text-muted-foreground">Auto-accepted</span>
+                                <span className="text-xs text-muted-foreground">Auto-submitted</span>
                               </TableCell>
                             </TableRow>
                           );
