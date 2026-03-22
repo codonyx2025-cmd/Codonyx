@@ -141,10 +141,7 @@ export default function RegisterPage() {
       toast({ title: "Areas of Expertise required", description: "Please add at least one area of expertise.", variant: "destructive" });
       return;
     }
-    if (!experience.trim()) {
-      toast({ title: "Experience / Background required", description: "Please add at least one experience entry.", variant: "destructive" });
-      return;
-    }
+    // Experience is now optional
 
     setIsSubmitting(true);
 
@@ -350,8 +347,8 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="linkedinUrl" className="text-xs uppercase tracking-wider font-medium">LinkedIn Profile *</Label>
-              <Input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/yourprofile" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="h-12" required />
+              <Label htmlFor="linkedinUrl" className="text-xs uppercase tracking-wider font-medium">LinkedIn Profile</Label>
+              <Input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/yourprofile" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="h-12" />
             </div>
 
             <div className="space-y-2">
@@ -371,7 +368,7 @@ export default function RegisterPage() {
                 <TagInput id="expertise" value={expertise} onChange={setExpertise} placeholder="Add expertise (e.g., Biotechnology, Drug Development)" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="experience" className="text-xs uppercase tracking-wider font-medium">Experience / Background *</Label>
+                <Label htmlFor="experience" className="text-xs uppercase tracking-wider font-medium">Experience / Background</Label>
                 <TagInput id="experience" value={experience} onChange={setExperience} placeholder="Add experience (e.g., Clinical Trials, R&D Management)" />
               </div>
             </div>

@@ -130,7 +130,7 @@ export function Navbar() {
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link to="/" onClick={() => handleNavClick("/")} className="flex items-center gap-3">
-            <img src={codonyxLogo} alt="Codonyx" className="h-10 w-10 object-contain" />
+            <img src={codonyxLogo} alt="Codonyx" className="h-10 w-10 object-contain" fetchPriority="high" decoding="sync" />
             <span className="font-heading text-2xl font-semibold text-white tracking-tight">
               Codonyx
             </span>

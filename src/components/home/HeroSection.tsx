@@ -55,7 +55,8 @@ export function HeroSection() {
             src={img}
             alt={`AI healthcare technology ${index + 1}`}
             loading={index === 0 ? "eager" : "lazy"}
-            decoding="async"
+            decoding={index === 0 ? "sync" : "async"}
+            fetchPriority={index === 0 ? "high" : undefined}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
               index === currentImage ? "opacity-100" : "opacity-0"
             }`}

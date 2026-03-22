@@ -459,7 +459,7 @@ export default function AuthPage() {
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 xl:px-24 py-12 bg-background">
         <div className="max-w-md mx-auto w-full">
           <Link to="/" className="inline-block mb-12">
-            <img src={codonyxLogo} alt="Codonyx" className="h-14 w-auto" />
+            <img src={codonyxLogo} alt="Codonyx" className="h-14 w-auto" fetchPriority="high" decoding="sync" />
           </Link>
 
           <h1 className="font-display text-3xl lg:text-4xl font-medium text-foreground mb-2">
@@ -548,7 +548,7 @@ export default function AuthPage() {
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <img src={googleIcon} alt="Google" className="w-5 h-5" />
+              <img src={googleIcon} alt="Google" className="w-5 h-5" fetchPriority="high" decoding="sync" />
             )}
             Continue with Google
           </Button>
