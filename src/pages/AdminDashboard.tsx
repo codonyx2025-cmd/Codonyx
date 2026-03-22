@@ -231,6 +231,17 @@ const AdminDashboard = () => {
 
   const handleCreateDeal = async () => {
     if (!newDealTitle || !newDealTarget) return;
+    
+    const targetAmount = parseFloat(newDealTarget);
+    if (newDealMinBid && parseFloat(newDealMinBid) >= targetAmount) {
+      toast({
+        title: "Invalid Minimum Bid",
+        description: "Minimum Bid Amount must be less than the Target Amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const { data: { user } } = await supabase.auth.getUser();
 
     let documentUrl: string | null = null;
