@@ -1148,15 +1148,16 @@ const AdminDashboard = () => {
                   {dealBids.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No bids received yet.</p>
                   ) : (
-                    <Table>
+                    <div className="w-full overflow-x-auto">
+                    <Table className="min-w-max whitespace-nowrap">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Distributor</TableHead>
-                          <TableHead>Deal</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="whitespace-nowrap">Distributor</TableHead>
+                          <TableHead className="whitespace-nowrap">Deal</TableHead>
+                          <TableHead className="whitespace-nowrap">Amount</TableHead>
+                          <TableHead className="whitespace-nowrap">Status</TableHead>
+                          <TableHead className="whitespace-nowrap">Date</TableHead>
+                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1164,7 +1165,7 @@ const AdminDashboard = () => {
                           const deal = deals.find((d: any) => d.id === bid.deal_id);
                           return (
                             <TableRow key={bid.id}>
-                              <TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <div
                                   className="flex items-center gap-3 cursor-pointer hover:opacity-80"
                                   onClick={() => bid.profiles?.id && navigate(`/profile/${bid.profiles.id}`)}
