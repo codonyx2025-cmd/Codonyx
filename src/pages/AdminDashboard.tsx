@@ -899,7 +899,8 @@ const AdminDashboard = () => {
                 ) : allDistributors.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No distributors registered yet.</p>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
@@ -917,15 +918,15 @@ const AdminDashboard = () => {
                         .map((dist) => (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist)}>
                           <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
+                            <div className="flex items-center gap-3 whitespace-nowrap">
+                              <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={dist.avatar_url || undefined} />
                                 <AvatarFallback>{dist.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
                               </Avatar>
                               <span className="font-medium">{dist.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{dist.email}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{dist.email}</TableCell>
                           <TableCell>{dist.organisation || "-"}</TableCell>
                           <TableCell>{dist.region || "-"}</TableCell>
                           <TableCell>
