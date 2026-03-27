@@ -738,8 +738,8 @@ const AdminDashboard = () => {
                               {advisor.approval_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{format(new Date(advisor.created_at), "MMM d, yyyy")}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(advisor.created_at), "MMM d, yyyy")}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
