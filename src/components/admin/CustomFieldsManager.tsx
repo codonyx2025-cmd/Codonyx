@@ -134,6 +134,11 @@ export function CustomFieldsManager() {
     setAppliesTo(field.applies_to);
     setIsRequired(field.is_required);
     setPlaceholder(field.placeholder || "");
+    if (field.field_type === "tags") {
+      fetchTagSuggestions(field.field_name);
+    } else {
+      setTagSuggestions([]);
+    }
     setDialogOpen(true);
   };
 
