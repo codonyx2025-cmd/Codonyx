@@ -699,7 +699,8 @@ const AdminDashboard = () => {
                 {usersLoading ? (
                   <p className="text-muted-foreground text-center py-8">Loading advisors...</p>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
@@ -717,15 +718,15 @@ const AdminDashboard = () => {
                         .map((advisor) => (
                         <TableRow key={advisor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/profile/${advisor.id}`)}>
                           <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
+                            <div className="flex items-center gap-3 whitespace-nowrap">
+                              <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={advisor.avatar_url || undefined} />
                                 <AvatarFallback>{advisor.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
                               </Avatar>
                               <span className="font-medium">{advisor.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{advisor.email}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{advisor.email}</TableCell>
                           <TableCell>{advisor.organisation || "-"}</TableCell>
                           <TableCell>{advisor.location || "-"}</TableCell>
                           <TableCell>
@@ -764,6 +765,7 @@ const AdminDashboard = () => {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -796,7 +798,8 @@ const AdminDashboard = () => {
                 {usersLoading ? (
                   <p className="text-muted-foreground text-center py-8">Loading laboratories...</p>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Company</TableHead>
@@ -814,15 +817,15 @@ const AdminDashboard = () => {
                         .map((lab) => (
                         <TableRow key={lab.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/profile/${lab.id}`)}>
                           <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
+                            <div className="flex items-center gap-3 whitespace-nowrap">
+                              <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={lab.avatar_url || undefined} />
                                 <AvatarFallback>{lab.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
                               </Avatar>
                               <span className="font-medium">{lab.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{lab.email}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{lab.email}</TableCell>
                           <TableCell>{lab.company_type || "-"}</TableCell>
                           <TableCell>{lab.location || "-"}</TableCell>
                           <TableCell>
@@ -861,6 +864,7 @@ const AdminDashboard = () => {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -895,7 +899,8 @@ const AdminDashboard = () => {
                 ) : allDistributors.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No distributors registered yet.</p>
                 ) : (
-                  <Table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
@@ -913,15 +918,15 @@ const AdminDashboard = () => {
                         .map((dist) => (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist)}>
                           <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
+                            <div className="flex items-center gap-3 whitespace-nowrap">
+                              <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={dist.avatar_url || undefined} />
                                 <AvatarFallback>{dist.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
                               </Avatar>
                               <span className="font-medium">{dist.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{dist.email}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{dist.email}</TableCell>
                           <TableCell>{dist.organisation || "-"}</TableCell>
                           <TableCell>{dist.region || "-"}</TableCell>
                           <TableCell>
@@ -960,6 +965,7 @@ const AdminDashboard = () => {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
