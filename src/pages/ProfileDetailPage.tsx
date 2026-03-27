@@ -225,6 +225,20 @@ export default function ProfileDetailPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
+                        {/* Edit Profile Button - only show on own profile */}
+                        {isOwnProfile && (
+                          <Button
+                            variant="outline"
+                            asChild
+                            className="gap-2"
+                          >
+                            <Link to="/edit-profile">
+                              <Pencil className="h-4 w-4" />
+                              Edit Profile
+                            </Link>
+                          </Button>
+                        )}
+
                         {/* Connect Button - only show if not own profile */}
                         {!isOwnProfile && currentUserProfile && (
                           <ConnectButton
