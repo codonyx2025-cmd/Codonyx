@@ -699,17 +699,17 @@ const AdminDashboard = () => {
                 {usersLoading ? (
                   <p className="text-muted-foreground text-center py-8">Loading advisors...</p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <Table className="min-w-[700px]">
+                  <div className="w-full overflow-x-auto">
+                  <Table className="min-w-max whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Organisation</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="whitespace-nowrap">User</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Organisation</TableHead>
+                        <TableHead className="whitespace-nowrap">Location</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Joined</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -717,8 +717,8 @@ const AdminDashboard = () => {
                         .filter(a => advisorStatusFilter === "all" || a.approval_status === advisorStatusFilter)
                         .map((advisor) => (
                         <TableRow key={advisor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/profile/${advisor.id}`)}>
-                          <TableCell>
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={advisor.avatar_url || undefined} />
                                 <AvatarFallback>{advisor.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
@@ -726,9 +726,9 @@ const AdminDashboard = () => {
                               <span className="font-medium">{advisor.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{advisor.email}</TableCell>
-                          <TableCell>{advisor.organisation || "-"}</TableCell>
-                          <TableCell>{advisor.location || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[220px] truncate">{advisor.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{advisor.organisation || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">{advisor.location || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               advisor.approval_status === "approved" ? "default" :
@@ -738,8 +738,8 @@ const AdminDashboard = () => {
                               {advisor.approval_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{format(new Date(advisor.created_at), "MMM d, yyyy")}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(advisor.created_at), "MMM d, yyyy")}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
@@ -798,17 +798,17 @@ const AdminDashboard = () => {
                 {usersLoading ? (
                   <p className="text-muted-foreground text-center py-8">Loading laboratories...</p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <Table className="min-w-[700px]">
+                  <div className="w-full overflow-x-auto">
+                  <Table className="min-w-max whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Company</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="whitespace-nowrap">Company</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Type</TableHead>
+                        <TableHead className="whitespace-nowrap">Location</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Joined</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -816,8 +816,8 @@ const AdminDashboard = () => {
                         .filter(l => labStatusFilter === "all" || l.approval_status === labStatusFilter)
                         .map((lab) => (
                         <TableRow key={lab.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/profile/${lab.id}`)}>
-                          <TableCell>
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={lab.avatar_url || undefined} />
                                 <AvatarFallback>{lab.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
@@ -825,9 +825,9 @@ const AdminDashboard = () => {
                               <span className="font-medium">{lab.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{lab.email}</TableCell>
-                          <TableCell>{lab.company_type || "-"}</TableCell>
-                          <TableCell>{lab.location || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[220px] truncate">{lab.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{lab.company_type || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">{lab.location || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               lab.approval_status === "approved" ? "default" :
@@ -837,8 +837,8 @@ const AdminDashboard = () => {
                               {lab.approval_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{format(new Date(lab.created_at), "MMM d, yyyy")}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(lab.created_at), "MMM d, yyyy")}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
@@ -899,17 +899,17 @@ const AdminDashboard = () => {
                 ) : allDistributors.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No distributors registered yet.</p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <Table className="min-w-[700px]">
+                  <div className="w-full overflow-x-auto">
+                  <Table className="min-w-max whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Company</TableHead>
-                        <TableHead>Region</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="whitespace-nowrap">Name</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Company</TableHead>
+                        <TableHead className="whitespace-nowrap">Region</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Joined</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -917,8 +917,8 @@ const AdminDashboard = () => {
                         .filter(d => distributorStatusFilter === "all" || d.approval_status === distributorStatusFilter)
                         .map((dist) => (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist)}>
-                          <TableCell>
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={dist.avatar_url || undefined} />
                                 <AvatarFallback>{dist.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
@@ -926,9 +926,9 @@ const AdminDashboard = () => {
                               <span className="font-medium">{dist.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{dist.email}</TableCell>
-                          <TableCell>{dist.organisation || "-"}</TableCell>
-                          <TableCell>{dist.region || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[220px] truncate">{dist.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{dist.organisation || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">{dist.region || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               dist.approval_status === "approved" ? "default" :
@@ -938,8 +938,8 @@ const AdminDashboard = () => {
                               {dist.approval_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{format(new Date(dist.created_at), "MMM d, yyyy")}</TableCell>
-                          <TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{format(new Date(dist.created_at), "MMM d, yyyy")}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                               <Button
                                 variant="ghost"
@@ -1089,15 +1089,16 @@ const AdminDashboard = () => {
                   {deals.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No deals created yet.</p>
                   ) : (
-                    <Table>
+                    <div className="w-full overflow-x-auto">
+                    <Table className="min-w-max whitespace-nowrap">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Target</TableHead>
-                          <TableHead>Raised</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Bids</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="whitespace-nowrap">Title</TableHead>
+                          <TableHead className="whitespace-nowrap">Target</TableHead>
+                          <TableHead className="whitespace-nowrap">Raised</TableHead>
+                          <TableHead className="whitespace-nowrap">Status</TableHead>
+                          <TableHead className="whitespace-nowrap">Bids</TableHead>
+                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1105,16 +1106,16 @@ const AdminDashboard = () => {
                           const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
                           return (
                             <TableRow key={deal.id}>
-                              <TableCell className="font-medium">{deal.title}</TableCell>
-                              <TableCell>₹{Number(deal.target_amount).toLocaleString()}</TableCell>
-                              <TableCell>₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                              <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
                               <TableCell>
                                 <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
                                   {deal.deal_status}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{bidsForDeal.length}</TableCell>
-                              <TableCell>
+                              <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
                                   <SelectTrigger className="w-[130px]">
                                     <SelectValue />
@@ -1132,6 +1133,7 @@ const AdminDashboard = () => {
                         })}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1146,15 +1148,16 @@ const AdminDashboard = () => {
                   {dealBids.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No bids received yet.</p>
                   ) : (
-                    <Table>
+                    <div className="w-full overflow-x-auto">
+                    <Table className="min-w-max whitespace-nowrap">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Distributor</TableHead>
-                          <TableHead>Deal</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="whitespace-nowrap">Distributor</TableHead>
+                          <TableHead className="whitespace-nowrap">Deal</TableHead>
+                          <TableHead className="whitespace-nowrap">Amount</TableHead>
+                          <TableHead className="whitespace-nowrap">Status</TableHead>
+                          <TableHead className="whitespace-nowrap">Date</TableHead>
+                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1162,7 +1165,7 @@ const AdminDashboard = () => {
                           const deal = deals.find((d: any) => d.id === bid.deal_id);
                           return (
                             <TableRow key={bid.id}>
-                              <TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <div
                                   className="flex items-center gap-3 cursor-pointer hover:opacity-80"
                                   onClick={() => bid.profiles?.id && navigate(`/profile/${bid.profiles.id}`)}
@@ -1177,8 +1180,8 @@ const AdminDashboard = () => {
                                   </div>
                                 </div>
                               </TableCell>
-                              <TableCell>{deal?.title || "Unknown"}</TableCell>
-                              <TableCell>₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
+                              <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
                               <TableCell>
                                 <Badge className="capitalize" variant={
                                   bid.bid_status === "accepted" ? "default" :
@@ -1187,8 +1190,8 @@ const AdminDashboard = () => {
                                   {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-muted-foreground text-xs font-mono">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
-                              <TableCell>
+                              <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <span className="text-xs text-muted-foreground">Auto-submitted</span>
                               </TableCell>
                             </TableRow>
@@ -1196,6 +1199,7 @@ const AdminDashboard = () => {
                         })}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
