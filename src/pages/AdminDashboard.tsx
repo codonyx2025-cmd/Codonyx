@@ -1089,15 +1089,16 @@ const AdminDashboard = () => {
                   {deals.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">No deals created yet.</p>
                   ) : (
-                    <Table>
+                    <div className="w-full overflow-x-auto">
+                    <Table className="min-w-max whitespace-nowrap">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Target</TableHead>
-                          <TableHead>Raised</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Bids</TableHead>
-                          <TableHead>Actions</TableHead>
+                          <TableHead className="whitespace-nowrap">Title</TableHead>
+                          <TableHead className="whitespace-nowrap">Target</TableHead>
+                          <TableHead className="whitespace-nowrap">Raised</TableHead>
+                          <TableHead className="whitespace-nowrap">Status</TableHead>
+                          <TableHead className="whitespace-nowrap">Bids</TableHead>
+                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1105,9 +1106,9 @@ const AdminDashboard = () => {
                           const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
                           return (
                             <TableRow key={deal.id}>
-                              <TableCell className="font-medium">{deal.title}</TableCell>
-                              <TableCell>₹{Number(deal.target_amount).toLocaleString()}</TableCell>
-                              <TableCell>₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                              <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
                               <TableCell>
                                 <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
                                   {deal.deal_status}
