@@ -346,7 +346,7 @@ export function CustomFieldsManager() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Input Type</Label>
-                <Select value={fieldType} onValueChange={setFieldType}>
+                <Select value={fieldType} onValueChange={(v) => { setFieldType(v); if (v === "tags" && fieldName.trim()) fetchTagSuggestions(fieldName.trim()); }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
