@@ -1114,8 +1114,8 @@ const AdminDashboard = () => {
                                   {deal.deal_status}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{bidsForDeal.length}</TableCell>
-                              <TableCell>
+                              <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
+                              <TableCell className="whitespace-nowrap">
                                 <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
                                   <SelectTrigger className="w-[130px]">
                                     <SelectValue />
@@ -1133,6 +1133,7 @@ const AdminDashboard = () => {
                         })}
                       </TableBody>
                     </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
