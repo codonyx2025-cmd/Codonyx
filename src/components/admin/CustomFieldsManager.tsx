@@ -53,6 +53,10 @@ export function CustomFieldsManager() {
   const [isRequired, setIsRequired] = useState(false);
   const [placeholder, setPlaceholder] = useState("");
 
+  // Tag suggestions state
+  const [tagSuggestions, setTagSuggestions] = useState<{ id: string; keyword: string }[]>([]);
+  const [newSuggestion, setNewSuggestion] = useState("");
+
   useEffect(() => {
     fetchFields();
   }, []);
