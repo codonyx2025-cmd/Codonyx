@@ -54,6 +54,8 @@ export function CustomFieldsManager() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState<string | null>(null);
 
   // Form state
   const [fieldLabel, setFieldLabel] = useState("");
