@@ -699,17 +699,17 @@ const AdminDashboard = () => {
                 {usersLoading ? (
                   <p className="text-muted-foreground text-center py-8">Loading advisors...</p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <Table className="min-w-[700px]">
+                  <div className="w-full overflow-x-auto">
+                  <Table className="min-w-max whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Organisation</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="whitespace-nowrap">User</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Organisation</TableHead>
+                        <TableHead className="whitespace-nowrap">Location</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Joined</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -717,8 +717,8 @@ const AdminDashboard = () => {
                         .filter(a => advisorStatusFilter === "all" || a.approval_status === advisorStatusFilter)
                         .map((advisor) => (
                         <TableRow key={advisor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/profile/${advisor.id}`)}>
-                          <TableCell>
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={advisor.avatar_url || undefined} />
                                 <AvatarFallback>{advisor.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
@@ -726,9 +726,9 @@ const AdminDashboard = () => {
                               <span className="font-medium">{advisor.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{advisor.email}</TableCell>
-                          <TableCell>{advisor.organisation || "-"}</TableCell>
-                          <TableCell>{advisor.location || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[220px] truncate">{advisor.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{advisor.organisation || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">{advisor.location || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               advisor.approval_status === "approved" ? "default" :
