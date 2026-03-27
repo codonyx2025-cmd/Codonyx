@@ -10,9 +10,6 @@ import { ConnectButton } from "@/components/connections/ConnectButton";
 import { ConnectionsSection } from "@/components/connections/ConnectionsSection";
 import { ProfilePublications } from "@/components/publications/ProfilePublications";
 import { ProfileCustomFieldsDisplay } from "@/components/profile/ProfileCustomFieldsDisplay";
-import { ConnectionsSection } from "@/components/connections/ConnectionsSection";
-import { ProfilePublications } from "@/components/publications/ProfilePublications";
-import { ProfileCustomFieldsDisplay } from "@/components/profile/ProfileCustomFieldsDisplay";
 import { 
   Loader2, 
   ArrowLeft, 
