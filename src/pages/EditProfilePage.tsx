@@ -350,7 +350,7 @@ export default function EditProfilePage() {
                   </Button>
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">{profile?.email}</p>
+                  <p className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none" title={profile?.email}>{profile?.email}</p>
                   <p className="text-sm text-muted-foreground capitalize mb-2">
                     {profile?.user_type}
                   </p>
