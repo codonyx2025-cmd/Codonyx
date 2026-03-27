@@ -92,6 +92,7 @@ export function CustomFieldsSection({ profileId, userType, onValuesChange }: Cus
               value={values[field.id] || ""}
               onChange={(val) => handleValueChange(field.id, val)}
               placeholder={field.placeholder || "Add items"}
+              suggestionField={field.field_name}
             />
           ) : field.field_type === "number" ? (
             <Input
