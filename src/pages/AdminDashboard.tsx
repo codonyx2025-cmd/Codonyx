@@ -899,17 +899,17 @@ const AdminDashboard = () => {
                 ) : allDistributors.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No distributors registered yet.</p>
                 ) : (
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
-                  <Table className="min-w-[700px]">
+                  <div className="w-full overflow-x-auto">
+                  <Table className="min-w-max whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Company</TableHead>
-                        <TableHead>Region</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="whitespace-nowrap">Name</TableHead>
+                        <TableHead className="whitespace-nowrap">Email</TableHead>
+                        <TableHead className="whitespace-nowrap">Company</TableHead>
+                        <TableHead className="whitespace-nowrap">Region</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Joined</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -917,8 +917,8 @@ const AdminDashboard = () => {
                         .filter(d => distributorStatusFilter === "all" || d.approval_status === distributorStatusFilter)
                         .map((dist) => (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewPendingUser(dist)}>
-                          <TableCell>
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8 shrink-0">
                                 <AvatarImage src={dist.avatar_url || undefined} />
                                 <AvatarFallback>{dist.full_name.slice(0,2).toUpperCase()}</AvatarFallback>
@@ -926,9 +926,9 @@ const AdminDashboard = () => {
                               <span className="font-medium">{dist.full_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[200px] truncate">{dist.email}</TableCell>
-                          <TableCell>{dist.organisation || "-"}</TableCell>
-                          <TableCell>{dist.region || "-"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap max-w-[220px] truncate">{dist.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{dist.organisation || "-"}</TableCell>
+                          <TableCell className="whitespace-nowrap">{dist.region || "-"}</TableCell>
                           <TableCell>
                             <Badge variant={
                               dist.approval_status === "approved" ? "default" :
