@@ -11,6 +11,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, GripVertical, Pencil, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CustomField {
   id: string;
@@ -44,6 +54,8 @@ export function CustomFieldsManager() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState<string | null>(null);
 
   // Form state
   const [fieldLabel, setFieldLabel] = useState("");
@@ -204,13 +216,17 @@ export function CustomFieldsManager() {
     fetchFields();
   };
 
-  const handleDelete = async (fieldId: string) => {
-    if (!confirm("Delete this custom field? All saved values for this field will also be deleted.")) return;
+  const handleDeleteClick = (fieldId: string) => {
+    setFieldToDelete(fieldId);
+    setDeleteDialogOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!fieldToDelete) return;
     const { error } = await supabase
       .from("custom_profile_fields")
       .delete()
-      .eq("id", fieldId);
+      .eq("id", fieldToDelete);
 
     if (error) {
       toast({ title: "Error", description: "Failed to delete field.", variant: "destructive" });
@@ -218,6 +234,8 @@ export function CustomFieldsManager() {
       toast({ title: "Field deleted" });
       fetchFields();
     }
+    setDeleteDialogOpen(false);
+    setFieldToDelete(null);
   };
 
   const filteredFields = filterType === "all" ? fields : fields.filter(f => f.applies_to === filterType);
@@ -303,7 +321,7 @@ export function CustomFieldsManager() {
                         <Button variant="ghost" size="sm" onClick={() => openEditDialog(field)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(field.id)} className="text-destructive hover:text-destructive">
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(field.id)} className="text-destructive hover:text-destructive">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -432,6 +450,24 @@ export function CustomFieldsManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Custom Field</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this custom field? All saved values for this field will also be permanently deleted. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setFieldToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
