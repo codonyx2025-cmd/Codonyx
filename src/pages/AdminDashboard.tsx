@@ -1309,6 +1309,10 @@ const AdminDashboard = () => {
           <TabsContent value="custom-fields">
             <CustomFieldsManager />
           </TabsContent>
+
+          <TabsContent value="keyword-suggestions">
+            <KeywordSuggestionsManager />
+          </TabsContent>
         </Tabs>
 
         <PendingUserDetailModal
