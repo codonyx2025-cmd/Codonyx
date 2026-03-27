@@ -333,7 +333,7 @@ export default function EditProfilePage() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarSelect}
                   />
                   <Button
                     size="sm"
