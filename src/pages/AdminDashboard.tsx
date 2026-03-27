@@ -1180,8 +1180,8 @@ const AdminDashboard = () => {
                                   </div>
                                 </div>
                               </TableCell>
-                              <TableCell>{deal?.title || "Unknown"}</TableCell>
-                              <TableCell>₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
+                              <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
+                              <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
                               <TableCell>
                                 <Badge className="capitalize" variant={
                                   bid.bid_status === "accepted" ? "default" :
