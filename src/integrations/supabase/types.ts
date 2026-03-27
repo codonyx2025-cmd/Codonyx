@@ -263,6 +263,27 @@ export type Database = {
         }
         Relationships: []
       }
+      keyword_suggestions: {
+        Row: {
+          created_at: string
+          field_name: string
+          id: string
+          keyword: string
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          id?: string
+          keyword: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          keyword?: string
+        }
+        Relationships: []
+      }
       opportunity_submissions: {
         Row: {
           created_at: string
