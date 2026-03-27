@@ -566,7 +566,8 @@ export default function EditProfilePage() {
                         id="services"
                         value={services}
                         onChange={setServices}
-                        placeholder="Add service (e.g., Gene Sequencing)"
+                        placeholder="Search or add service"
+                        suggestionField="services"
                       />
                     </div>
 
@@ -576,7 +577,8 @@ export default function EditProfilePage() {
                         id="researchAreas"
                         value={researchAreas}
                         onChange={setResearchAreas}
-                        placeholder="Add research area (e.g., Oncology)"
+                        placeholder="Search or add research area"
+                        suggestionField="research_areas"
                       />
                     </div>
                   </>
