@@ -232,6 +232,7 @@ export default function AuthPage() {
         } else {
           toast({ title: "Code sent", description: "Check your email for a 6-digit verification code." });
           setResetStep("otp");
+          setResetCooldown(30);
         }
       } catch {
         toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
