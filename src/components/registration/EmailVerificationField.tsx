@@ -187,8 +187,8 @@ export default function EmailVerificationField({
           </div>
           <p className="text-xs text-muted-foreground">
             Check your inbox for a 6-digit verification code.{" "}
-            <button type="button" onClick={handleSendCode} className="text-primary hover:underline" disabled={isSending}>
-              Resend code
+            <button type="button" onClick={handleSendCode} className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed" disabled={isSending || cooldown > 0}>
+              {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
             </button>
           </p>
         </div>
