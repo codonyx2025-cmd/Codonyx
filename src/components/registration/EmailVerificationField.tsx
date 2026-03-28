@@ -70,6 +70,7 @@ export default function EmailVerificationField({
       }
 
       setCodeSent(true);
+      setCooldown(30);
       toast({ title: "Code sent!", description: `A verification code has been sent to ${email}.` });
     } catch (err) {
       toast({ title: "Error", description: "Could not send verification code.", variant: "destructive" });
