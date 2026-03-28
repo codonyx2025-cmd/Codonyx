@@ -46,7 +46,13 @@ export default function AuthPage() {
   const [resetPassword, setResetPassword] = useState("");
   const [resetConfirmPassword, setResetConfirmPassword] = useState("");
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0);
 
+  useEffect(() => {
+    if (resetCooldown <= 0) return;
+    const timer = setTimeout(() => setResetCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resetCooldown]);
   const unauthorizedDescription = "No approved account exists with this email. Please register first or contact support.";
   const deactivatedDescription = "Your account has been deactivated by an administrator. Please contact support for assistance.";
   const hasShownUnauthorizedToast = useRef(false);
