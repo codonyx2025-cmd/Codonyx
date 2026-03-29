@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Users, Building2, ArrowRight } from "lucide-react";
@@ -18,23 +18,19 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasChecked = useRef(false);
+
   useEffect(() => {
-    const checkAuthAndLoadProfile = async () => {
-      const {
-        data: {
-          session
-        }
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      const {
-        data: profileData
-      } = await supabase
+    if (hasChecked.current) return;
+    hasChecked.current = true;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const loadProfile = async (userId: string) => {
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("full_name, email, user_type, organisation, approval_status")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (!profileData || profileData.approval_status !== "approved") {
@@ -43,26 +39,55 @@ export default function DashboardPage() {
         return;
       }
 
-      // Redirect distributors to their dedicated dashboard
       if (profileData.user_type === "distributor") {
-        navigate("/distributor-dashboard");
+        navigate("/distributor-dashboard", { replace: true });
         return;
       }
 
       setProfile(profileData);
       setIsLoading(false);
     };
-    checkAuthAndLoadProfile();
-    const {
-      data: {
-        subscription
+
+    const checkAuth = async () => {
+      // Race getSession against a timeout to avoid long waits on stale tokens
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise<null>((resolve) => {
+        timeoutId = setTimeout(() => resolve(null), 3000);
+      });
+
+      const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+      if (!result || !('data' in result) || !result.data.session) {
+        // No session or timed out — clear any stale local data and redirect
+        try {
+          await supabase.auth.signOut({ scope: "local" });
+        } catch {
+          // ignore
+        }
+        navigate("/auth", { replace: true });
+        return;
       }
-    } = supabase.auth.onAuthStateChange((event) => {
+
+      clearTimeout(timeoutId);
+      await loadProfile(result.data.session.user.id);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        navigate("/auth");
+        navigate("/auth", { replace: true });
+      }
+      // If user just signed in, load profile immediately
+      if (event === "SIGNED_IN" && session) {
+        loadProfile(session.user.id);
       }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, [navigate]);
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
