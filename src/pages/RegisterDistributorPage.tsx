@@ -116,22 +116,17 @@ export default function RegisterDistributorPage() {
         return;
       }
 
-      // Send registration submitted email before signing out
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            type: "registration_submitted",
-            recipientEmail: email,
-            recipientName: fullName,
-            userType: "distributor",
-          },
-        });
-      } catch (emailErr) {
-        console.error("Failed to send confirmation email:", emailErr);
-      }
+      // Fire-and-forget email
+      supabase.functions.invoke("send-notification-email", {
+        body: {
+          type: "registration_submitted",
+          recipientEmail: email,
+          recipientName: fullName,
+          userType: "distributor",
+        },
+      }).catch((err) => console.error("Failed to send confirmation email:", err));
 
       await supabase.auth.signOut();
-
       setIsRegistered(true);
     } catch (error) {
       console.error("Registration error:", error);
