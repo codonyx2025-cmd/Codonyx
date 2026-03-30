@@ -338,9 +338,9 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || isUploading || !isEmailVerified}>
-              {isSubmitting || isUploading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{isUploading ? "Uploading..." : "Registering..."}</>
+            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified}>
+              {isSubmitting ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Registering...</>
               ) : (
                 "Submit Registration"
               )}
