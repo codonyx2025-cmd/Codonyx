@@ -176,22 +176,10 @@ export default function RegisterLaboratoryPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Avatar */}
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider font-medium">Profile Picture</Label>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={avatarUrl} />
-                  <AvatarFallback className="bg-muted"><User className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
-                </Avatar>
-                <label className="cursor-pointer">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                  <div className="flex items-center gap-2 px-4 py-2 border border-input rounded-md text-sm font-medium hover:bg-muted transition-colors">
-                    <Upload className="h-4 w-4" /> Upload Photo
-                  </div>
-                </label>
-              </div>
-            </div>
+            <RegistrationAvatarUpload
+              avatarUrl={avatarUrl}
+              onAvatarChange={(url, blob) => { setAvatarUrl(url); setAvatarBlob(blob); }}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-xs uppercase tracking-wider font-medium">Full Name *</Label>
