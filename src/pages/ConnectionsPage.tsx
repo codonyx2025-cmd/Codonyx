@@ -372,8 +372,8 @@ export default function ConnectionsPage() {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="pending" className="gap-2">
-                <Clock className="h-4 w-4" />
+              <TabsTrigger value="pending" className="gap-1 sm:gap-2 text-xs sm:text-sm px-1 sm:px-3">
+                <Clock className="h-4 w-4 hidden sm:inline" />
                 Requests
                 {pendingReceived.length > 0 && (
                   <Badge variant="destructive" className="ml-1">
