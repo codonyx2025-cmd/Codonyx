@@ -178,22 +178,17 @@ export default function RegisterPage() {
         return;
       }
 
-      // Send registration submitted email before signing out
-      try {
-        await supabase.functions.invoke("send-notification-email", {
-          body: {
-            type: "registration_submitted",
-            recipientEmail: email,
-            recipientName: fullName,
-            userType: "advisor",
-          },
-        });
-      } catch (emailErr) {
-        console.error("Failed to send confirmation email:", emailErr);
-      }
+      // Fire-and-forget: send email in background, don't block the UI
+      supabase.functions.invoke("send-notification-email", {
+        body: {
+          type: "registration_submitted",
+          recipientEmail: email,
+          recipientName: fullName,
+          userType: "advisor",
+        },
+      }).catch((err) => console.error("Failed to send confirmation email:", err));
 
       await supabase.auth.signOut();
-
       setIsRegistered(true);
     } catch (error) {
       console.error("Registration error:", error);
