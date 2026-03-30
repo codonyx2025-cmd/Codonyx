@@ -69,16 +69,19 @@ export default function RegisterDistributorPage() {
         return;
       }
 
-      let uploadedAvatarUrl = null;
-      if (avatarFile) {
-        const fileExt = avatarFile.name.split(".").pop();
-        const filePath = `${userId}/avatar.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, avatarFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          uploadedAvatarUrl = urlData.publicUrl;
-        }
-      }
+      // Upload avatar + verification doc in parallel
+      const avatarUploadPromise = avatarBlob
+        ? (async () => {
+            const filePath = `${userId}/avatar.jpg`;
+            const file = new File([avatarBlob], "avatar.jpg", { type: "image/jpeg" });
+            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+            if (!uploadError) {
+              const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+              return urlData.publicUrl;
+            }
+            return null;
+          })()
+        : Promise.resolve(null);
 
       let verificationDocUrl = null;
       if (verificationDoc) {
