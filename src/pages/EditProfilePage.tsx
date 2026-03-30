@@ -169,9 +169,16 @@ export default function EditProfilePage() {
       const fileName = `${session.user.id}/avatar.jpg`;
       const file = new File([croppedBlob], "avatar.jpg", { type: "image/jpeg" });
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
+      // Attempt upload with automatic retry on first failure (handles first-time path creation)
+      let uploadError: any = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { error } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file, { upsert: true });
+        if (!error) { uploadError = null; break; }
+        uploadError = error;
+        if (attempt === 0) await new Promise(r => setTimeout(r, 500));
+      }
 
       if (uploadError) throw uploadError;
 

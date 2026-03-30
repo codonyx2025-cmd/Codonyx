@@ -203,19 +203,9 @@ export function ConnectionsSection({ currentProfileId, userType }: ConnectionsSe
                           {profile.headline || profile.organisation || profile.user_type}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="capitalize">
-                          {profile.user_type}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeConnection(connection.id)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <Badge variant="secondary" className="capitalize shrink-0">
+                        {profile.user_type}
+                      </Badge>
                     </div>
                   );
                 })}
@@ -235,7 +225,7 @@ export function ConnectionsSection({ currentProfileId, userType }: ConnectionsSe
                   return (
                     <div
                       key={connection.id}
-                      className="flex items-center gap-4 p-4 rounded-lg border border-divider bg-primary/5"
+                      className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border border-divider bg-primary/5"
                     >
                       <Avatar
                         className="h-12 w-12 cursor-pointer"
@@ -260,7 +250,7 @@ export function ConnectionsSection({ currentProfileId, userType }: ConnectionsSe
                           Wants to connect with you
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                         <Button
                           size="sm"
                           onClick={() => acceptConnection(connection.id)}
