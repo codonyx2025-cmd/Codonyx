@@ -55,22 +55,24 @@ const PageLoader = () => {
 
     if (stored) {
       try {
-        const parsed = JSON.parse(stored) as { path: string; timestamp: number };
+        const parsed = JSON.parse(stored) as { path: string; timestamp: number; count: number };
         const isSamePath = parsed.path === currentPath;
         const isRecent = Date.now() - parsed.timestamp < 5 * 60 * 1000;
+        // If we already reloaded for this path, don't do it again
         if (isSamePath && isRecent) return;
       } catch {
         sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
       }
     }
 
+    // Auto-refresh after 3.5 seconds if page is stuck loading
     const timer = window.setTimeout(() => {
       sessionStorage.setItem(
         BUFFER_RECOVERY_KEY,
-        JSON.stringify({ path: currentPath, timestamp: Date.now() })
+        JSON.stringify({ path: currentPath, timestamp: Date.now(), count: 1 })
       );
       window.location.reload();
-    }, 2000);
+    }, 3500);
 
     return () => window.clearTimeout(timer);
   }, []);
