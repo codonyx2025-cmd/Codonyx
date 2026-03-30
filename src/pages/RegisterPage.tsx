@@ -137,20 +137,23 @@ export default function RegisterPage() {
         return;
       }
 
-      let uploadedAvatarUrl = null;
-      if (avatarFile) {
-        setIsUploading(true);
-        const fileExt = avatarFile.name.split(".").pop();
-        const filePath = `${userId}/avatar.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, avatarFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          uploadedAvatarUrl = urlData.publicUrl;
-        }
-        setIsUploading(false);
-      }
-
+      // Upload avatar in parallel with profile creation
       const locationStr = [city, country].filter(Boolean).join(", ");
+
+      const avatarUploadPromise = avatarBlob
+        ? (async () => {
+            const filePath = `${userId}/avatar.jpg`;
+            const file = new File([avatarBlob], "avatar.jpg", { type: "image/jpeg" });
+            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+            if (!uploadError) {
+              const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+              return urlData.publicUrl;
+            }
+            return null;
+          })()
+        : Promise.resolve(null);
+
+      const [uploadedAvatarUrl] = await Promise.all([avatarUploadPromise]);
 
       const { error: profileError } = await supabase.from("profiles").insert({
         user_id: userId,
