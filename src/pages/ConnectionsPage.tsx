@@ -381,8 +381,8 @@ export default function ConnectionsPage() {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="sent" className="gap-2">
-                <Mail className="h-4 w-4" />
+              <TabsTrigger value="sent" className="gap-1 sm:gap-2 text-xs sm:text-sm px-1 sm:px-3">
+                <Mail className="h-4 w-4 hidden sm:inline" />
                 Sent
                 {pendingSent.length > 0 && (
                   <Badge variant="secondary" className="ml-1">

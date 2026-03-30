@@ -225,7 +225,7 @@ export function ConnectionsSection({ currentProfileId, userType }: ConnectionsSe
                   return (
                     <div
                       key={connection.id}
-                      className="flex items-center gap-4 p-4 rounded-lg border border-divider bg-primary/5"
+                      className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border border-divider bg-primary/5"
                     >
                       <Avatar
                         className="h-12 w-12 cursor-pointer"
