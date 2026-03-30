@@ -61,6 +61,7 @@ interface AggregateStats {
 
 export default function DistributorDashboard() {
   const navigate = useNavigate();
+  useAccountGuard();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [allDeals, setAllDeals] = useState<Deal[]>([]);

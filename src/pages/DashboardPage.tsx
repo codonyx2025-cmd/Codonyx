@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasChecked = useRef(false);
+  useAccountGuard();
 
   useEffect(() => {
     if (hasChecked.current) return;
