@@ -250,7 +250,7 @@ export function ConnectionsSection({ currentProfileId, userType }: ConnectionsSe
                           Wants to connect with you
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                         <Button
                           size="sm"
                           onClick={() => acceptConnection(connection.id)}
