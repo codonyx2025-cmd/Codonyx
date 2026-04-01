@@ -26,7 +26,7 @@ export default function DashboardPage() {
     if (hasChecked.current) return;
     hasChecked.current = true;
 
-    let timeoutId: ReturnType<typeof setTimeout>;
+    
 
     const loadProfile = async (userId: string) => {
       const { data: profileData } = await supabase
