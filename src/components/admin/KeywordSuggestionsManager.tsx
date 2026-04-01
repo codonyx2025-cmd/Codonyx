@@ -45,13 +45,13 @@ export function KeywordSuggestionsManager() {
   const fetchSuggestions = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("keyword_suggestions" as any)
+      .from("keyword_suggestions")
       .select("*")
       .eq("field_name", selectedField)
       .order("keyword");
 
     if (!error && data) {
-      setSuggestions(data as any[]);
+      setSuggestions(data);
     }
     setLoading(false);
   };
