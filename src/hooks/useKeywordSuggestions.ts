@@ -15,13 +15,13 @@ export function useKeywordSuggestions(fieldName: string) {
     const fetchSuggestions = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from("keyword_suggestions" as any)
+        .from("keyword_suggestions")
         .select("keyword")
         .eq("field_name", fieldName)
         .order("keyword");
 
       if (!error && data) {
-        setSuggestions((data as any[]).map((d: any) => d.keyword));
+        setSuggestions(data.map((d) => d.keyword));
       }
       setLoading(false);
     };

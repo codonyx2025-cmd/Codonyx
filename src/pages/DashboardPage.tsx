@@ -26,7 +26,7 @@ export default function DashboardPage() {
     if (hasChecked.current) return;
     hasChecked.current = true;
 
-    let timeoutId: ReturnType<typeof setTimeout>;
+    
 
     const loadProfile = async (userId: string) => {
       const { data: profileData } = await supabase
@@ -51,27 +51,25 @@ export default function DashboardPage() {
     };
 
     const checkAuth = async () => {
-      // Race getSession against a timeout to avoid long waits on stale tokens
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise<null>((resolve) => {
-        timeoutId = setTimeout(() => resolve(null), 3000);
-      });
+      // Try getSession first (fast, uses local cache)
+      const { data: { session } } = await supabase.auth.getSession();
 
-      const result = await Promise.race([sessionPromise, timeoutPromise]);
-
-      if (!result || !('data' in result) || !result.data.session) {
-        // No session or timed out — clear any stale local data and redirect
-        try {
-          await supabase.auth.signOut({ scope: "local" });
-        } catch {
-          // ignore
-        }
-        navigate("/auth", { replace: true });
+      if (session) {
+        await loadProfile(session.user.id);
         return;
       }
 
-      clearTimeout(timeoutId);
-      await loadProfile(result.data.session.user.id);
+      // Session is null — could be a token refresh in progress.
+      // Verify with getUser() which validates the token server-side.
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        await loadProfile(user.id);
+        return;
+      }
+
+      // Truly no valid session — redirect to auth (no signOut to avoid clearing mid-refresh tokens)
+      navigate("/auth", { replace: true });
     };
 
     checkAuth();
@@ -87,7 +85,6 @@ export default function DashboardPage() {
     });
 
     return () => {
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [navigate]);

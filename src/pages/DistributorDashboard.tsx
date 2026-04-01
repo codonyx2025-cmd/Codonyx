@@ -99,13 +99,22 @@ export default function DistributorDashboard() {
   }, [profile]);
 
   const loadData = async () => {
+    let userId: string | null = null;
+
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    if (session) {
+      userId = session.user.id;
+    } else {
+      // Session null during token refresh — verify with getUser
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/auth"); return; }
+      userId = user.id;
+    }
 
     const { data: profileData } = await supabase
       .from("profiles")
       .select("id, full_name, organisation, user_type, approval_status")
-      .eq("user_id", session.user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (!profileData || profileData.approval_status !== "approved" || profileData.user_type !== "distributor") {

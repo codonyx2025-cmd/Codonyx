@@ -45,13 +45,13 @@ export function KeywordSuggestionsManager() {
   const fetchSuggestions = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("keyword_suggestions" as any)
+      .from("keyword_suggestions")
       .select("*")
       .eq("field_name", selectedField)
       .order("keyword");
 
     if (!error && data) {
-      setSuggestions(data as any[]);
+      setSuggestions(data);
     }
     setLoading(false);
   };
@@ -65,8 +65,8 @@ export function KeywordSuggestionsManager() {
 
     if (keywords.length === 1) {
       const { error } = await supabase
-        .from("keyword_suggestions" as any)
-        .insert({ field_name: selectedField, keyword: keywords[0] } as any);
+        .from("keyword_suggestions")
+        .insert({ field_name: selectedField, keyword: keywords[0] });
 
       if (error) {
         if (error.code === "23505") {
@@ -82,8 +82,8 @@ export function KeywordSuggestionsManager() {
     } else {
       const inserts = keywords.map(keyword => ({ field_name: selectedField, keyword }));
       const { error } = await supabase
-        .from("keyword_suggestions" as any)
-        .insert(inserts as any);
+        .from("keyword_suggestions")
+        .insert(inserts);
 
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -104,8 +104,8 @@ export function KeywordSuggestionsManager() {
     const inserts = keywords.map(keyword => ({ field_name: selectedField, keyword }));
 
     const { error } = await supabase
-      .from("keyword_suggestions" as any)
-      .insert(inserts as any);
+      .from("keyword_suggestions")
+      .insert(inserts);
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -119,7 +119,7 @@ export function KeywordSuggestionsManager() {
 
   const deleteKeyword = async (id: string) => {
     const { error } = await supabase
-      .from("keyword_suggestions" as any)
+      .from("keyword_suggestions")
       .delete()
       .eq("id", id);
 
