@@ -100,7 +100,16 @@ export default function DistributorDashboard() {
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    if (!session) {
+      // Verify with getUser before redirecting — session can be null during token refresh
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/auth"); return; }
+      // If user exists but session is null, re-fetch session after refresh completes
+      const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+      if (!refreshedSession) { navigate("/auth"); return; }
+    }
+    const activeSession = session || (await supabase.auth.getSession()).data.session;
+    if (!activeSession) { navigate("/auth"); return; }
 
     const { data: profileData } = await supabase
       .from("profiles")

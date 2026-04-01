@@ -119,7 +119,7 @@ export function KeywordSuggestionsManager() {
 
   const deleteKeyword = async (id: string) => {
     const { error } = await supabase
-      .from("keyword_suggestions" as any)
+      .from("keyword_suggestions")
       .delete()
       .eq("id", id);
 
