@@ -174,7 +174,7 @@ export function KeywordSuggestionsManager() {
             <Input
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
-              placeholder={`Add keyword for ${currentFieldLabel}`}
+              placeholder={`Add keywords (use , or | to separate multiple)`}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
