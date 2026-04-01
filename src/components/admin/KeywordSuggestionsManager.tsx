@@ -57,24 +57,41 @@ export function KeywordSuggestionsManager() {
   };
 
   const addKeyword = async () => {
-    const trimmed = newKeyword.trim();
-    if (!trimmed) return;
+    // Split by comma or pipe to support multiple keywords at once
+    const keywords = newKeyword.split(/[,|]/).map(k => k.trim()).filter(Boolean);
+    if (keywords.length === 0) return;
 
     setSaving(true);
-    const { error } = await supabase
-      .from("keyword_suggestions" as any)
-      .insert({ field_name: selectedField, keyword: trimmed } as any);
 
-    if (error) {
-      if (error.code === "23505") {
-        toast({ title: "Duplicate", description: "This keyword already exists for this field.", variant: "destructive" });
+    if (keywords.length === 1) {
+      const { error } = await supabase
+        .from("keyword_suggestions" as any)
+        .insert({ field_name: selectedField, keyword: keywords[0] } as any);
+
+      if (error) {
+        if (error.code === "23505") {
+          toast({ title: "Duplicate", description: "This keyword already exists for this field.", variant: "destructive" });
+        } else {
+          toast({ title: "Error", description: error.message, variant: "destructive" });
+        }
       } else {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        setNewKeyword("");
+        fetchSuggestions();
+        toast({ title: "Added", description: `"${keywords[0]}" added successfully.` });
       }
     } else {
-      setNewKeyword("");
-      fetchSuggestions();
-      toast({ title: "Added", description: `"${trimmed}" added successfully.` });
+      const inserts = keywords.map(keyword => ({ field_name: selectedField, keyword }));
+      const { error } = await supabase
+        .from("keyword_suggestions" as any)
+        .insert(inserts as any);
+
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        setNewKeyword("");
+        fetchSuggestions();
+        toast({ title: "Added", description: `${keywords.length} keywords added successfully.` });
+      }
     }
     setSaving(false);
   };
