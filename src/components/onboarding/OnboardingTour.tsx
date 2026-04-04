@@ -243,7 +243,7 @@ export function OnboardingTour() {
       {/* Tooltip */}
       <div
         ref={tooltipRef}
-        className="w-[360px] max-w-[calc(100vw-32px)] bg-background rounded-xl border border-divider shadow-2xl p-6 animate-fade-in"
+        className="w-[360px] max-w-[calc(100vw-32px)] bg-background rounded-xl border border-divider shadow-2xl p-4 sm:p-6 animate-fade-in overflow-hidden"
         style={tooltipStyle}
         onClick={(e) => e.stopPropagation()}
       >
