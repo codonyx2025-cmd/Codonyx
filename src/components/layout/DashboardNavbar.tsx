@@ -103,7 +103,7 @@ export function DashboardNavbar() {
 
           {/* User Menu */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link to="/edit-profile">
+            <Link to="/edit-profile" data-tour="edit-profile">
               <Button variant="outline" size="sm">
                 Edit Profile
               </Button>
@@ -156,13 +156,13 @@ export function DashboardNavbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/connections" className="cursor-pointer">
+                  <Link to="/connections" className="cursor-pointer" data-tour="connections">
                     <Users className="mr-2 h-4 w-4" />
                     Connections
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/publications" className="cursor-pointer">
+                  <Link to="/publications" className="cursor-pointer" data-tour="publications">
                     <FileText className="mr-2 h-4 w-4" />
                     Publications
                   </Link>

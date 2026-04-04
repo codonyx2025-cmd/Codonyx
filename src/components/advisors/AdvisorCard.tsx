@@ -43,16 +43,29 @@ export function AdvisorCard({
       .slice(0, 2);
   };
 
-  // Parse mentoring areas into array
   const mentoringTags = mentoringAreas
     ? mentoringAreas.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
-  const displayTags = mentoringTags.slice(0, 2);
-  const remainingCount = mentoringTags.length - 2;
+  const displayTags = mentoringTags.slice(0, 3);
+  const remainingCount = mentoringTags.length - 3;
+
+  const tagColors = [
+    "bg-teal-400",
+    "bg-emerald-400",
+    "bg-amber-400",
+    "bg-sky-400",
+    "bg-rose-400",
+    "bg-violet-400",
+    "bg-orange-400",
+    "bg-lime-400",
+  ];
+
+  // Truncate bio to ~120 chars
+  const truncatedBio = bio && bio.length > 120 ? bio.slice(0, 120).trimEnd() + "..." : bio;
 
   return (
     <>
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-divider bg-background">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-divider bg-background flex flex-col">
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {location && (
@@ -88,7 +101,7 @@ export function AdvisorCard({
       </div>
 
       {/* Content Section */}
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-4 space-y-3 flex-1 flex flex-col">
         <div>
           <h3 className="font-heading text-lg font-semibold text-foreground line-clamp-1">
             {fullName}
@@ -100,44 +113,49 @@ export function AdvisorCard({
           )}
         </div>
 
-        {/* Mentoring Areas Badges */}
+        {/* Bio */}
+        {truncatedBio && (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {truncatedBio}{" "}
+            {bio && bio.length > 120 && (
+              <button
+                onClick={() => navigate(`/profile/${id}`)}
+                className="text-primary font-medium hover:underline inline"
+              >
+                more
+              </button>
+            )}
+          </p>
+        )}
+
+        {/* Mentoring Areas */}
         {mentoringTags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {displayTags.map((tag, index) => {
-              const colors = [
-                "bg-teal-400",
-                "bg-emerald-400",
-                "bg-amber-400",
-                "bg-sky-400",
-                "bg-rose-400",
-                "bg-violet-400",
-                "bg-orange-400",
-                "bg-lime-400",
-              ];
-              const colorClass = colors[index % colors.length];
-              return (
+          <div className="mt-auto pt-2">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Functional Areas for Mentoring</p>
+            <div className="flex flex-wrap gap-1.5">
+              {displayTags.map((tag, index) => (
                 <Badge 
                   key={index} 
                   variant="secondary" 
-                  className={`text-xs font-medium ${colorClass} text-black hover:opacity-90`}
+                  className={`text-xs font-medium ${tagColors[index % tagColors.length]} text-black hover:opacity-90`}
                 >
                   {tag}
                 </Badge>
-              );
-            })}
-            {remainingCount > 0 && (
-              <Badge
-                variant="outline"
-                className="text-xs bg-muted text-foreground"
-              >
-                +{remainingCount}
-              </Badge>
-            )}
+              ))}
+              {remainingCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-muted text-foreground"
+                >
+                  +{remainingCount}
+                </Badge>
+              )}
+            </div>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-2 mt-auto">
           <Button 
             onClick={() => navigate(`/profile/${id}`)}
             className="flex-1"
