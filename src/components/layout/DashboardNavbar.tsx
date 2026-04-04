@@ -156,13 +156,13 @@ export function DashboardNavbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/connections" className="cursor-pointer">
+                  <Link to="/connections" className="cursor-pointer" data-tour="connections">
                     <Users className="mr-2 h-4 w-4" />
                     Connections
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/publications" className="cursor-pointer">
+                  <Link to="/publications" className="cursor-pointer" data-tour="publications">
                     <FileText className="mr-2 h-4 w-4" />
                     Publications
                   </Link>
