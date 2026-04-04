@@ -293,23 +293,24 @@ export function OnboardingTour() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between mt-5">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+          <div className="flex items-center gap-1">
             {currentStep > 0 && (
-              <Button variant="ghost" size="sm" onClick={prevStep} className="gap-1">
-                <ArrowLeft className="h-3.5 w-3.5" /> Back
+              <Button variant="ghost" size="sm" onClick={prevStep} className="gap-1 px-2 text-xs sm:text-sm sm:px-3">
+                <ArrowLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Back
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={dismissTour} className="text-muted-foreground">
-              Skip Tour
+            <Button variant="ghost" size="sm" onClick={dismissTour} className="text-muted-foreground px-2 text-xs sm:text-sm sm:px-3">
+              Skip
             </Button>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5">
             {step.action && step.actionLabel && (
               <Button
                 variant="outline"
                 size="sm"
+                className="px-2 text-xs sm:text-sm sm:px-3 truncate max-w-[130px] sm:max-w-none"
                 onClick={() => {
                   step.action!();
                   dismissTour();
@@ -318,9 +319,9 @@ export function OnboardingTour() {
                 {step.actionLabel}
               </Button>
             )}
-            <Button size="sm" onClick={nextStep} className="gap-1">
+            <Button size="sm" onClick={nextStep} className="gap-1 px-3 text-xs sm:text-sm sm:px-4 shrink-0">
               {currentStep === steps.length - 1 ? "Finish" : "Next"}
-              {currentStep < steps.length - 1 && <ArrowRight className="h-3.5 w-3.5" />}
+              {currentStep < steps.length - 1 && <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
             </Button>
           </div>
         </div>
