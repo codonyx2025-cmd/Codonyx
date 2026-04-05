@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ArrowRight, ArrowLeft, Pencil, Users, FileText, CheckCircle, Sparkles } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Pencil, Users, FileText, CheckCircle, Sparkles, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,7 +8,6 @@ interface TourStep {
   title: string;
   description: string;
   targetSelector?: string;
-  mobileTargetSelector?: string;
   icon: React.ReactNode;
   action?: () => void;
   actionLabel?: string;
@@ -23,54 +22,61 @@ export function OnboardingTour() {
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
   const [arrowDirection, setArrowDirection] = useState<"top" | "bottom">("top");
+  const [userType, setUserType] = useState<string>("advisor");
   const tooltipRef = useRef<HTMLDivElement>(null);
-
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
   const steps: TourStep[] = useMemo(() => [
     {
       title: "Welcome to Codonyx! 👋",
-      description: "Let's get you set up quickly. We'll walk you through the key features of this professional networking platform so you can make the most of it.",
+      description: "Let's get you set up quickly. We'll walk you through the key features so you can make the most of this professional networking platform.",
       icon: <Sparkles className="h-7 w-7" />,
     },
     {
       title: "Complete Your Profile",
-      description: "A complete profile helps others find and connect with you. Add your headline, bio, location, and professional details to stand out in the network.",
-      targetSelector: '[data-tour="edit-profile"]',
-      mobileTargetSelector: '[data-tour-mobile="edit-profile"]',
+      description: "A complete profile helps others find and connect with you. Add your headline, bio, location, and professional details to stand out.",
+      targetSelector: '[data-tour="quick-edit-profile"]',
       icon: <Pencil className="h-7 w-7" />,
       action: () => navigate("/edit-profile"),
       actionLabel: "Edit Profile",
-      position: "bottom",
+      position: "top",
+    },
+    {
+      title: "Browse the Network",
+      description: userType === "advisor"
+        ? "Discover laboratories in the network. Browse profiles and find the right match for collaboration."
+        : "Discover advisors in the network. Browse profiles and find the right expertise for your needs.",
+      targetSelector: '[data-tour="quick-network"]',
+      icon: userType === "advisor" ? <Building2 className="h-7 w-7" /> : <Users className="h-7 w-7" />,
+      action: () => navigate(userType === "advisor" ? "/laboratories" : "/advisors"),
+      actionLabel: userType === "advisor" ? "View Labs" : "View Advisors",
+      position: "top",
     },
     {
       title: "Manage Your Connections",
-      description: "Build your professional network by browsing profiles and sending connection requests. Track all your sent and received requests in one place.",
-      targetSelector: '[data-tour="connections"]',
-      mobileTargetSelector: '[data-tour-mobile="connections"]',
+      description: "Build your professional network by sending connection requests. Track all your sent and received requests in one place.",
+      targetSelector: '[data-tour="quick-connections"]',
       icon: <Users className="h-7 w-7" />,
       action: () => navigate("/connections"),
       actionLabel: "View Connections",
-      position: "bottom",
+      position: "top",
     },
     {
       title: "Share Your Publications",
-      description: "Showcase your expertise by uploading research papers, presentations, and articles. Let your work speak for itself and attract the right connections.",
-      targetSelector: '[data-tour="publications"]',
-      mobileTargetSelector: '[data-tour-mobile="publications"]',
+      description: "Showcase your expertise by uploading research papers, presentations, and articles. Let your work speak for itself.",
+      targetSelector: '[data-tour="quick-publications"]',
       icon: <FileText className="h-7 w-7" />,
       action: () => navigate("/publications"),
       actionLabel: "View Publications",
-      position: "bottom",
+      position: "top",
     },
     {
       title: "You're All Set! 🎉",
-      description: "Start by completing your profile — it's the first step to meaningful connections. You can always revisit these features from the navigation menu.",
+      description: "Start by completing your profile — it's the first step to meaningful connections. You can always revisit these features from the dashboard.",
       icon: <CheckCircle className="h-7 w-7" />,
       action: () => navigate("/edit-profile"),
       actionLabel: "Complete My Profile",
     },
-  ], [navigate]);
+  ], [navigate, userType]);
 
   useEffect(() => {
     const checkIfShouldShowTour = async () => {
@@ -82,11 +88,13 @@ export function OnboardingTour() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("headline, bio, location, organisation, avatar_url, created_at, updated_at")
+        .select("headline, bio, location, organisation, avatar_url, created_at, updated_at, user_type")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (!profile) return;
+
+      setUserType(profile.user_type);
 
       const isIncomplete = !profile.headline || !profile.bio || !profile.location;
       const createdAt = new Date(profile.created_at).getTime();
@@ -103,8 +111,7 @@ export function OnboardingTour() {
 
   const positionTooltip = useCallback(() => {
     const step = steps[currentStep];
-    const mobile = window.innerWidth < 1024;
-    const selector = mobile ? (step.mobileTargetSelector || step.targetSelector) : step.targetSelector;
+    const selector = step.targetSelector;
 
     if (!selector) {
       setTargetRect(null);
@@ -134,8 +141,8 @@ export function OnboardingTour() {
     const rect = el.getBoundingClientRect();
     setTargetRect(rect);
 
-    const tooltipWidth = Math.min(400, window.innerWidth - 24);
-    const tooltipHeight = 260;
+    const tooltipWidth = Math.min(400, window.innerWidth - 32);
+    const tooltipHeight = 280;
     const gap = 14;
     const pos = step.position || "bottom";
 
@@ -161,8 +168,8 @@ export function OnboardingTour() {
       dir = "top";
     }
 
-    left = Math.max(12, Math.min(left, window.innerWidth - tooltipWidth - 12));
-    top = Math.max(12, Math.min(top, window.innerHeight - tooltipHeight - 12));
+    left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
+    top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
 
     setArrowDirection(dir);
     setTooltipStyle({
@@ -242,7 +249,7 @@ export function OnboardingTour() {
       {/* Tooltip */}
       <div
         ref={tooltipRef}
-        className="fixed max-w-[calc(100vw-24px)] bg-background rounded-2xl border border-divider shadow-2xl p-5 sm:p-7 animate-fade-in overflow-hidden"
+        className="fixed max-w-[calc(100vw-32px)] bg-background rounded-2xl border border-divider shadow-2xl p-5 sm:p-7 animate-fade-in overflow-hidden"
         style={tooltipStyle}
         onClick={(e) => e.stopPropagation()}
       >
@@ -280,7 +287,7 @@ export function OnboardingTour() {
           ))}
         </div>
 
-        {/* Icon & Content */}
+        {/* Icon & Content — horizontal layout */}
         <div className="flex items-start gap-4 mb-4">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary">
             {step.icon}

@@ -40,15 +40,21 @@ export default function AdvisorsPage() {
         return;
       }
 
-      // Check if user is approved
+      // Check if user is approved and get user_type
       const { data: profile } = await supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, user_type")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (profile?.approval_status !== "approved") {
         navigate("/auth");
+        return;
+      }
+
+      // Advisors cannot view the advisors page (reciprocal model)
+      if (profile.user_type === "advisor") {
+        navigate("/dashboard", { replace: true });
         return;
       }
 

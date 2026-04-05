@@ -41,15 +41,21 @@ export default function LaboratoriesPage() {
         return;
       }
 
-      // Check if user is approved
+      // Check if user is approved and get user_type
       const { data: profile } = await supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, user_type")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (profile?.approval_status !== "approved") {
         navigate("/auth");
+        return;
+      }
+
+      // Labs cannot view the laboratories page (reciprocal model)
+      if (profile.user_type === "laboratory") {
+        navigate("/dashboard", { replace: true });
         return;
       }
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { showSuccessToast, showErrorToast } from "@/components/ui/animated-toast";
 import { Check, X, Building2, Phone, Mail, MapPin, Clock, Link2, Copy, CalendarIcon, Power, Eye, Settings2, Trash2, Ban } from "lucide-react";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { Footer } from "@/components/layout/Footer";
@@ -104,6 +105,7 @@ const AdminDashboard = () => {
   const [newDealDocFile, setNewDealDocFile] = useState<File | null>(null);
   const [newDealMinBid, setNewDealMinBid] = useState("");
   const [accountAction, setAccountAction] = useState<{ user: PendingUser; type: "deactivate" | "delete" } | null>(null);
+  const [showDealConfirm, setShowDealConfirm] = useState(false);
   const [accountActionLoading, setAccountActionLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -235,11 +237,7 @@ const AdminDashboard = () => {
     
     const targetAmount = parseFloat(newDealTarget);
     if (newDealMinBid && parseFloat(newDealMinBid) >= targetAmount) {
-      toast({
-        title: "Invalid Minimum Bid",
-        description: "Minimum Bid Amount must be less than the Target Amount.",
-        variant: "destructive",
-      });
+      showErrorToast("Invalid Minimum Bid", { description: "Minimum Bid Amount must be less than the Target Amount." });
       return;
     }
     
@@ -266,14 +264,15 @@ const AdminDashboard = () => {
       min_bid_amount: newDealMinBid ? parseFloat(newDealMinBid) : null,
     } as any);
     if (error) {
-      toast({ title: "Error", description: "Failed to create deal.", variant: "destructive" });
+      showErrorToast("Failed to create deal", { description: "Please try again." });
     } else {
-      toast({ title: "Deal created and published!" });
+      showSuccessToast("Deal created and published!");
       setNewDealTitle("");
       setNewDealDescription("");
       setNewDealTarget("");
       setNewDealMinBid("");
       setNewDealDocFile(null);
+      setShowDealConfirm(false);
       fetchDeals();
     }
   };
@@ -1074,7 +1073,7 @@ const AdminDashboard = () => {
                       {newDealDocFile && <p className="text-xs text-muted-foreground">Selected: {newDealDocFile.name}</p>}
                     </div>
                   </div>
-                  <Button className="mt-4" onClick={handleCreateDeal} disabled={!newDealTitle || !newDealTarget}>
+                  <Button className="mt-4" onClick={() => setShowDealConfirm(true)} disabled={!newDealTitle || !newDealTarget}>
                     Create & Publish Deal
                   </Button>
                 </CardContent>
@@ -1394,6 +1393,24 @@ const AdminDashboard = () => {
                     : accountAction?.user.approval_status === "deactivated"
                       ? "Yes, Reactivate"
                       : "Yes, Deactivate"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Deal Creation Confirm Dialog */}
+        <AlertDialog open={showDealConfirm} onOpenChange={setShowDealConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Deal Creation</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to create and publish the deal "{newDealTitle}" with a target amount of ${newDealTarget}? This will be visible to all approved distributors.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCreateDeal}>
+                Yes, Create Deal
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
