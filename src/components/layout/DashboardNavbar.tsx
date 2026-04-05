@@ -60,8 +60,17 @@ export function DashboardNavbar() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Fallback: clear local session if global signout fails (e.g. network timeout)
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        // ignore
+      }
+    }
+    navigate("/auth", { replace: true });
   };
 
   const getInitials = (name: string) => {
@@ -223,6 +232,7 @@ export function DashboardNavbar() {
               to="/edit-profile"
               className="flex items-center gap-2 text-sm font-medium tracking-wide uppercase text-muted-foreground hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
+              data-tour-mobile="edit-profile"
             >
               <User className="h-4 w-4" />
               Edit Profile
@@ -231,6 +241,7 @@ export function DashboardNavbar() {
               to="/connections"
               className="flex items-center gap-2 text-sm font-medium tracking-wide uppercase text-muted-foreground hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
+              data-tour-mobile="connections"
             >
               <Users className="h-4 w-4" />
               Connections
@@ -239,6 +250,7 @@ export function DashboardNavbar() {
               to="/publications"
               className="flex items-center gap-2 text-sm font-medium tracking-wide uppercase text-muted-foreground hover:text-primary transition-colors py-2"
               onClick={() => setMobileMenuOpen(false)}
+              data-tour-mobile="publications"
             >
               <FileText className="h-4 w-4" />
               Publications

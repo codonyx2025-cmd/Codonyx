@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, ArrowRight, ArrowLeft, Pencil, Users, FileText, CheckCircle } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Pencil, Users, FileText, CheckCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,6 +8,7 @@ interface TourStep {
   title: string;
   description: string;
   targetSelector?: string;
+  mobileTargetSelector?: string;
   icon: React.ReactNode;
   action?: () => void;
   actionLabel?: string;
@@ -24,35 +25,40 @@ export function OnboardingTour() {
   const [arrowDirection, setArrowDirection] = useState<"top" | "bottom">("top");
   const tooltipRef = useRef<HTMLDivElement>(null);
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+
   const steps: TourStep[] = useMemo(() => [
     {
       title: "Welcome to Codonyx! 👋",
-      description: "Let's get you set up. We'll walk you through the key features of this networking platform so you can make the most of it.",
-      icon: <CheckCircle className="h-6 w-6" />,
+      description: "Let's get you set up quickly. We'll walk you through the key features of this professional networking platform so you can make the most of it.",
+      icon: <Sparkles className="h-7 w-7" />,
     },
     {
       title: "Complete Your Profile",
-      description: "A complete profile helps others find and connect with you. Add your headline, bio, location, and professional details to stand out.",
+      description: "A complete profile helps others find and connect with you. Add your headline, bio, location, and professional details to stand out in the network.",
       targetSelector: '[data-tour="edit-profile"]',
-      icon: <Pencil className="h-6 w-6" />,
+      mobileTargetSelector: '[data-tour-mobile="edit-profile"]',
+      icon: <Pencil className="h-7 w-7" />,
       action: () => navigate("/edit-profile"),
-      actionLabel: "Go to Edit Profile",
+      actionLabel: "Edit Profile",
       position: "bottom",
     },
     {
       title: "Manage Your Connections",
-      description: "Build your professional network by browsing profiles and sending connection requests. Track sent and received requests here.",
+      description: "Build your professional network by browsing profiles and sending connection requests. Track all your sent and received requests in one place.",
       targetSelector: '[data-tour="connections"]',
-      icon: <Users className="h-6 w-6" />,
+      mobileTargetSelector: '[data-tour-mobile="connections"]',
+      icon: <Users className="h-7 w-7" />,
       action: () => navigate("/connections"),
       actionLabel: "View Connections",
       position: "bottom",
     },
     {
       title: "Share Your Publications",
-      description: "Showcase your expertise by uploading research papers, presentations, and articles. Let your work speak for itself.",
+      description: "Showcase your expertise by uploading research papers, presentations, and articles. Let your work speak for itself and attract the right connections.",
       targetSelector: '[data-tour="publications"]',
-      icon: <FileText className="h-6 w-6" />,
+      mobileTargetSelector: '[data-tour-mobile="publications"]',
+      icon: <FileText className="h-7 w-7" />,
       action: () => navigate("/publications"),
       actionLabel: "View Publications",
       position: "bottom",
@@ -60,7 +66,7 @@ export function OnboardingTour() {
     {
       title: "You're All Set! 🎉",
       description: "Start by completing your profile — it's the first step to meaningful connections. You can always revisit these features from the navigation menu.",
-      icon: <CheckCircle className="h-6 w-6" />,
+      icon: <CheckCircle className="h-7 w-7" />,
       action: () => navigate("/edit-profile"),
       actionLabel: "Complete My Profile",
     },
@@ -97,7 +103,10 @@ export function OnboardingTour() {
 
   const positionTooltip = useCallback(() => {
     const step = steps[currentStep];
-    if (!step.targetSelector) {
+    const mobile = window.innerWidth < 1024;
+    const selector = mobile ? (step.mobileTargetSelector || step.targetSelector) : step.targetSelector;
+
+    if (!selector) {
       setTargetRect(null);
       setTooltipStyle({
         position: "fixed",
@@ -109,7 +118,7 @@ export function OnboardingTour() {
       return;
     }
 
-    const el = document.querySelector(step.targetSelector);
+    const el = document.querySelector(selector);
     if (!el) {
       setTargetRect(null);
       setTooltipStyle({
@@ -125,9 +134,9 @@ export function OnboardingTour() {
     const rect = el.getBoundingClientRect();
     setTargetRect(rect);
 
-    const tooltipWidth = Math.min(360, window.innerWidth - 32);
-    const tooltipHeight = 220;
-    const gap = 16;
+    const tooltipWidth = Math.min(400, window.innerWidth - 24);
+    const tooltipHeight = 260;
+    const gap = 14;
     const pos = step.position || "bottom";
 
     let top = 0;
@@ -152,8 +161,8 @@ export function OnboardingTour() {
       dir = "top";
     }
 
-    left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
-    top = Math.max(16, Math.min(top, window.innerHeight - tooltipHeight - 16));
+    left = Math.max(12, Math.min(left, window.innerWidth - tooltipWidth - 12));
+    top = Math.max(12, Math.min(top, window.innerHeight - tooltipHeight - 12));
 
     setArrowDirection(dir);
     setTooltipStyle({
@@ -233,7 +242,7 @@ export function OnboardingTour() {
       {/* Tooltip */}
       <div
         ref={tooltipRef}
-        className="fixed max-w-[calc(100vw-32px)] bg-background rounded-xl border border-divider shadow-2xl p-4 sm:p-6 animate-fade-in"
+        className="fixed max-w-[calc(100vw-24px)] bg-background rounded-2xl border border-divider shadow-2xl p-5 sm:p-7 animate-fade-in overflow-hidden"
         style={tooltipStyle}
         onClick={(e) => e.stopPropagation()}
       >
@@ -254,17 +263,17 @@ export function OnboardingTour() {
         {/* Close button */}
         <button
           onClick={dismissTour}
-          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10 p-1 rounded-full hover:bg-muted"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
 
         {/* Step indicator */}
-        <div className="flex gap-1.5 mb-3">
+        <div className="flex gap-1.5 mb-4">
           {steps.map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 rounded-full flex-1 transition-colors duration-300 ${
+              className={`h-2 rounded-full flex-1 transition-all duration-300 ${
                 i <= currentStep ? "bg-primary" : "bg-muted"
               }`}
             />
@@ -272,35 +281,35 @@ export function OnboardingTour() {
         </div>
 
         {/* Icon & Content */}
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary">
             {step.icon}
           </div>
-          <div className="min-w-0 pr-4">
-            <h3 className="font-heading text-base sm:text-lg font-semibold text-foreground leading-tight">{step.title}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">{step.description}</p>
+          <div className="min-w-0 pr-5">
+            <h3 className="font-heading text-lg sm:text-xl font-semibold text-foreground leading-tight">{step.title}</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1.5 leading-relaxed">{step.description}</p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-divider">
+        <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-divider">
           <div className="flex items-center gap-1 shrink-0">
             {currentStep > 0 && (
-              <Button variant="ghost" size="sm" onClick={prevStep} className="gap-1 h-8 px-2 text-xs">
-                <ArrowLeft className="h-3 w-3" /> Back
+              <Button variant="ghost" size="sm" onClick={prevStep} className="gap-1 h-9 px-3 text-sm">
+                <ArrowLeft className="h-3.5 w-3.5" /> Back
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={dismissTour} className="text-muted-foreground h-8 px-2 text-xs">
+            <Button variant="ghost" size="sm" onClick={dismissTour} className="text-muted-foreground h-9 px-3 text-sm">
               Skip
             </Button>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {step.action && step.actionLabel && (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 px-2 text-xs hidden sm:inline-flex"
+                className="h-9 px-3 text-sm"
                 onClick={() => {
                   step.action!();
                   dismissTour();
@@ -309,9 +318,9 @@ export function OnboardingTour() {
                 {step.actionLabel}
               </Button>
             )}
-            <Button size="sm" onClick={nextStep} className="gap-1 h-8 px-3 text-xs">
+            <Button size="sm" onClick={nextStep} className="gap-1 h-9 px-4 text-sm font-medium">
               {currentStep === steps.length - 1 ? "Finish" : "Next"}
-              {currentStep < steps.length - 1 && <ArrowRight className="h-3 w-3" />}
+              {currentStep < steps.length - 1 && <ArrowRight className="h-3.5 w-3.5" />}
             </Button>
           </div>
         </div>

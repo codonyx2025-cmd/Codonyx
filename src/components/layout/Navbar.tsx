@@ -117,8 +117,16 @@ export function Navbar() {
   }, [location.pathname]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut({ scope: "local" });
-    navigate("/");
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        // ignore
+      }
+    }
+    navigate("/auth", { replace: true });
   };
 
   const getInitials = (name: string) =>
