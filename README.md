@@ -7,3 +7,8 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## What tools are used for this project?
+- Resend
+- Render
+- Loveable AI (For designs frontend)
