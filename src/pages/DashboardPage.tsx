@@ -29,6 +29,7 @@ const quickLinks = {
       description: "Browse and connect with laboratories",
       gradient: "from-emerald-500/20 to-teal-500/10",
       hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20",
+      tourId: "quick-network",
     },
     {
       to: "/edit-profile",
@@ -37,6 +38,7 @@ const quickLinks = {
       description: "Update your professional details",
       gradient: "from-primary/20 to-primary/5",
       hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10",
+      tourId: "quick-edit-profile",
     },
     {
       to: "/connections",
@@ -45,6 +47,7 @@ const quickLinks = {
       description: "Manage your network connections",
       gradient: "from-violet-500/20 to-purple-500/10",
       hoverGradient: "group-hover:from-violet-500/30 group-hover:to-purple-500/20",
+      tourId: "quick-connections",
     },
     {
       to: "/publications",
@@ -53,6 +56,7 @@ const quickLinks = {
       description: "Share and manage your publications",
       gradient: "from-amber-500/20 to-orange-500/10",
       hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20",
+      tourId: "quick-publications",
     },
   ],
   laboratory: [
@@ -63,6 +67,7 @@ const quickLinks = {
       description: "Browse and connect with advisors",
       gradient: "from-blue-500/20 to-indigo-500/10",
       hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20",
+      tourId: "quick-network",
     },
     {
       to: "/edit-profile",
@@ -71,6 +76,7 @@ const quickLinks = {
       description: "Update your organisation details",
       gradient: "from-primary/20 to-primary/5",
       hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10",
+      tourId: "quick-edit-profile",
     },
     {
       to: "/connections",
@@ -79,6 +85,7 @@ const quickLinks = {
       description: "Manage your network connections",
       gradient: "from-violet-500/20 to-purple-500/10",
       hoverGradient: "group-hover:from-violet-500/30 group-hover:to-purple-500/20",
+      tourId: "quick-connections",
     },
     {
       to: "/publications",
@@ -87,6 +94,7 @@ const quickLinks = {
       description: "Share and manage your publications",
       gradient: "from-amber-500/20 to-orange-500/10",
       hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20",
+      tourId: "quick-publications",
     },
   ],
 };
@@ -215,7 +223,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {links.map((link) => (
                 <Link key={link.to} to={link.to}>
-                  <Card className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
+                  <Card data-tour={link.tourId} className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
                     <CardContent className="p-0">
                       <div className="flex items-center gap-4 p-5">
                         <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
