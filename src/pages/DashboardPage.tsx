@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Users, Building2, ArrowRight } from "lucide-react";
+import { Loader2, Users, Building2, ArrowRight, Pencil, FileText, BookOpen } from "lucide-react";
 import { BackButton } from "@/components/layout/BackButton";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { Footer } from "@/components/layout/Footer";
@@ -9,13 +9,88 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAccountGuard } from "@/hooks/useAccountGuard";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+
 interface Profile {
   full_name: string;
   email: string;
   user_type: "advisor" | "laboratory" | "distributor";
   organisation: string | null;
   approval_status: "pending" | "approved" | "rejected" | "deactivated";
+  headline: string | null;
+  avatar_url: string | null;
 }
+
+const quickLinks = {
+  advisor: [
+    {
+      to: "/laboratories",
+      icon: Building2,
+      title: "Laboratory Network",
+      description: "Browse and connect with laboratories",
+      gradient: "from-emerald-500/20 to-teal-500/10",
+      hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20",
+    },
+    {
+      to: "/edit-profile",
+      icon: Pencil,
+      title: "Edit Profile",
+      description: "Update your professional details",
+      gradient: "from-primary/20 to-primary/5",
+      hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10",
+    },
+    {
+      to: "/connections",
+      icon: Users,
+      title: "My Connections",
+      description: "Manage your network connections",
+      gradient: "from-violet-500/20 to-purple-500/10",
+      hoverGradient: "group-hover:from-violet-500/30 group-hover:to-purple-500/20",
+    },
+    {
+      to: "/publications",
+      icon: FileText,
+      title: "Publications",
+      description: "Share and manage your publications",
+      gradient: "from-amber-500/20 to-orange-500/10",
+      hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20",
+    },
+  ],
+  laboratory: [
+    {
+      to: "/advisors",
+      icon: Users,
+      title: "Advisor Network",
+      description: "Browse and connect with advisors",
+      gradient: "from-blue-500/20 to-indigo-500/10",
+      hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20",
+    },
+    {
+      to: "/edit-profile",
+      icon: Pencil,
+      title: "Edit Profile",
+      description: "Update your organisation details",
+      gradient: "from-primary/20 to-primary/5",
+      hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10",
+    },
+    {
+      to: "/connections",
+      icon: Users,
+      title: "My Connections",
+      description: "Manage your network connections",
+      gradient: "from-violet-500/20 to-purple-500/10",
+      hoverGradient: "group-hover:from-violet-500/30 group-hover:to-purple-500/20",
+    },
+    {
+      to: "/publications",
+      icon: FileText,
+      title: "Publications",
+      description: "Share and manage your publications",
+      gradient: "from-amber-500/20 to-orange-500/10",
+      hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20",
+    },
+  ],
+};
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -27,12 +102,10 @@ export default function DashboardPage() {
     if (hasChecked.current) return;
     hasChecked.current = true;
 
-    
-
     const loadProfile = async (userId: string) => {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("full_name, email, user_type, organisation, approval_status")
+        .select("full_name, email, user_type, organisation, approval_status, headline, avatar_url")
         .eq("user_id", userId)
         .maybeSingle();
 
@@ -52,7 +125,6 @@ export default function DashboardPage() {
     };
 
     const checkAuth = async () => {
-      // Try getSession first (fast, uses local cache)
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
@@ -60,8 +132,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // Session is null — could be a token refresh in progress.
-      // Verify with getUser() which validates the token server-side.
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
@@ -69,7 +139,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // Truly no valid session — redirect to auth (no signOut to avoid clearing mid-refresh tokens)
       navigate("/auth", { replace: true });
     };
 
@@ -79,7 +148,6 @@ export default function DashboardPage() {
       if (event === "SIGNED_OUT") {
         navigate("/auth", { replace: true });
       }
-      // If user just signed in, load profile immediately
       if (event === "SIGNED_IN" && session) {
         loadProfile(session.user.id);
       }
@@ -89,92 +157,99 @@ export default function DashboardPage() {
       subscription.unsubscribe();
     };
   }, [navigate]);
+
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-muted">
+
+  const links = profile?.user_type === "advisor" ? quickLinks.advisor : quickLinks.laboratory;
+  const firstName = profile?.full_name?.split(" ")[0];
+  const greeting = getGreeting();
+
+  return (
+    <div className="min-h-screen bg-muted">
       <DashboardNavbar />
       <OnboardingTour />
-      
+
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           <BackButton />
-          <div className="max-w-4xl mx-auto">
-            {/* Welcome Section - Enhanced */}
-            <div className="bg-gradient-to-br from-primary/5 via-background to-primary/10 rounded-3xl p-8 md:p-10 mb-8 border border-divider relative overflow-hidden">
-              <div className="absolute top-4 right-4">
-                
-              </div>
+          <div className="max-w-5xl mx-auto">
+            {/* Welcome Section */}
+            <div className="relative bg-gradient-to-br from-primary/8 via-background to-primary/5 rounded-3xl p-6 sm:p-8 md:p-10 mb-8 border border-divider overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/3 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+
               <div className="relative z-10">
-                <h1 className="font-heading text-3xl lg:text-4xl font-semibold text-foreground mb-3">
-                  Welcome back, {profile?.full_name?.split(' ')[0]}!
+                <p className="text-muted-foreground text-sm sm:text-base mb-1">{greeting}</p>
+                <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-foreground mb-3">
+                  Welcome back, {firstName}!
                 </h1>
-                <p className="text-muted-foreground text-lg flex flex-wrap items-center gap-2">
-                  You're logged in as a
-                  <Badge variant="outline" className="capitalize font-medium text-primary border-primary/30 bg-primary/5 text-base px-3 py-1">
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                  <span>You're logged in as</span>
+                  <Badge variant="outline" className="capitalize font-medium text-primary border-primary/30 bg-primary/5 text-sm px-3 py-0.5">
                     {profile?.user_type}
                   </Badge>
-                  {profile?.organisation && <span className="text-foreground">at {profile.organisation}</span>}
-                </p>
+                  {profile?.organisation && (
+                    <span className="text-foreground font-medium">at {profile.organisation}</span>
+                  )}
+                </div>
+                {profile?.headline && (
+                  <p className="text-muted-foreground text-sm mt-2 italic">"{profile.headline}"</p>
+                )}
               </div>
             </div>
 
-            {/* Quick Links - Show only relevant section based on user type */}
-            <div className="grid grid-cols-1 gap-6">
-              {profile?.user_type === "advisor" ? (
-                <Link to="/laboratories">
-                  <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden">
+            {/* Quick Actions Title */}
+            <div className="flex items-center gap-2 mb-4 px-1">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
+            </div>
+
+            {/* Quick Links Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {links.map((link) => (
+                <Link key={link.to} to={link.to}>
+                  <Card className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
                     <CardContent className="p-0">
-                      <div className="flex items-center gap-5 p-6">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
-                          <Building2 className="w-8 h-8 text-primary" />
+                      <div className="flex items-center gap-4 p-5">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
+                          <link.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-heading text-xl font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                            Laboratory Network
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-heading text-base sm:text-lg font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors truncate">
+                            {link.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Browse and connect with laboratories
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                            {link.description}
                           </p>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                          <ArrowRight className="w-5 h-5" />
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0">
+                          <ArrowRight className="w-4 h-4" />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
-              ) : (
-                <Link to="/advisors">
-                  <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="flex items-center gap-5 p-6">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
-                          <Users className="w-8 h-8 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-heading text-xl font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                            Advisor Network
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            Browse and connect with advisors
-                          </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                          <ArrowRight className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )}
+              ))}
             </div>
           </div>
         </div>
       </main>
 
       <Footer />
-    </div>;
+    </div>
+  );
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning ☀️";
+  if (hour < 17) return "Good afternoon 🌤️";
+  return "Good evening 🌙";
 }
