@@ -283,8 +283,9 @@ serve(async (req: Request) => {
       );
 
       if (updateError) {
+        console.error("[reset-password-otp] Password update error:", updateError);
         return new Response(
-          JSON.stringify({ error: updateError.message }),
+          JSON.stringify({ error: "Failed to update password. Please try again." }),
           { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }

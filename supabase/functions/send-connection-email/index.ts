@@ -154,9 +154,9 @@ const handler = async (req: Request): Promise<Response> => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in send-connection-email function:", error);
+    console.error("[send-connection-email] Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An unexpected error occurred. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
