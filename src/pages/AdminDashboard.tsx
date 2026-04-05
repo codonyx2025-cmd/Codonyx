@@ -1397,6 +1397,24 @@ const AdminDashboard = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Deal Creation Confirm Dialog */}
+        <AlertDialog open={showDealConfirm} onOpenChange={setShowDealConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Deal Creation</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to create and publish the deal "{newDealTitle}" with a target amount of ${newDealTarget}? This will be visible to all approved distributors.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCreateDeal}>
+                Yes, Create Deal
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
       <Footer />
     </div>
