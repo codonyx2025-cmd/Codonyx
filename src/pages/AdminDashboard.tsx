@@ -237,11 +237,7 @@ const AdminDashboard = () => {
     
     const targetAmount = parseFloat(newDealTarget);
     if (newDealMinBid && parseFloat(newDealMinBid) >= targetAmount) {
-      toast({
-        title: "Invalid Minimum Bid",
-        description: "Minimum Bid Amount must be less than the Target Amount.",
-        variant: "destructive",
-      });
+      showErrorToast("Invalid Minimum Bid", { description: "Minimum Bid Amount must be less than the Target Amount." });
       return;
     }
     
@@ -268,14 +264,15 @@ const AdminDashboard = () => {
       min_bid_amount: newDealMinBid ? parseFloat(newDealMinBid) : null,
     } as any);
     if (error) {
-      toast({ title: "Error", description: "Failed to create deal.", variant: "destructive" });
+      showErrorToast("Failed to create deal", { description: "Please try again." });
     } else {
-      toast({ title: "Deal created and published!" });
+      showSuccessToast("Deal created and published!");
       setNewDealTitle("");
       setNewDealDescription("");
       setNewDealTarget("");
       setNewDealMinBid("");
       setNewDealDocFile(null);
+      setShowDealConfirm(false);
       fetchDeals();
     }
   };
