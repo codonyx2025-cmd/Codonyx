@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAccountGuard } from "@/hooks/useAccountGuard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardNavbar } from "@/components/layout/DashboardNavbar";
 import { BackButton } from "@/components/layout/BackButton";
@@ -456,6 +456,44 @@ export default function DistributorDashboard() {
                 </Card>
               );
             })()}
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20" },
+                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20" },
+                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10" },
+                ].map((link) => (
+                  <Link key={link.to} to={link.to}>
+                    <Card className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
+                      <CardContent className="p-0">
+                        <div className="flex items-center gap-4 p-5">
+                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
+                            <link.icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-heading text-base font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors truncate">
+                              {link.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {link.description}
+                            </p>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0">
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             {/* Available Deals */}
             <Card className="mb-8">
