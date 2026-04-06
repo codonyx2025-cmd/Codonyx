@@ -181,6 +181,16 @@ export default function DistributorDashboard() {
       return;
     }
 
+    // Bid must not exceed target amount
+    if (amount > selectedDeal.target_amount) {
+      toast({
+        title: "Bid amount too high",
+        description: `Bid amount cannot exceed the target of ₹${Number(selectedDeal.target_amount).toLocaleString()}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const minBid = selectedDeal.min_bid_amount ? Number(selectedDeal.min_bid_amount) : 0;
     if (minBid > 0 && amount < minBid) {
       toast({
