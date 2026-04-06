@@ -57,11 +57,21 @@ export function KeywordSuggestionsManager() {
   };
 
   const addKeyword = async () => {
-    // Split by comma or pipe to support multiple keywords at once
     const keywords = newKeyword.split(/[,|]/).map(k => k.trim()).filter(Boolean);
     if (keywords.length === 0) return;
 
     setSaving(true);
+
+    // Ensure session is fresh before writing
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Session expired", description: "Please sign in again.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
 
     if (keywords.length === 1) {
       const { error } = await supabase
@@ -101,6 +111,18 @@ export function KeywordSuggestionsManager() {
     if (keywords.length === 0) return;
 
     setSaving(true);
+
+    // Ensure session is fresh
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Session expired", description: "Please sign in again.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
+
     const inserts = keywords.map(keyword => ({ field_name: selectedField, keyword }));
 
     const { error } = await supabase
