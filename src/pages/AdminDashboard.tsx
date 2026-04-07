@@ -107,6 +107,7 @@ const AdminDashboard = () => {
   const [accountAction, setAccountAction] = useState<{ user: PendingUser; type: "deactivate" | "delete" } | null>(null);
   const [showDealConfirm, setShowDealConfirm] = useState(false);
   const [accountActionLoading, setAccountActionLoading] = useState(false);
+  const [selectedBidDetail, setSelectedBidDetail] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 

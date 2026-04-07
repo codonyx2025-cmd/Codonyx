@@ -121,14 +121,15 @@ export default function AuthPage() {
       }
 
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-        setTimeout(async () => {
+        // No setTimeout — validate and redirect immediately for faster Google auth
+        (async () => {
           const approved = await validateApprovedSession(session.user.id);
           if (approved) {
             navigate("/dashboard", { replace: true });
             return;
           }
           setIsCheckingAuth(false);
-        }, 0);
+        })();
       }
     });
 

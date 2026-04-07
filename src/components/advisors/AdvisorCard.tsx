@@ -65,7 +65,7 @@ export function AdvisorCard({
 
   return (
     <>
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-divider bg-background flex flex-col">
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-divider bg-background flex flex-col cursor-pointer" onClick={() => navigate(`/profile/${id}`)}>
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {location && (

@@ -66,12 +66,13 @@ export function Navbar() {
         setProfile(p);
         setIsLoggedIn(true);
       } else {
+        // Don't sign out here — let AuthPage / useAccountGuard handle sign-out.
+        // Signing out from Navbar caused unintended logouts on navigation.
         profileFetched.current = false;
         cachedProfile = null;
         cachedUserId = null;
         setProfile(null);
         setIsLoggedIn(false);
-        await supabase.auth.signOut({ scope: "local" });
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
