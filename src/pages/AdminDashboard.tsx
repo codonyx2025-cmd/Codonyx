@@ -1142,7 +1142,7 @@ const AdminDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>All Bids</CardTitle>
-                  <CardDescription>Review and manage distributor bids</CardDescription>
+                  <CardDescription>Review and manage distributor bids — click a row to view full details</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {dealBids.length === 0 ? (
@@ -1155,21 +1155,18 @@ const AdminDashboard = () => {
                           <TableHead className="whitespace-nowrap">Distributor</TableHead>
                           <TableHead className="whitespace-nowrap">Deal</TableHead>
                           <TableHead className="whitespace-nowrap">Amount</TableHead>
+                          <TableHead className="whitespace-nowrap">Notes</TableHead>
                           <TableHead className="whitespace-nowrap">Status</TableHead>
                           <TableHead className="whitespace-nowrap">Date</TableHead>
-                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {dealBids.map((bid: any) => {
                           const deal = deals.find((d: any) => d.id === bid.deal_id);
                           return (
-                            <TableRow key={bid.id}>
+                            <TableRow key={bid.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedBidDetail({ ...bid, deal })}>
                               <TableCell className="whitespace-nowrap">
-                                <div
-                                  className="flex items-center gap-3 cursor-pointer hover:opacity-80"
-                                  onClick={() => bid.profiles?.id && navigate(`/profile/${bid.profiles.id}`)}
-                                >
+                                <div className="flex items-center gap-3">
                                   <Avatar className="h-8 w-8">
                                     <AvatarImage src={bid.profiles?.avatar_url || undefined} />
                                     <AvatarFallback>{(bid.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
@@ -1182,6 +1179,9 @@ const AdminDashboard = () => {
                               </TableCell>
                               <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
                               <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
+                              <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
+                                {bid.notes || <span className="italic text-muted-foreground/50">No notes</span>}
+                              </TableCell>
                               <TableCell>
                                 <Badge className="capitalize" variant={
                                   bid.bid_status === "accepted" ? "default" :
@@ -1190,10 +1190,7 @@ const AdminDashboard = () => {
                                   {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
-                              <TableCell className="whitespace-nowrap">
-                                <span className="text-xs text-muted-foreground">Auto-submitted</span>
-                              </TableCell>
+                              <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm")}</TableCell>
                             </TableRow>
                           );
                         })}
@@ -1203,6 +1200,70 @@ const AdminDashboard = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Bid Detail Dialog */}
+              {selectedBidDetail && (
+                <Dialog open={!!selectedBidDetail} onOpenChange={(open) => !open && setSelectedBidDetail(null)}>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Bid Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={selectedBidDetail.profiles?.avatar_url || undefined} />
+                          <AvatarFallback>{(selectedBidDetail.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold text-lg">{selectedBidDetail.profiles?.full_name || "Unknown"}</p>
+                          {selectedBidDetail.profiles?.organisation && (
+                            <p className="text-sm text-muted-foreground">{selectedBidDetail.profiles.organisation}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Deal</p>
+                          <p className="font-medium">{selectedBidDetail.deal?.title || "Unknown"}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Bid Amount</p>
+                          <p className="font-medium text-primary">₹{Number(selectedBidDetail.bid_amount).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
+                          <Badge className="capitalize mt-1" variant={
+                            selectedBidDetail.bid_status === "accepted" ? "default" :
+                            selectedBidDetail.bid_status === "rejected" ? "destructive" : "secondary"
+                          }>
+                            {selectedBidDetail.bid_status === "accepted" ? "Submitted" : selectedBidDetail.bid_status}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Submitted On</p>
+                          <p className="font-medium">{format(new Date(selectedBidDetail.created_at), "MMM d, yyyy HH:mm")}</p>
+                        </div>
+                      </div>
+                      {selectedBidDetail.deal && (
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Deal Target</p>
+                          <p className="font-medium">₹{Number(selectedBidDetail.deal.target_amount).toLocaleString()}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Distributor Notes / Description</p>
+                        <div className="bg-muted/50 rounded-lg p-3 min-h-[60px]">
+                          {selectedBidDetail.notes ? (
+                            <p className="text-sm whitespace-pre-wrap">{selectedBidDetail.notes}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No description provided by the distributor.</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </TabsContent>
 

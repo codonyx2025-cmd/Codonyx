@@ -119,8 +119,7 @@ export default function DistributorDashboard() {
       .maybeSingle();
 
     if (!profileData || profileData.approval_status !== "approved" || profileData.user_type !== "distributor") {
-      await supabase.auth.signOut({ scope: "local" });
-      navigate("/auth");
+      navigate("/dashboard");
       return;
     }
 
