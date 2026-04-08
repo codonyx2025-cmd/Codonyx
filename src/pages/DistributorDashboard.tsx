@@ -324,20 +324,31 @@ export default function DistributorDashboard() {
   return (
     <div className="min-h-screen bg-muted">
       <DashboardNavbar />
+      <OnboardingTour />
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           <BackButton />
           <div className="max-w-6xl mx-auto">
             {/* Welcome */}
-            <div className="bg-gradient-to-br from-primary/5 via-background to-primary/10 rounded-3xl p-8 mb-8 border border-divider">
-              <h1 className="font-heading text-3xl font-semibold text-foreground mb-2">
-                Welcome, {profile?.full_name?.split(" ")[0]}!
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Distribution Partner
-                {profile?.organisation && <span> at {profile.organisation}</span>}
-              </p>
+            <div className="relative bg-gradient-to-br from-primary/8 via-background to-primary/5 rounded-3xl p-6 sm:p-8 md:p-10 mb-8 border border-divider overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/3 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+              <div className="relative z-10">
+                <p className="text-muted-foreground text-sm sm:text-base mb-1">{getGreeting()}</p>
+                <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-foreground mb-3">
+                  Welcome back, {profile?.full_name?.split(" ")[0]}!
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                  <span>You're logged in as</span>
+                  <Badge variant="outline" className="capitalize font-medium text-primary border-primary/30 bg-primary/5 text-sm px-3 py-0.5">
+                    Distribution Partner
+                  </Badge>
+                  {profile?.organisation && (
+                    <span className="text-foreground font-medium">at {profile.organisation}</span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Stats */}
