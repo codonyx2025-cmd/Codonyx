@@ -4,17 +4,17 @@ import codonyxLogo from "@/assets/codonyx_logo.png";
 
 const footerLinks = {
   solutions: [
-  { name: "Services", href: "/services" },
-  { name: "Technology", href: "/technology" }],
-
+    { name: "Services", href: "/services" },
+    { name: "Technology", href: "/technology" },
+  ],
   company: [
-  { name: "About Us", href: "/about" },
-  { name: "Contact Us", href: "/contact" }],
-
+    { name: "About Us", href: "/about" },
+    { name: "Contact Us", href: "/contact" },
+  ],
   compliance: [
-  { name: "Privacy Policy", href: "/privacy-policy" },
-  { name: "Terms & Conditions", href: "/terms" }]
-
+    { name: "Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms & Conditions", href: "/terms" },
+  ],
 };
 
 export function Footer() {
@@ -32,23 +32,24 @@ export function Footer() {
             </Link>
             <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-sm font-body">
               A global molecular science and AI healthcare company connecting elite advisors and pioneering laboratories to shape the future.
-            
             </p>
             <div className="flex gap-3 mt-6">
               <a
-                href="#"
+                href="https://www.linkedin.com/company/codonyx"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="LinkedIn">
-                
+                aria-label="LinkedIn"
+              >
                 <Linkedin size={18} />
               </a>
-              <a
-                href="mailto:contact@codonyx.org"
+              <Link
+                to="/contact"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="Email">
-                
+                aria-label="Contact Us"
+              >
                 <Mail size={18} />
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -58,13 +59,13 @@ export function Footer() {
               Solutions
             </h4>
             <ul className="space-y-3">
-              {footerLinks.solutions.map((link) =>
-              <li key={link.name}>
+              {footerLinks.solutions.map((link) => (
+                <li key={link.name}>
                   <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
-              )}
+              ))}
             </ul>
           </div>
 
@@ -74,13 +75,13 @@ export function Footer() {
               Company
             </h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) =>
-              <li key={link.name}>
+              {footerLinks.company.map((link) => (
+                <li key={link.name}>
                   <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
-              )}
+              ))}
             </ul>
           </div>
 
@@ -90,13 +91,13 @@ export function Footer() {
               Compliance
             </h4>
             <ul className="space-y-3">
-              {footerLinks.compliance.map((link) =>
-              <li key={link.name}>
+              {footerLinks.compliance.map((link) => (
+                <li key={link.name}>
                   <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
-              )}
+              ))}
             </ul>
           </div>
         </div>
@@ -111,6 +112,6 @@ export function Footer() {
           </p>
         </div>
       </div>
-    </footer>);
-
+    </footer>
+  );
 }
