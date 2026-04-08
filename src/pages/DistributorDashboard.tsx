@@ -474,11 +474,12 @@ export default function DistributorDashboard() {
                 <BookOpen className="h-5 w-5 text-primary" />
                 <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20" },
-                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20" },
-                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10" },
+                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20", tourId: "quick-network" },
+                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20", tourId: "" },
+                  { to: "#deals", icon: Briefcase, title: "Deals & Bids", description: "View deals and place bids", gradient: "from-amber-500/20 to-orange-500/10", hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20", tourId: "quick-deals" },
+                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10", tourId: "quick-edit-profile" },
                 ].map((link) => (
                   <Link key={link.to} to={link.to}>
                     <Card className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
