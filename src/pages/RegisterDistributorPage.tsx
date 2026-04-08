@@ -238,7 +238,7 @@ export default function RegisterDistributorPage() {
 
             <div className="space-y-2">
               <Label htmlFor="bio" className="text-xs uppercase tracking-wider font-medium">About Your Business</Label>
-              <TagInput id="bio" value={bio} onChange={setBio} placeholder="Search or add keyword (e.g., Pharmaceutical Distribution)" suggestionField="bio_distributor" />
+              <TagInput id="bio" value={bio} onChange={setBio} placeholder="Search or add keyword (e.g., Logistics, Cold Chain)" suggestionField="distribution_capacity" />
             </div>
 
             <div className="space-y-2">

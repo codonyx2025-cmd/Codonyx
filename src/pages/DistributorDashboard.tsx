@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, TrendingUp, DollarSign, Briefcase, Target, Pencil, FileText, Users, Building2, ArrowRight, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import {
   Dialog,
   DialogContent,
@@ -323,20 +324,31 @@ export default function DistributorDashboard() {
   return (
     <div className="min-h-screen bg-muted">
       <DashboardNavbar />
+      <OnboardingTour />
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           <BackButton />
           <div className="max-w-6xl mx-auto">
             {/* Welcome */}
-            <div className="bg-gradient-to-br from-primary/5 via-background to-primary/10 rounded-3xl p-8 mb-8 border border-divider">
-              <h1 className="font-heading text-3xl font-semibold text-foreground mb-2">
-                Welcome, {profile?.full_name?.split(" ")[0]}!
-              </h1>
-              <p className="text-muted-foreground text-lg">
-                Distribution Partner
-                {profile?.organisation && <span> at {profile.organisation}</span>}
-              </p>
+            <div className="relative bg-gradient-to-br from-primary/8 via-background to-primary/5 rounded-3xl p-6 sm:p-8 md:p-10 mb-8 border border-divider overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/3 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+              <div className="relative z-10">
+                <p className="text-muted-foreground text-sm sm:text-base mb-1">{getGreeting()}</p>
+                <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-semibold text-foreground mb-3">
+                  Welcome back, {profile?.full_name?.split(" ")[0]}!
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                  <span>You're logged in as</span>
+                  <Badge variant="outline" className="capitalize font-medium text-primary border-primary/30 bg-primary/5 text-sm px-3 py-0.5">
+                    Distribution Partner
+                  </Badge>
+                  {profile?.organisation && (
+                    <span className="text-foreground font-medium">at {profile.organisation}</span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Stats */}
@@ -462,14 +474,15 @@ export default function DistributorDashboard() {
                 <BookOpen className="h-5 w-5 text-primary" />
                 <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20" },
-                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20" },
-                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10" },
-                ].map((link) => (
-                  <Link key={link.to} to={link.to}>
-                    <Card className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
+                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20", tourId: "quick-network" },
+                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20", tourId: "" },
+                  { to: "#deals", icon: Briefcase, title: "Deals & Bids", description: "View deals and place bids", gradient: "from-amber-500/20 to-orange-500/10", hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20", tourId: "quick-deals" },
+                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10", tourId: "quick-edit-profile" },
+                ].map((link) => {
+                  const cardContent = (
+                    <Card data-tour={link.tourId || undefined} className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
                       <CardContent className="p-0">
                         <div className="flex items-center gap-4 p-5">
                           <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
@@ -489,13 +502,21 @@ export default function DistributorDashboard() {
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))}
+                  );
+                  if (link.to === "#deals") {
+                    return (
+                      <div key={link.to} onClick={() => document.getElementById("deals-section")?.scrollIntoView({ behavior: "smooth" })} className="cursor-pointer">
+                        {cardContent}
+                      </div>
+                    );
+                  }
+                  return <Link key={link.to} to={link.to}>{cardContent}</Link>;
+                })}
               </div>
             </div>
 
             {/* Available Deals */}
-            <Card className="mb-8">
+            <Card id="deals-section" className="mb-8">
               <CardHeader>
                 <CardTitle>Available Deals</CardTitle>
                 <CardDescription>Published deals you can bid on</CardDescription>
@@ -697,4 +718,11 @@ export default function DistributorDashboard() {
       <Footer />
     </div>
   );
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning ☀️";
+  if (hour < 17) return "Good afternoon 🌤️";
+  return "Good evening 🌙";
 }

@@ -34,6 +34,8 @@ const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const RegisterDistributorPage = lazy(() => import("./pages/RegisterDistributorPage"));
 const DistributorDashboard = lazy(() => import("./pages/DistributorDashboard"));
 const DistributorsPage = lazy(() => import("./pages/DistributorsPage"));
+const RegisterLaboratoryLandingPage = lazy(() => import("./pages/RegisterLaboratoryLandingPage"));
+const DistributorLandingPage = lazy(() => import("./pages/DistributorLandingPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -139,6 +141,8 @@ const App = () => (
                 <Route path="/register-distributor" element={<RegisterDistributorPage />} />
                 <Route path="/distributor-dashboard" element={<DistributorDashboard />} />
                 <Route path="/distributors" element={<DistributorsPage />} />
+                <Route path="/laboratory-info" element={<RegisterLaboratoryLandingPage />} />
+                <Route path="/distributor-info" element={<DistributorLandingPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

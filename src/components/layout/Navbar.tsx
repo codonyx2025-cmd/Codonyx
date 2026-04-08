@@ -239,7 +239,11 @@ export function Navbar() {
             ))}
             {isLoggedIn && profile ? (
               <>
-                <div className="flex items-center gap-3 py-3 border-t border-white/10 mt-2 pt-4">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-3 py-3 border-t border-white/10 mt-2 pt-4 cursor-pointer"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
                     <AvatarFallback className="bg-primary text-primary-foreground">
@@ -250,7 +254,7 @@ export function Navbar() {
                     <p className="text-sm font-medium text-white truncate">{profile.full_name}</p>
                     <p className="text-xs text-white/50 truncate">{profile.email}</p>
                   </div>
-                </div>
+                </Link>
                 <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" className="w-full mt-3">
                     Dashboard

@@ -16,7 +16,7 @@ interface Profile {
   id: string;
   full_name: string;
   avatar_url: string | null;
-  user_type: "advisor" | "laboratory";
+  user_type: "advisor" | "laboratory" | "distributor";
   email: string;
 }
 
@@ -26,9 +26,8 @@ export function DashboardNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingConnectionCount, setPendingConnectionCount] = useState(0);
 
-  // Dynamic nav links based on user type
-  // Advisors see Laboratories, Labs see Advisors
   const navLinks = [
     { name: "HOME", href: "/" },
     { name: "Dashboard", href: "/dashboard" },
@@ -50,9 +49,16 @@ export function DashboardNavbar() {
           .maybeSingle();
         if (data) {
           setProfile(data as Profile);
+          
+          // Fetch pending received connection requests
+          const { count } = await supabase
+            .from("connections")
+            .select("*", { count: "exact", head: true })
+            .eq("receiver_id", data.id)
+            .eq("status", "pending");
+          setPendingConnectionCount(count || 0);
         }
 
-        // Check if user is admin
         const { data: hasAdminRole } = await supabase.rpc('has_role', {
           _user_id: session.user.id,
           _role: 'admin'
@@ -67,7 +73,6 @@ export function DashboardNavbar() {
     try {
       await supabase.auth.signOut();
     } catch {
-      // Fallback: clear local session if global signout fails (e.g. network timeout)
       try {
         await supabase.auth.signOut({ scope: "local" });
       } catch {
@@ -171,7 +176,12 @@ export function DashboardNavbar() {
                 <DropdownMenuItem asChild>
                   <Link to="/connections" className="cursor-pointer" data-tour="connections">
                     <Users className="mr-2 h-4 w-4" />
-                    Connections
+                    <span className="flex-1">Connections</span>
+                    {pendingConnectionCount > 0 && (
+                      <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                        {pendingConnectionCount}
+                      </span>
+                    )}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -207,7 +217,7 @@ export function DashboardNavbar() {
             {profile && (
               <Link 
                 to={`/profile/${profile.id}`} 
-                className="flex items-center gap-3 pb-4 border-b border-divider"
+                className="flex items-center gap-3 pb-4 border-b border-divider cursor-pointer"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Avatar className="h-10 w-10">
@@ -249,6 +259,11 @@ export function DashboardNavbar() {
             >
               <Users className="h-4 w-4" />
               Connections
+              {pendingConnectionCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                  {pendingConnectionCount}
+                </span>
+              )}
             </Link>
             <Link
               to="/publications"
