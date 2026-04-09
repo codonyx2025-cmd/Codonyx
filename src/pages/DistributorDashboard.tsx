@@ -78,6 +78,8 @@ export default function DistributorDashboard() {
   const [editBidAmount, setEditBidAmount] = useState("");
   const [editBidNotes, setEditBidNotes] = useState("");
   const [isUpdatingBid, setIsUpdatingBid] = useState(false);
+  const [dealShowCount, setDealShowCount] = useState(15);
+  const [bidShowCount, setBidShowCount] = useState(15);
 
   useEffect(() => {
     loadData();
@@ -399,6 +401,53 @@ export default function DistributorDashboard() {
               </Card>
             </div>
 
+            {/* Quick Actions — moved to top */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4 px-1">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20", tourId: "quick-network" },
+                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20", tourId: "" },
+                  { to: "#deals", icon: Briefcase, title: "Deals & Bids", description: "View deals and place bids", gradient: "from-amber-500/20 to-orange-500/10", hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20", tourId: "quick-deals" },
+                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10", tourId: "quick-edit-profile" },
+                ].map((link) => {
+                  const cardContent = (
+                    <Card data-tour={link.tourId || undefined} className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
+                      <CardContent className="p-0">
+                        <div className="flex items-center gap-4 p-5">
+                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
+                            <link.icon className="w-6 h-6 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-heading text-base font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors truncate">
+                              {link.title}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {link.description}
+                            </p>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0">
+                            <ArrowRight className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                  if (link.to === "#deals") {
+                    return (
+                      <div key={link.to} onClick={() => document.getElementById("deals-section")?.scrollIntoView({ behavior: "smooth" })} className="cursor-pointer">
+                        {cardContent}
+                      </div>
+                    );
+                  }
+                  return <Link key={link.to} to={link.to}>{cardContent}</Link>;
+                })}
+              </div>
+            </div>
+
             {/* Deal Indicators */}
             {(() => {
                const approvedDistributors = aggregateStats.approved_distributors;
@@ -468,53 +517,6 @@ export default function DistributorDashboard() {
               );
             })()}
 
-            {/* Quick Actions */}
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4 px-1">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <h2 className="font-heading text-lg font-semibold text-foreground">Quick Actions</h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { to: "/advisors", icon: Users, title: "Advisor Network", description: "Browse and connect with advisors", gradient: "from-blue-500/20 to-indigo-500/10", hoverGradient: "group-hover:from-blue-500/30 group-hover:to-indigo-500/20", tourId: "quick-network" },
-                  { to: "/laboratories", icon: Building2, title: "Laboratory Network", description: "Browse and connect with laboratories", gradient: "from-emerald-500/20 to-teal-500/10", hoverGradient: "group-hover:from-emerald-500/30 group-hover:to-teal-500/20", tourId: "" },
-                  { to: "#deals", icon: Briefcase, title: "Deals & Bids", description: "View deals and place bids", gradient: "from-amber-500/20 to-orange-500/10", hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/20", tourId: "quick-deals" },
-                  { to: "/edit-profile", icon: Pencil, title: "Edit Profile", description: "Update your business details", gradient: "from-primary/20 to-primary/5", hoverGradient: "group-hover:from-primary/30 group-hover:to-primary/10", tourId: "quick-edit-profile" },
-                ].map((link) => {
-                  const cardContent = (
-                    <Card data-tour={link.tourId || undefined} className="group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 border-divider cursor-pointer bg-background overflow-hidden h-full">
-                      <CardContent className="p-0">
-                        <div className="flex items-center gap-4 p-5">
-                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${link.gradient} ${link.hoverGradient} flex items-center justify-center transition-all duration-300 shrink-0`}>
-                            <link.icon className="w-6 h-6 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-heading text-base font-semibold text-foreground mb-0.5 group-hover:text-primary transition-colors truncate">
-                              {link.title}
-                            </h3>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {link.description}
-                            </p>
-                          </div>
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0">
-                            <ArrowRight className="w-4 h-4" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                  if (link.to === "#deals") {
-                    return (
-                      <div key={link.to} onClick={() => document.getElementById("deals-section")?.scrollIntoView({ behavior: "smooth" })} className="cursor-pointer">
-                        {cardContent}
-                      </div>
-                    );
-                  }
-                  return <Link key={link.to} to={link.to}>{cardContent}</Link>;
-                })}
-              </div>
-            </div>
-
             {/* Available Deals */}
             <Card id="deals-section" className="mb-8">
               <CardHeader>
@@ -525,66 +527,74 @@ export default function DistributorDashboard() {
                 {deals.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No deals available at the moment.</p>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {deals.map((deal) => {
-                      const progress = deal.target_amount > 0 ? (deal.raised_amount / deal.target_amount) * 100 : 0;
-                      const existingBid = myBids.find(b => b.deal_id === deal.id && b.bid_status !== "withdrawn");
-                      return (
-                        <Card key={deal.id} className="border border-divider">
-                          <CardContent className="p-5">
-                            <div className="flex items-start justify-between mb-3">
-                              <h3 className="font-heading text-lg font-semibold text-foreground">{deal.title}</h3>
-                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                                Open
-                              </Badge>
-                            </div>
-                            {deal.description && (
-                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{deal.description}</p>
-                            )}
-                            <div className="space-y-3">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Target</span>
-                                <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount)}</span>
+                  <>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {deals.slice(0, dealShowCount).map((deal) => {
+                        const progress = deal.target_amount > 0 ? (deal.raised_amount / deal.target_amount) * 100 : 0;
+                        const existingBid = myBids.find(b => b.deal_id === deal.id && b.bid_status !== "withdrawn");
+                        return (
+                          <Card key={deal.id} className="border border-divider">
+                            <CardContent className="p-5">
+                              <div className="flex items-start justify-between mb-3">
+                                <h3 className="font-heading text-lg font-semibold text-foreground">{deal.title}</h3>
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                                  Open
+                                </Badge>
                               </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Raised</span>
-                                <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount)}</span>
-                              </div>
-                              <div className="w-full bg-muted rounded-full h-2">
-                                <div
-                                  className="bg-primary rounded-full h-2 transition-all"
-                                  style={{ width: `${Math.min(progress, 100)}%` }}
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground text-right">{progress.toFixed(1)}% funded</p>
-                            </div>
-                            <div className="mt-4 flex flex-col gap-2">
-                              {deal.document_url && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="w-full"
-                                  onClick={() => window.open(deal.document_url!, '_blank')}
-                                >
-                                  <FileText className="w-4 h-4 mr-2" /> View Document
-                                </Button>
+                              {deal.description && (
+                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{deal.description}</p>
                               )}
-                              {existingBid ? (
-                                <p className="text-sm text-muted-foreground">
-                                  You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount)}</span>
-                                  {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status === "accepted" ? "Submitted" : existingBid.bid_status}</Badge>
-                                </p>
-                              ) : (
-                                <Button className="w-full" onClick={() => setSelectedDeal(deal)}>
-                                  Place Bid
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
+                              <div className="space-y-3">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Target</span>
+                                  <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Raised</span>
+                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount)}</span>
+                                </div>
+                                <div className="w-full bg-muted rounded-full h-2">
+                                  <div
+                                    className="bg-primary rounded-full h-2 transition-all"
+                                    style={{ width: `${Math.min(progress, 100)}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground text-right">{progress.toFixed(1)}% funded</p>
+                              </div>
+                              <div className="mt-4 flex flex-col gap-2">
+                                {deal.document_url && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => window.open(deal.document_url!, '_blank')}
+                                  >
+                                    <FileText className="w-4 h-4 mr-2" /> View Document
+                                  </Button>
+                                )}
+                                {existingBid ? (
+                                  <p className="text-sm text-muted-foreground">
+                                    You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount)}</span>
+                                    {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status === "accepted" ? "Submitted" : existingBid.bid_status}</Badge>
+                                  </p>
+                                ) : (
+                                  <Button className="w-full" onClick={() => setSelectedDeal(deal)}>
+                                    Place Bid
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                    {deals.length > dealShowCount && (
+                      <div className="flex justify-center gap-2 mt-4">
+                        <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDealShowCount(deals.length)}>Show All ({deals.length})</Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -599,32 +609,40 @@ export default function DistributorDashboard() {
                 {myBids.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">No bids placed yet.</p>
                 ) : (
-                  <div className="space-y-3">
-                    {myBids.map((bid) => (
-                      <div key={bid.id} className="flex items-center justify-between p-4 border border-divider rounded-xl">
-                        <div>
-                          <p className="font-medium text-foreground">{bid.deal_title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(bid.created_at).toLocaleDateString()}
-                          </p>
+                  <>
+                    <div className="space-y-3">
+                      {myBids.slice(0, bidShowCount).map((bid) => (
+                        <div key={bid.id} className="flex items-center justify-between p-4 border border-divider rounded-xl">
+                          <div>
+                            <p className="font-medium text-foreground">{bid.deal_title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(bid.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-semibold text-foreground">{formatCurrency(bid.bid_amount)}</span>
+                            <Badge className={getStatusColor(bid.bid_status)}>{getBidDisplayStatus(bid)}</Badge>
+                            {canEditBid(bid) && (
+                              <Button variant="outline" size="sm" onClick={() => handleEditBid(bid)}>
+                                <Pencil className="w-3 h-3 mr-1" /> Edit
+                              </Button>
+                            )}
+                            {bid.bid_status === "accepted" && bid.deal_status !== "closed" && (
+                              <Button variant="outline" size="sm" onClick={() => handleWithdrawBid(bid.id)}>
+                                Withdraw
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-foreground">{formatCurrency(bid.bid_amount)}</span>
-                          <Badge className={getStatusColor(bid.bid_status)}>{getBidDisplayStatus(bid)}</Badge>
-                          {canEditBid(bid) && (
-                            <Button variant="outline" size="sm" onClick={() => handleEditBid(bid)}>
-                              <Pencil className="w-3 h-3 mr-1" /> Edit
-                            </Button>
-                          )}
-                          {bid.bid_status === "accepted" && bid.deal_status !== "closed" && (
-                            <Button variant="outline" size="sm" onClick={() => handleWithdrawBid(bid.id)}>
-                              Withdraw
-                            </Button>
-                          )}
-                        </div>
+                      ))}
+                    </div>
+                    {myBids.length > bidShowCount && (
+                      <div className="flex justify-center gap-2 mt-4">
+                        <Button variant="outline" size="sm" onClick={() => setBidShowCount(c => c + 15)}>Show More</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setBidShowCount(myBids.length)}>Show All ({myBids.length})</Button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

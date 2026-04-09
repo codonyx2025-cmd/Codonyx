@@ -43,6 +43,7 @@ export function ConnectButton({
     sendConnectionRequest,
     acceptConnection,
     withdrawConnection,
+    isLoading: isHydrating,
   } = useConnections(currentProfileId);
 
   if (!currentProfileId || currentProfileId === targetProfileId) {
@@ -52,6 +53,24 @@ export function ConnectButton({
   const { status, connectionId, cooldownUntil } = getConnectionStatus(targetProfileId);
 
   const handleConnect = async () => {
+    // Guard: if still hydrating, warn user
+    if (isHydrating) {
+      toast({
+        title: "Checking connection status...",
+        description: "Please wait a moment and try again.",
+      });
+      return;
+    }
+    // Guard: if already connected/pending, show warning
+    if (status === "accepted" || status === "pending_sent") {
+      toast({
+        title: status === "accepted" ? "Already Connected" : "Request Already Sent",
+        description: status === "accepted" 
+          ? "You are already connected with this person." 
+          : "You have already sent a connection request.",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       await sendConnectionRequest(targetProfileId);
@@ -113,7 +132,6 @@ export function ConnectButton({
 
   // Check cooldown (3 weeks)
   if (cooldownUntil && new Date(cooldownUntil) > new Date()) {
-    const daysLeft = Math.ceil((new Date(cooldownUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return (
       <Button variant={variant} size={size} className={`gap-2 ${className}`} onClick={handleCooldownConnect}>
         <UserPlus className="w-4 h-4" />

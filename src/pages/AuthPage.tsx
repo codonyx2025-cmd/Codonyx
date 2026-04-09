@@ -98,21 +98,41 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const approved = await validateApprovedSession(session.user.id);
-        if (approved) {
-          navigate("/dashboard", { replace: true });
-          return;
+      try {
+        // Race session check with a 3s timeout to prevent hanging
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+        ]);
+
+        if (cancelled) return;
+
+        const session = sessionResult && typeof sessionResult === 'object' && 'data' in sessionResult
+          ? (sessionResult as any).data.session
+          : null;
+
+        if (session) {
+          const approved = await validateApprovedSession(session.user.id);
+          if (cancelled) return;
+          if (approved) {
+            navigate("/dashboard", { replace: true });
+            return;
+          }
         }
+      } catch (err) {
+        console.error("Auth check error:", err);
       }
-      setIsCheckingAuth(false);
+      if (!cancelled) setIsCheckingAuth(false);
     };
 
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+
       if (!session) {
         if (event === "SIGNED_OUT") {
           setIsCheckingAuth(false);
@@ -121,9 +141,9 @@ export default function AuthPage() {
       }
 
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-        // No setTimeout — validate and redirect immediately for faster Google auth
         (async () => {
           const approved = await validateApprovedSession(session.user.id);
+          if (cancelled) return;
           if (approved) {
             navigate("/dashboard", { replace: true });
             return;
@@ -133,7 +153,10 @@ export default function AuthPage() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,16 +165,6 @@ export default function AuthPage() {
     hasShownUnauthorizedToast.current = false;
 
     try {
-      // Check if session already exists before attempting sign in
-      const { data: { session: existingSession } } = await supabase.auth.getSession();
-      if (existingSession) {
-        const approved = await validateApprovedSession(existingSession.user.id);
-        if (approved) {
-          navigate("/dashboard", { replace: true });
-          return;
-        }
-      }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
@@ -210,7 +223,6 @@ export default function AuthPage() {
         });
 
         if (error) {
-          // Edge function returned non-2xx — parse the structured error from context
           let errorMsg = "Failed to send reset code.";
           try {
             const bodyText = await (error as any)?.context?.json?.() 
@@ -248,7 +260,6 @@ export default function AuthPage() {
         toast({ title: "Invalid code", description: "Please enter the 6-digit code.", variant: "destructive" });
         return;
       }
-      // Verify OTP with the server before proceeding
       setIsSendingReset(true);
       try {
         const { data, error } = await supabase.functions.invoke("reset-password-otp", {
@@ -434,24 +445,13 @@ export default function AuthPage() {
     }
   };
 
-  // Auto-refresh after 1 second if stuck on loading
+  // Fallback: if auth check hangs for 4s, show the form. No auto-reload.
   useEffect(() => {
     if (!isCheckingAuth) return;
-    const hasRefreshed = sessionStorage.getItem("auth_page_refreshed");
     const timer = setTimeout(() => {
-      if (isCheckingAuth && !hasRefreshed) {
-        sessionStorage.setItem("auth_page_refreshed", "true");
-        window.location.reload();
-      }
-    }, 1000);
+      setIsCheckingAuth(false);
+    }, 4000);
     return () => clearTimeout(timer);
-  }, [isCheckingAuth]);
-
-  // Clear refresh flag when auth check completes
-  useEffect(() => {
-    if (!isCheckingAuth) {
-      sessionStorage.removeItem("auth_page_refreshed");
-    }
   }, [isCheckingAuth]);
 
   if (isCheckingAuth) {
@@ -507,86 +507,87 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
                 </button>
               </div>
             </div>
 
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-              >
-                Forgot password
-              </button>
-            </div>
-
-            <Button 
-              type="submit" 
-              variant="primary" 
-              className="w-full h-12 text-base"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Signing in...</>
-              ) : (
-                "Sign In"
+            <Button type="submit" className="w-full h-12 text-base font-medium gap-2" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-5 h-5" />
+                </>
               )}
             </Button>
           </form>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted" />
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or</span>
-            </div>
+
+            <Button
+              variant="outline"
+              className="w-full h-12 mt-4 gap-3 text-base font-medium"
+              onClick={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+            >
+              {isGoogleLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <img src={googleIcon} alt="Google" className="w-5 h-5" />
+              )}
+              Continue with Google
+            </Button>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-12 text-base gap-3"
-            disabled={isGoogleLoading}
-            onClick={handleGoogleSignIn}
-          >
-            {isGoogleLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <img src={googleIcon} alt="Google" className="w-5 h-5" fetchPriority="high" decoding="sync" />
-            )}
-            Continue with Google
-          </Button>
-
-          <p className="mt-8 text-xs text-center text-muted-foreground">
-            Access is by invitation only. Contact your network administrator for an invite.
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-primary hover:underline font-medium">
+              Register here
+            </Link>
           </p>
         </div>
       </div>
 
-      {/* Right Panel - Features */}
-      <div className="hidden lg:flex w-1/2 bg-foreground text-background p-12 xl:p-16 flex-col justify-center">
-        <div className="max-w-md">
-          <div className="space-y-8">
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className="flex items-start gap-4 group cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="w-12 h-12 rounded-lg bg-background/10 flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-5 h-5 text-background" />
+      {/* Right Panel - Visual */}
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary/10 via-primary/5 to-background items-center justify-center p-16">
+        <div className="max-w-md space-y-10">
+          <div>
+            <h2 className="font-display text-3xl font-medium text-foreground mb-3">
+              Your Professional Network Awaits
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Join the most trusted platform connecting advisors, laboratories, and distributors.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {features.map((feature) => (
+              <div key={feature.title} className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <feature.icon className="w-6 h-6 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-display text-lg font-medium">{feature.title}</h3>
-                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <p className="text-background/70 text-sm font-body">{feature.description}</p>
+                <div>
+                  <h3 className="font-medium text-foreground mb-1">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </div>
               </div>
             ))}
@@ -595,124 +596,117 @@ export default function AuthPage() {
       </div>
 
       {/* Forgot Password Dialog */}
-      <Dialog open={showForgotPassword} onOpenChange={(open) => { if (!open) closeForgotPasswordDialog(); else setShowForgotPassword(true); }}>
+      <Dialog open={showForgotPassword} onOpenChange={(open) => !open && closeForgotPasswordDialog()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display">Reset Password</DialogTitle>
+            <DialogTitle>
+              {resetStep === "email" ? "Reset Password" : resetStep === "otp" ? "Enter Verification Code" : "Set New Password"}
+            </DialogTitle>
             <DialogDescription>
-              {resetStep === "email" && "Enter your email address and we'll send you a verification code."}
-              {resetStep === "otp" && "Enter the 6-digit code sent to your email."}
-              {resetStep === "password" && `Set your new password for ${forgotEmail}.`}
+              {resetStep === "email"
+                ? "Enter your email address and we'll send you a verification code."
+                : resetStep === "otp"
+                ? "Enter the 6-digit code sent to your email."
+                : "Choose a new password for your account."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleForgotPassword} className="space-y-4 mt-4">
+          <form onSubmit={handleForgotPassword} className="space-y-4 mt-2">
             {resetStep === "email" && (
               <div className="space-y-2">
-                <Label htmlFor="forgot-email">Email</Label>
+                <Label>Email</Label>
                 <Input
-                  id="forgot-email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="your@email.com"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
-                  className="h-12"
                   required
                 />
               </div>
             )}
-
             {resetStep === "otp" && (
               <div className="space-y-2">
-                <Label htmlFor="reset-otp">Verification Code</Label>
+                <Label>6-digit Code</Label>
                 <Input
-                  id="reset-otp"
                   type="text"
-                  inputMode="numeric"
                   maxLength={6}
-                  placeholder="Enter 6-digit code"
+                  placeholder="000000"
                   value={resetOtp}
                   onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="h-12 text-center text-2xl tracking-[0.5em] font-mono"
+                  className="text-center text-2xl tracking-[0.5em] font-mono"
                   required
-                  autoFocus
                 />
-                <p className="text-xs text-muted-foreground">
-                  Code sent to {forgotEmail}.{" "}
-                  <button
+                <div className="flex justify-end">
+                  <Button
                     type="button"
+                    variant="link"
+                    size="sm"
+                    disabled={resetCooldown > 0 || isSendingReset}
                     onClick={async () => {
-                      if (resetCooldown > 0 || isSendingReset) return;
                       setIsSendingReset(true);
                       try {
                         const { error } = await supabase.functions.invoke("reset-password-otp", {
                           body: { action: "send", email: forgotEmail.trim().toLowerCase() },
                         });
                         if (!error) {
-                          toast({ title: "Code resent", description: "A new verification code has been sent." });
+                          toast({ title: "New code sent" });
                           setResetCooldown(30);
                         }
-                      } catch {} finally { setIsSendingReset(false); }
+                      } catch { /* ignore */ }
+                      setIsSendingReset(false);
                     }}
-                    className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isSendingReset || resetCooldown > 0}
                   >
-                    {resetCooldown > 0 ? `Resend code (${resetCooldown}s)` : "Resend code"}
-                  </button>
-                </p>
+                    {resetCooldown > 0 ? `Resend in ${resetCooldown}s` : "Resend code"}
+                  </Button>
+                </div>
               </div>
             )}
-
             {resetStep === "password" && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="reset-new-password">New Password</Label>
+                  <Label>New Password</Label>
                   <div className="relative">
                     <Input
-                      id="reset-new-password"
                       type={showResetPassword ? "text" : "password"}
-                      placeholder="Enter new password"
+                      placeholder="At least 6 characters"
                       value={resetPassword}
                       onChange={(e) => setResetPassword(e.target.value)}
-                      className="h-12 pr-12"
                       required
                     />
-                    <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                      {showResetPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(!showResetPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    >
+                      {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="reset-confirm-password">Confirm Password</Label>
+                  <Label>Confirm New Password</Label>
                   <Input
-                    id="reset-confirm-password"
-                    type="password"
-                    placeholder="Confirm new password"
+                    type={showResetPassword ? "text" : "password"}
+                    placeholder="Re-enter new password"
                     value={resetConfirmPassword}
                     onChange={(e) => setResetConfirmPassword(e.target.value)}
-                    className="h-12"
                     required
                   />
                 </div>
               </>
             )}
-
-            <Button type="submit" variant="primary" className="w-full h-12" disabled={isSendingReset}>
-              {isSendingReset ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
-              ) : resetStep === "email" ? (
-                "Send Verification Code"
-              ) : resetStep === "otp" ? (
-                "Verify Code"
-              ) : (
-                "Update Password"
-              )}
+            <Button type="submit" className="w-full" disabled={isSendingReset}>
+              {isSendingReset ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {resetStep === "email" ? "Send Code" : resetStep === "otp" ? "Verify Code" : "Reset Password"}
             </Button>
-
             {resetStep !== "email" && (
-              <Button type="button" variant="ghost" className="w-full" onClick={() => {
-                if (resetStep === "otp") { setResetStep("email"); setResetOtp(""); }
-                else if (resetStep === "password") { setResetStep("otp"); }
-              }}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  if (resetStep === "password") setResetStep("otp");
+                  else setResetStep("email");
+                }}
+              >
                 Back
               </Button>
             )}

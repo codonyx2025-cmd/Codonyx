@@ -19,10 +19,26 @@ try {
 }
 
 // Handle invalid refresh token errors globally — clear corrupt session to prevent 400 loops
+// CRITICAL: Do NOT await async calls inside onAuthStateChange to prevent deadlocks
+const AUTH_RECOVERY_KEY = "auth_token_recovery";
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === "TOKEN_REFRESHED" && !session) {
-    // Refresh failed — clear local storage to stop retry loops
+    // Refresh failed — check if we already attempted recovery
+    const recoveryAttempt = sessionStorage.getItem(AUTH_RECOVERY_KEY);
+    if (recoveryAttempt) {
+      // Already tried once — just clear everything, no reload
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(AUTH_RECOVERY_KEY);
+      return;
+    }
+    // First failure — clear and do a single guarded reload
     localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.setItem(AUTH_RECOVERY_KEY, "1");
+    window.location.replace("/auth");
+  }
+  // On successful auth events, clear recovery flag
+  if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")) {
+    sessionStorage.removeItem(AUTH_RECOVERY_KEY);
   }
 });
 

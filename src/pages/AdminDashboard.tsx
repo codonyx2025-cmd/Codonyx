@@ -111,6 +111,18 @@ const AdminDashboard = () => {
   const [selectedBidDetail, setSelectedBidDetail] = useState<any>(null);
   const [selectedDealDetail, setSelectedDealDetail] = useState<any>(null);
   const [dealDeleteConfirm, setDealDeleteConfirm] = useState<any>(null);
+  // Deal filters
+  const [dealSearchTerm, setDealSearchTerm] = useState("");
+  const [dealStatusFilter, setDealStatusFilter] = useState("all");
+  const [dealSortBy, setDealSortBy] = useState<"date" | "price">("date");
+  const [dealSortOrder, setDealSortOrder] = useState<"desc" | "asc">("desc");
+  const [dealShowCount, setDealShowCount] = useState(15);
+  // Bid filters
+  const [bidSearchTerm, setBidSearchTerm] = useState("");
+  const [bidStatusFilter, setBidStatusFilter] = useState("all");
+  const [bidSortBy, setBidSortBy] = useState<"date" | "amount">("date");
+  const [bidSortOrder, setBidSortOrder] = useState<"desc" | "asc">("desc");
+  const [bidShowCount, setBidShowCount] = useState(15);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -1090,70 +1102,127 @@ const AdminDashboard = () => {
                   <CardDescription>Click a row to view full deal details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {deals.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">No deals created yet.</p>
-                  ) : (
-                    <div className="w-full overflow-x-auto">
-                    <Table className="min-w-max whitespace-nowrap">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="whitespace-nowrap">Title</TableHead>
-                          <TableHead className="whitespace-nowrap">Notes</TableHead>
-                          <TableHead className="whitespace-nowrap">Target</TableHead>
-                          <TableHead className="whitespace-nowrap">Raised</TableHead>
-                          <TableHead className="whitespace-nowrap">Status</TableHead>
-                          <TableHead className="whitespace-nowrap">Bids</TableHead>
-                          <TableHead className="whitespace-nowrap">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {deals.map((deal: any) => {
-                          const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
-                          return (
-                            <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
-                              <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
-                              <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
-                                {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
-                              <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
-                              <TableCell>
-                                <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
-                                  {deal.deal_status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
-                              <TableCell className="whitespace-nowrap">
-                                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                                  <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
-                                    <SelectTrigger className="w-[120px]">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="draft">Draft</SelectItem>
-                                      <SelectItem value="published">Published</SelectItem>
-                                      <SelectItem value="closed">Closed</SelectItem>
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                    title="Delete deal"
-                                    onClick={() => setDealDeleteConfirm(deal)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <Input
+                      placeholder="Search by title..."
+                      value={dealSearchTerm}
+                      onChange={(e) => setDealSearchTerm(e.target.value)}
+                      className="max-w-[200px] h-9"
+                    />
+                    <Select value={dealStatusFilter} onValueChange={setDealStatusFilter}>
+                      <SelectTrigger className="w-[140px] h-9">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={dealSortBy} onValueChange={(v) => setDealSortBy(v as any)}>
+                      <SelectTrigger className="w-[130px] h-9">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="price">Target Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" className="h-9" onClick={() => setDealSortOrder(o => o === "desc" ? "asc" : "desc")}>
+                      {dealSortOrder === "desc" ? "↓ Newest" : "↑ Oldest"}
+                    </Button>
+                  </div>
+
+                  {(() => {
+                    const filtered = deals
+                      .filter(d => dealStatusFilter === "all" || d.deal_status === dealStatusFilter)
+                      .filter(d => !dealSearchTerm || d.title.toLowerCase().includes(dealSearchTerm.toLowerCase()))
+                      .sort((a, b) => {
+                        if (dealSortBy === "price") {
+                          return dealSortOrder === "desc" ? Number(b.target_amount) - Number(a.target_amount) : Number(a.target_amount) - Number(b.target_amount);
+                        }
+                        return dealSortOrder === "desc" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                      });
+                    const visible = filtered.slice(0, dealShowCount);
+
+                    if (filtered.length === 0) {
+                      return <p className="text-muted-foreground text-center py-8">No deals match your filters.</p>;
+                    }
+
+                    return (
+                      <>
+                        <div className="w-full overflow-x-auto">
+                        <Table className="min-w-max whitespace-nowrap">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="whitespace-nowrap">Title</TableHead>
+                              <TableHead className="whitespace-nowrap">Notes</TableHead>
+                              <TableHead className="whitespace-nowrap">Target</TableHead>
+                              <TableHead className="whitespace-nowrap">Raised</TableHead>
+                              <TableHead className="whitespace-nowrap">Status</TableHead>
+                              <TableHead className="whitespace-nowrap">Bids</TableHead>
+                              <TableHead className="whitespace-nowrap">Actions</TableHead>
                             </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                    </div>
-                  )}
+                          </TableHeader>
+                          <TableBody>
+                            {visible.map((deal: any) => {
+                              const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
+                              return (
+                                <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
+                                  <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
+                                  <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
+                                    {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
+                                  </TableCell>
+                                  <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                                  <TableCell>
+                                    <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
+                                      {deal.deal_status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
+                                  <TableCell className="whitespace-nowrap">
+                                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
+                                        <SelectTrigger className="w-[120px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="draft">Draft</SelectItem>
+                                          <SelectItem value="published">Published</SelectItem>
+                                          <SelectItem value="closed">Closed</SelectItem>
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete deal"
+                                        onClick={() => setDealDeleteConfirm(deal)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                        </div>
+                        {filtered.length > dealShowCount && (
+                          <div className="flex justify-center gap-2 mt-4">
+                            <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
@@ -1269,59 +1338,122 @@ const AdminDashboard = () => {
                   <CardDescription>Review and manage distributor bids — click a row to view full details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {dealBids.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">No bids received yet.</p>
-                  ) : (
-                    <div className="w-full overflow-x-auto">
-                    <Table className="min-w-max whitespace-nowrap">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="whitespace-nowrap">Distributor</TableHead>
-                          <TableHead className="whitespace-nowrap">Deal</TableHead>
-                          <TableHead className="whitespace-nowrap">Amount</TableHead>
-                          <TableHead className="whitespace-nowrap">Notes</TableHead>
-                          <TableHead className="whitespace-nowrap">Status</TableHead>
-                          <TableHead className="whitespace-nowrap">Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dealBids.map((bid: any) => {
-                          const deal = deals.find((d: any) => d.id === bid.deal_id);
-                          return (
-                            <TableRow key={bid.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedBidDetail({ ...bid, deal })}>
-                              <TableCell className="whitespace-nowrap">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarImage src={bid.profiles?.avatar_url || undefined} />
-                                    <AvatarFallback>{(bid.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <span className="font-medium">{bid.profiles?.full_name || "Unknown"}</span>
-                                    {bid.profiles?.organisation && <p className="text-muted-foreground text-xs">({bid.profiles.organisation})</p>}
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
-                              <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
-                              <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
-                                {bid.notes || <span className="italic text-muted-foreground/50">No notes</span>}
-                              </TableCell>
-                              <TableCell>
-                                <Badge className="capitalize" variant={
-                                  bid.bid_status === "accepted" ? "default" :
-                                  bid.bid_status === "rejected" ? "destructive" : "secondary"
-                                }>
-                                  {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm")}</TableCell>
+                  {/* Bid Filters */}
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <Input
+                      placeholder="Search by name or deal..."
+                      value={bidSearchTerm}
+                      onChange={(e) => setBidSearchTerm(e.target.value)}
+                      className="max-w-[200px] h-9"
+                    />
+                    <Select value={bidStatusFilter} onValueChange={setBidStatusFilter}>
+                      <SelectTrigger className="w-[140px] h-9">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="accepted">Submitted</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                        <SelectItem value="withdrawn">Withdrawn</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={bidSortBy} onValueChange={(v) => setBidSortBy(v as any)}>
+                      <SelectTrigger className="w-[130px] h-9">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="amount">Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" className="h-9" onClick={() => setBidSortOrder(o => o === "desc" ? "asc" : "desc")}>
+                      {bidSortOrder === "desc" ? "↓ Newest" : "↑ Oldest"}
+                    </Button>
+                  </div>
+
+                  {(() => {
+                    const filtered = dealBids
+                      .filter((bid: any) => bidStatusFilter === "all" || bid.bid_status === bidStatusFilter)
+                      .filter((bid: any) => {
+                        if (!bidSearchTerm) return true;
+                        const term = bidSearchTerm.toLowerCase();
+                        const deal = deals.find((d: any) => d.id === bid.deal_id);
+                        return (bid.profiles?.full_name || "").toLowerCase().includes(term) ||
+                               (deal?.title || "").toLowerCase().includes(term);
+                      })
+                      .sort((a: any, b: any) => {
+                        if (bidSortBy === "amount") {
+                          return bidSortOrder === "desc" ? Number(b.bid_amount) - Number(a.bid_amount) : Number(a.bid_amount) - Number(b.bid_amount);
+                        }
+                        return bidSortOrder === "desc" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                      });
+                    const visible = filtered.slice(0, bidShowCount);
+
+                    if (filtered.length === 0) {
+                      return <p className="text-muted-foreground text-center py-8">No bids match your filters.</p>;
+                    }
+
+                    return (
+                      <>
+                        <div className="w-full overflow-x-auto">
+                        <Table className="min-w-max whitespace-nowrap">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="whitespace-nowrap">Distributor</TableHead>
+                              <TableHead className="whitespace-nowrap">Deal</TableHead>
+                              <TableHead className="whitespace-nowrap">Amount</TableHead>
+                              <TableHead className="whitespace-nowrap">Notes</TableHead>
+                              <TableHead className="whitespace-nowrap">Status</TableHead>
+                              <TableHead className="whitespace-nowrap">Date</TableHead>
                             </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                    </div>
-                  )}
+                          </TableHeader>
+                          <TableBody>
+                            {visible.map((bid: any) => {
+                              const deal = deals.find((d: any) => d.id === bid.deal_id);
+                              return (
+                                <TableRow key={bid.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedBidDetail({ ...bid, deal })}>
+                                  <TableCell className="whitespace-nowrap">
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-8 w-8">
+                                        <AvatarImage src={bid.profiles?.avatar_url || undefined} />
+                                        <AvatarFallback>{(bid.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <span className="font-medium">{bid.profiles?.full_name || "Unknown"}</span>
+                                        {bid.profiles?.organisation && <p className="text-muted-foreground text-xs">({bid.profiles.organisation})</p>}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
+                                  <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
+                                    {bid.notes || <span className="italic text-muted-foreground/50">No notes</span>}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className="capitalize" variant={
+                                      bid.bid_status === "accepted" ? "default" :
+                                      bid.bid_status === "rejected" ? "destructive" : "secondary"
+                                    }>
+                                      {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm")}</TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                        </div>
+                        {filtered.length > bidShowCount && (
+                          <div className="flex justify-center gap-2 mt-4">
+                            <Button variant="outline" size="sm" onClick={() => setBidShowCount(c => c + 15)}>Show More</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setBidShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 

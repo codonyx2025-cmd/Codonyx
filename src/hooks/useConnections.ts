@@ -41,30 +41,32 @@ export function useConnections(currentProfileId: string | null) {
     }
 
     try {
-      const { data: sentData, error: sentError } = await supabase
-        .from("connections")
-        .select(`
-          *,
-          receiver_profile:profiles!connections_receiver_id_fkey(id, full_name, avatar_url, headline, user_type, organisation)
-        `)
-        .eq("sender_id", currentProfileId);
+      // Parallel fetch for sent and received connections
+      const [sentResult, receivedResult] = await Promise.all([
+        supabase
+          .from("connections")
+          .select(`
+            *,
+            receiver_profile:profiles!connections_receiver_id_fkey(id, full_name, avatar_url, headline, user_type, organisation)
+          `)
+          .eq("sender_id", currentProfileId),
+        supabase
+          .from("connections")
+          .select(`
+            *,
+            sender_profile:profiles!connections_sender_id_fkey(id, full_name, avatar_url, headline, user_type, organisation)
+          `)
+          .eq("receiver_id", currentProfileId),
+      ]);
 
-      const { data: receivedData, error: receivedError } = await supabase
-        .from("connections")
-        .select(`
-          *,
-          sender_profile:profiles!connections_sender_id_fkey(id, full_name, avatar_url, headline, user_type, organisation)
-        `)
-        .eq("receiver_id", currentProfileId);
-
-      if (sentError || receivedError) {
-        console.error("Error fetching connections:", sentError || receivedError);
+      if (sentResult.error || receivedResult.error) {
+        console.error("Error fetching connections:", sentResult.error || receivedResult.error);
         return;
       }
 
       const allConnections = [
-        ...(sentData || []).map(c => ({ ...c, receiver_profile: c.receiver_profile })),
-        ...(receivedData || []).map(c => ({ ...c, sender_profile: c.sender_profile })),
+        ...(sentResult.data || []).map(c => ({ ...c, receiver_profile: c.receiver_profile })),
+        ...(receivedResult.data || []).map(c => ({ ...c, sender_profile: c.sender_profile })),
       ] as Connection[];
 
       setConnections(allConnections);
@@ -142,6 +144,15 @@ export function useConnections(currentProfileId: string | null) {
         await supabase.from("connections").delete().eq("id", existingConn.id);
       }
 
+      // Also check for any existing active connection (prevent duplicate)
+      if (existingConn && !existingConn.withdrawn_at) {
+        toast({
+          title: "Already connected",
+          description: "You already have an active connection with this person.",
+        });
+        return false;
+      }
+
       const { error } = await supabase
         .from("connections")
         .insert({
@@ -159,43 +170,53 @@ export function useConnections(currentProfileId: string | null) {
         return false;
       }
 
-      // Send email notification to receiver
-      const { data: senderProfile } = await supabase
-        .from("profiles")
-        .select("full_name, headline, organisation, bio")
-        .eq("id", currentProfileId)
-        .single();
-
-      const { data: receiverProfile } = await supabase
-        .from("profiles")
-        .select("full_name, user_id, email")
-        .eq("id", targetProfileId)
-        .single();
-
-      if (receiverProfile?.email && senderProfile) {
-        try {
-          await supabase.functions.invoke("send-connection-email", {
-            body: {
-              recipientEmail: receiverProfile.email,
-              recipientName: receiverProfile.full_name || "User",
-              senderName: senderProfile.full_name || "A Codonyx user",
-              senderTitle: senderProfile.headline || "",
-              senderOrganization: senderProfile.organisation || "",
-              senderBio: senderProfile.bio || "",
-              connectionPageUrl: `${window.location.origin}/connections`,
-            },
-          });
-        } catch (emailError) {
-          console.error("Error sending connection email:", emailError);
-        }
-      }
+      // Optimistic update — add connection immediately
+      setConnections(prev => [...prev, {
+        id: "optimistic-" + Date.now(),
+        sender_id: currentProfileId,
+        receiver_id: targetProfileId,
+        status: "pending" as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        withdrawn_at: null,
+      }]);
 
       toast({
         title: "Request Sent",
         description: "Your connection request has been sent.",
       });
-      
-      await fetchConnections();
+
+      // Send email notification in background (non-blocking)
+      (async () => {
+        try {
+          const [senderResult, receiverResult] = await Promise.all([
+            supabase.from("profiles").select("full_name, headline, organisation, bio").eq("id", currentProfileId).single(),
+            supabase.from("profiles").select("full_name, email").eq("id", targetProfileId).single(),
+          ]);
+
+          const senderProfile = senderResult.data;
+          const receiverProfile = receiverResult.data;
+
+          if (receiverProfile?.email && senderProfile) {
+            await supabase.functions.invoke("send-connection-email", {
+              body: {
+                recipientEmail: receiverProfile.email,
+                recipientName: receiverProfile.full_name || "User",
+                senderName: senderProfile.full_name || "A Codonyx user",
+                senderTitle: senderProfile.headline || "",
+                senderOrganization: senderProfile.organisation || "",
+                senderBio: senderProfile.bio || "",
+                connectionPageUrl: `${window.location.origin}/connections`,
+              },
+            });
+          }
+        } catch (emailError) {
+          console.error("Error sending connection email:", emailError);
+        }
+      })();
+
+      // Refresh in background to get real ID
+      fetchConnections();
       return true;
     } catch (error) {
       console.error("Error sending connection request:", error);
@@ -220,49 +241,47 @@ export function useConnections(currentProfileId: string | null) {
         return false;
       }
 
-      // Send acceptance notification email with details
-      try {
-        const connection = connections.find(c => c.id === connectionId);
-        if (connection && currentProfileId) {
-          const senderId = connection.sender_id;
-          
-          const { data: acceptorProfile } = await supabase
-            .from("profiles")
-            .select("full_name, headline, organisation, user_type")
-            .eq("id", currentProfileId)
-            .single();
-
-          const { data: senderProfile } = await supabase
-            .from("profiles")
-            .select("full_name, email")
-            .eq("id", senderId)
-            .single();
-
-          if (senderProfile?.email && acceptorProfile?.full_name) {
-            await supabase.functions.invoke("send-notification-email", {
-              body: {
-                type: "connection_accepted",
-                recipientEmail: senderProfile.email,
-                recipientName: senderProfile.full_name,
-                senderName: acceptorProfile.full_name,
-                senderHeadline: acceptorProfile.headline || "",
-                senderOrganisation: acceptorProfile.organisation || "",
-                senderUserType: acceptorProfile.user_type || "",
-                loginUrl: window.location.origin + "/auth",
-              },
-            });
-          }
-        }
-      } catch (emailError) {
-        console.error("Error sending acceptance email:", emailError);
-      }
+      // Optimistic update
+      setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "accepted" as const } : c));
 
       toast({
         title: "Connection Accepted",
         description: "You are now connected.",
       });
-      
-      await fetchConnections();
+
+      // Send acceptance email in background
+      (async () => {
+        try {
+          const connection = connections.find(c => c.id === connectionId);
+          if (connection && currentProfileId) {
+            const senderId = connection.sender_id;
+            
+            const [acceptorResult, senderResult] = await Promise.all([
+              supabase.from("profiles").select("full_name, headline, organisation, user_type").eq("id", currentProfileId).single(),
+              supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
+            ]);
+
+            if (senderResult.data?.email && acceptorResult.data?.full_name) {
+              await supabase.functions.invoke("send-notification-email", {
+                body: {
+                  type: "connection_accepted",
+                  recipientEmail: senderResult.data.email,
+                  recipientName: senderResult.data.full_name,
+                  senderName: acceptorResult.data.full_name,
+                  senderHeadline: acceptorResult.data.headline || "",
+                  senderOrganisation: acceptorResult.data.organisation || "",
+                  senderUserType: acceptorResult.data.user_type || "",
+                  loginUrl: window.location.origin + "/auth",
+                },
+              });
+            }
+          }
+        } catch (emailError) {
+          console.error("Error sending acceptance email:", emailError);
+        }
+      })();
+
+      fetchConnections();
       return true;
     } catch (error) {
       console.error("Error accepting connection:", error);
@@ -302,7 +321,6 @@ export function useConnections(currentProfileId: string | null) {
 
   const withdrawConnection = async (connectionId: string) => {
     try {
-      // Instead of deleting, set withdrawn_at timestamp for cooldown tracking
       const { error } = await supabase
         .from("connections")
         .update({ 

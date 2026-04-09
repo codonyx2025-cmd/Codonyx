@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,54 +49,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const BUFFER_RECOVERY_KEY = "page_buffer_recovery_once";
-
 const PageLoader = () => {
-  useEffect(() => {
-    const currentPath = `${window.location.pathname}${window.location.search}`;
-    const stored = sessionStorage.getItem(BUFFER_RECOVERY_KEY);
-
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as { path: string; timestamp: number; count: number };
-        const isSamePath = parsed.path === currentPath;
-        const isRecent = Date.now() - parsed.timestamp < 5 * 60 * 1000;
-        // If we already reloaded for this path, don't do it again
-        if (isSamePath && isRecent) return;
-      } catch {
-        sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
-      }
-    }
-
-    // Auto-refresh after 3.5 seconds if page is stuck loading
-    const timer = window.setTimeout(() => {
-      sessionStorage.setItem(
-        BUFFER_RECOVERY_KEY,
-        JSON.stringify({ path: currentPath, timestamp: Date.now(), count: 1 })
-      );
-      window.location.reload();
-    }, 3500);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      const currentPath = `${window.location.pathname}${window.location.search}`;
-      const stored = sessionStorage.getItem(BUFFER_RECOVERY_KEY);
-      if (!stored) return;
-
-      try {
-        const parsed = JSON.parse(stored) as { path: string; timestamp: number };
-        if (parsed.path === currentPath) {
-          sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
-        }
-      } catch {
-        sessionStorage.removeItem(BUFFER_RECOVERY_KEY);
-      }
-    };
-  }, []);
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />
