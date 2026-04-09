@@ -1102,70 +1102,127 @@ const AdminDashboard = () => {
                   <CardDescription>Click a row to view full deal details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {deals.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">No deals created yet.</p>
-                  ) : (
-                    <div className="w-full overflow-x-auto">
-                    <Table className="min-w-max whitespace-nowrap">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="whitespace-nowrap">Title</TableHead>
-                          <TableHead className="whitespace-nowrap">Notes</TableHead>
-                          <TableHead className="whitespace-nowrap">Target</TableHead>
-                          <TableHead className="whitespace-nowrap">Raised</TableHead>
-                          <TableHead className="whitespace-nowrap">Status</TableHead>
-                          <TableHead className="whitespace-nowrap">Bids</TableHead>
-                          <TableHead className="whitespace-nowrap">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {deals.map((deal: any) => {
-                          const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
-                          return (
-                            <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
-                              <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
-                              <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
-                                {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
-                              <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
-                              <TableCell>
-                                <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
-                                  {deal.deal_status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
-                              <TableCell className="whitespace-nowrap">
-                                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                                  <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
-                                    <SelectTrigger className="w-[120px]">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="draft">Draft</SelectItem>
-                                      <SelectItem value="published">Published</SelectItem>
-                                      <SelectItem value="closed">Closed</SelectItem>
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                    title="Delete deal"
-                                    onClick={() => setDealDeleteConfirm(deal)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
+                  {/* Filters */}
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <Input
+                      placeholder="Search by title..."
+                      value={dealSearchTerm}
+                      onChange={(e) => setDealSearchTerm(e.target.value)}
+                      className="max-w-[200px] h-9"
+                    />
+                    <Select value={dealStatusFilter} onValueChange={setDealStatusFilter}>
+                      <SelectTrigger className="w-[140px] h-9">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="published">Published</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={dealSortBy} onValueChange={(v) => setDealSortBy(v as any)}>
+                      <SelectTrigger className="w-[130px] h-9">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date">Date</SelectItem>
+                        <SelectItem value="price">Target Amount</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" className="h-9" onClick={() => setDealSortOrder(o => o === "desc" ? "asc" : "desc")}>
+                      {dealSortOrder === "desc" ? "↓ Newest" : "↑ Oldest"}
+                    </Button>
+                  </div>
+
+                  {(() => {
+                    const filtered = deals
+                      .filter(d => dealStatusFilter === "all" || d.deal_status === dealStatusFilter)
+                      .filter(d => !dealSearchTerm || d.title.toLowerCase().includes(dealSearchTerm.toLowerCase()))
+                      .sort((a, b) => {
+                        if (dealSortBy === "price") {
+                          return dealSortOrder === "desc" ? Number(b.target_amount) - Number(a.target_amount) : Number(a.target_amount) - Number(b.target_amount);
+                        }
+                        return dealSortOrder === "desc" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                      });
+                    const visible = filtered.slice(0, dealShowCount);
+
+                    if (filtered.length === 0) {
+                      return <p className="text-muted-foreground text-center py-8">No deals match your filters.</p>;
+                    }
+
+                    return (
+                      <>
+                        <div className="w-full overflow-x-auto">
+                        <Table className="min-w-max whitespace-nowrap">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="whitespace-nowrap">Title</TableHead>
+                              <TableHead className="whitespace-nowrap">Notes</TableHead>
+                              <TableHead className="whitespace-nowrap">Target</TableHead>
+                              <TableHead className="whitespace-nowrap">Raised</TableHead>
+                              <TableHead className="whitespace-nowrap">Status</TableHead>
+                              <TableHead className="whitespace-nowrap">Bids</TableHead>
+                              <TableHead className="whitespace-nowrap">Actions</TableHead>
                             </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                    </div>
-                  )}
+                          </TableHeader>
+                          <TableBody>
+                            {visible.map((deal: any) => {
+                              const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
+                              return (
+                                <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
+                                  <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
+                                  <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
+                                    {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
+                                  </TableCell>
+                                  <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                                  <TableCell>
+                                    <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
+                                      {deal.deal_status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="whitespace-nowrap">{bidsForDeal.length}</TableCell>
+                                  <TableCell className="whitespace-nowrap">
+                                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <Select value={deal.deal_status} onValueChange={(val) => handleDealStatusChange(deal.id, val)}>
+                                        <SelectTrigger className="w-[120px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="draft">Draft</SelectItem>
+                                          <SelectItem value="published">Published</SelectItem>
+                                          <SelectItem value="closed">Closed</SelectItem>
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:text-destructive"
+                                        title="Delete deal"
+                                        onClick={() => setDealDeleteConfirm(deal)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                        </div>
+                        {filtered.length > dealShowCount && (
+                          <div className="flex justify-center gap-2 mt-4">
+                            <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
