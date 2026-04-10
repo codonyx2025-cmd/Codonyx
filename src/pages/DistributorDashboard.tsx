@@ -552,11 +552,11 @@ export default function DistributorDashboard() {
                               <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Target</span>
-                                  <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount)}</span>
+                                  <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount, deal.currency)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Raised</span>
-                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount)}</span>
+                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount, deal.currency)}</span>
                                 </div>
                                 <div className="w-full bg-muted rounded-full h-2">
                                   <div
@@ -579,7 +579,7 @@ export default function DistributorDashboard() {
                                 )}
                                 {existingBid ? (
                                   <p className="text-sm text-muted-foreground">
-                                    You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount)}</span>
+                                    You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount, deal.currency)}</span>
                                     {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status === "accepted" ? "Submitted" : existingBid.bid_status}</Badge>
                                   </p>
                                 ) : (
