@@ -5,8 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, ExternalLink } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface AdvisorCardProps {
   id: string;
@@ -32,7 +30,6 @@ export function AdvisorCard({
   linkedinUrl,
 }: AdvisorCardProps) {
   const navigate = useNavigate();
-  const [photoOpen, setPhotoOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name
@@ -178,15 +175,6 @@ export function AdvisorCard({
       </CardContent>
     </Card>
 
-    {/* Photo Lightbox */}
-    {avatarUrl && (
-      <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-        <DialogContent className="max-w-lg p-0 bg-transparent border-none shadow-none [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1">
-          <VisuallyHidden><DialogTitle>{fullName}</DialogTitle></VisuallyHidden>
-          <img src={avatarUrl} alt={fullName} className="w-full h-auto rounded-xl object-contain max-h-[80vh]" />
-        </DialogContent>
-      </Dialog>
-    )}
     </>
   );
 }
