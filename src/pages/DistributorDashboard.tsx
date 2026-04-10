@@ -81,6 +81,26 @@ export default function DistributorDashboard() {
   const [isUpdatingBid, setIsUpdatingBid] = useState(false);
   const [dealShowCount, setDealShowCount] = useState(15);
   const [bidShowCount, setBidShowCount] = useState(15);
+  const [bidSearchTerm, setBidSearchTerm] = useState("");
+  const [bidStatusFilter, setBidStatusFilter] = useState("all");
+  const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
+
+  const filteredMyBids = useMemo(() => {
+    return myBids.filter(bid => {
+      const deal = allDeals.find(d => d.id === bid.deal_id);
+      const matchesSearch = !bidSearchTerm || (bid.deal_title || "").toLowerCase().includes(bidSearchTerm.toLowerCase());
+      const matchesCurrency = bidCurrencyFilter === "all" || (deal?.currency || "INR") === bidCurrencyFilter;
+      let matchesStatus = true;
+      if (bidStatusFilter !== "all") {
+        if (bidStatusFilter === "submitted") matchesStatus = bid.bid_status === "accepted" && bid.deal_status !== "closed";
+        else if (bidStatusFilter === "deal_closed") matchesStatus = bid.deal_status === "closed";
+        else if (bidStatusFilter === "withdrawn") matchesStatus = bid.bid_status === "withdrawn";
+        else if (bidStatusFilter === "cancelled") matchesStatus = bid.deal_status === "cancelled";
+        else matchesStatus = bid.bid_status === bidStatusFilter;
+      }
+      return matchesSearch && matchesStatus && matchesCurrency;
+    });
+  }, [myBids, bidSearchTerm, bidStatusFilter, bidCurrencyFilter, allDeals]);
 
   useEffect(() => {
     loadData();
