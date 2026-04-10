@@ -1140,6 +1140,16 @@ const AdminDashboard = () => {
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Select value={dealCurrencyFilter} onValueChange={setDealCurrencyFilter}>
+                      <SelectTrigger className="w-[120px] h-9">
+                        <SelectValue placeholder="Currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Currency</SelectItem>
+                        <SelectItem value="INR">₹ INR</SelectItem>
+                        <SelectItem value="USD">$ USD</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <Select value={dealSortBy} onValueChange={(v) => setDealSortBy(v as any)}>
                       <SelectTrigger className="w-[130px] h-9">
                         <SelectValue placeholder="Sort by" />
@@ -1157,6 +1167,7 @@ const AdminDashboard = () => {
                   {(() => {
                     const filtered = deals
                       .filter(d => dealStatusFilter === "all" || d.deal_status === dealStatusFilter)
+                      .filter(d => dealCurrencyFilter === "all" || (d.currency || "INR") === dealCurrencyFilter)
                       .filter(d => !dealSearchTerm || d.title.toLowerCase().includes(dealSearchTerm.toLowerCase()))
                       .sort((a, b) => {
                         if (dealSortBy === "price") {
