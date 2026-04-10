@@ -95,6 +95,13 @@ export default function ProfileDetailPage() {
     return () => clearTimeout(timer);
   }, [isLoading]);
 
+  // Reset load state when id changes
+  useEffect(() => {
+    loadAttempted.current = false;
+    setIsLoading(true);
+    setProfile(null);
+  }, [id]);
+
   useEffect(() => {
     if (loadAttempted.current) return;
     loadAttempted.current = true;
