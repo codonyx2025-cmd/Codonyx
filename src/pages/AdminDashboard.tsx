@@ -105,6 +105,7 @@ const AdminDashboard = () => {
   const [newDealTarget, setNewDealTarget] = useState("");
   const [newDealDocFile, setNewDealDocFile] = useState<File | null>(null);
   const [newDealMinBid, setNewDealMinBid] = useState("");
+  const [newDealCurrency, setNewDealCurrency] = useState<"INR" | "USD">("INR");
   const [accountAction, setAccountAction] = useState<{ user: PendingUser; type: "deactivate" | "delete" } | null>(null);
   const [showDealConfirm, setShowDealConfirm] = useState(false);
   const [accountActionLoading, setAccountActionLoading] = useState(false);
@@ -114,6 +115,7 @@ const AdminDashboard = () => {
   // Deal filters
   const [dealSearchTerm, setDealSearchTerm] = useState("");
   const [dealStatusFilter, setDealStatusFilter] = useState("all");
+  const [dealCurrencyFilter, setDealCurrencyFilter] = useState("all");
   const [dealSortBy, setDealSortBy] = useState<"date" | "price">("date");
   const [dealSortOrder, setDealSortOrder] = useState<"desc" | "asc">("desc");
   const [dealShowCount, setDealShowCount] = useState(15);
