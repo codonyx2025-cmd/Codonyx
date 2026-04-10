@@ -664,17 +664,17 @@ export default function DistributorDashboard() {
           <DialogHeader>
             <DialogTitle>Place Bid on "{selectedDeal?.title}"</DialogTitle>
             <DialogDescription>
-              Target: {selectedDeal && formatCurrency(selectedDeal.target_amount)}
+              Target: {selectedDeal && formatCurrency(selectedDeal.target_amount, selectedDeal.currency)} ({selectedDeal?.currency || "INR"})
               {selectedDeal?.min_bid_amount && (
                 <span className="block mt-1 text-amber-600 font-medium">
-                  Minimum Bid: ₹{Number(selectedDeal.min_bid_amount).toLocaleString()}
+                  Minimum Bid: {(selectedDeal.currency || "INR") === "USD" ? "$" : "₹"}{Number(selectedDeal.min_bid_amount).toLocaleString()}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Bid Amount (₹) *</Label>
+              <Label>Bid Amount ({(selectedDeal?.currency || "INR") === "USD" ? "$" : "₹"}) *</Label>
               <Input
                 type="number"
                 min="1"
