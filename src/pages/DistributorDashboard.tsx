@@ -634,12 +634,44 @@ export default function DistributorDashboard() {
                 <CardDescription>Track all your bids and commitments</CardDescription>
               </CardHeader>
               <CardContent>
-                {myBids.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No bids placed yet.</p>
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Input
+                    placeholder="Search by deal name..."
+                    value={bidSearchTerm}
+                    onChange={(e) => { setBidSearchTerm(e.target.value); setBidShowCount(15); }}
+                    className="w-48"
+                  />
+                  <select
+                    value={bidStatusFilter}
+                    onChange={(e) => { setBidStatusFilter(e.target.value); setBidShowCount(15); }}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="deal_closed">Deal Closed</option>
+                    <option value="withdrawn">Withdrawn</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <select
+                    value={bidCurrencyFilter}
+                    onChange={(e) => { setBidCurrencyFilter(e.target.value); setBidShowCount(15); }}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">All Currencies</option>
+                    <option value="INR">₹ INR</option>
+                    <option value="USD">$ USD</option>
+                  </select>
+                </div>
+
+                {filteredMyBids.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    {myBids.length === 0 ? "No bids placed yet." : "No bids match the selected filters."}
+                  </p>
                 ) : (
                   <>
                     <div className="space-y-3">
-                      {myBids.slice(0, bidShowCount).map((bid) => (
+                      {filteredMyBids.slice(0, bidShowCount).map((bid) => (
                         <div key={bid.id} className="flex items-center justify-between p-4 border border-divider rounded-xl">
                           <div>
                             <p className="font-medium text-foreground">{bid.deal_title}</p>
@@ -664,10 +696,10 @@ export default function DistributorDashboard() {
                         </div>
                       ))}
                     </div>
-                    {myBids.length > bidShowCount && (
+                    {filteredMyBids.length > bidShowCount && (
                       <div className="flex justify-center gap-2 mt-4">
                         <Button variant="outline" size="sm" onClick={() => setBidShowCount(c => c + 15)}>Show More</Button>
-                        <Button variant="ghost" size="sm" onClick={() => setBidShowCount(myBids.length)}>Show All ({myBids.length})</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setBidShowCount(filteredMyBids.length)}>Show All ({filteredMyBids.length})</Button>
                       </div>
                     )}
                   </>
