@@ -463,11 +463,11 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-muted/30">
       {/* Left Panel - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 xl:px-24 py-12 bg-background">
-        <div className="max-w-md mx-auto w-full">
-          <Link to="/" className="inline-block mb-12">
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-4 sm:px-8 lg:px-16 xl:px-24 py-12">
+        <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-lg p-6 sm:p-10">
+          <Link to="/" className="inline-block mb-8">
             <img src={codonyxLogo} alt="Codonyx" className="h-14 w-auto" fetchPriority="high" decoding="sync" />
           </Link>
 
@@ -539,7 +539,7 @@ export default function AuthPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or</span>
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
               </div>
             </div>
 
@@ -559,9 +559,8 @@ export default function AuthPage() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-primary hover:underline font-medium">
-              Register here
+            <Link to="/" className="text-primary hover:underline font-medium">
+              ← Back to Home
             </Link>
           </p>
         </div>

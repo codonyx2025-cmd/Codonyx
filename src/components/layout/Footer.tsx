@@ -34,23 +34,23 @@ export function Footer() {
               A global molecular science and AI healthcare company connecting elite advisors and pioneering laboratories to shape the future.
             </p>
             <div className="flex gap-3 mt-6">
-              <a
-                href="https://www.linkedin.com/company/codonyx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-primary-foreground transition-colors"
+              <span
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 cursor-default"
                 aria-label="LinkedIn"
               >
                 <Linkedin size={18} />
-              </a>
-              <Link
-                to="/contact"
+              </span>
+              <a
+                href="mailto:info@codonyx.org"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="Contact Us"
+                aria-label="Email us"
               >
                 <Mail size={18} />
-              </Link>
+              </a>
             </div>
+            <p className="mt-3 text-xs text-white/40 font-body">
+              <a href="mailto:info@codonyx.org" className="hover:text-emerald-glow transition-colors">info@codonyx.org</a>
+            </p>
           </div>
 
           {/* Solutions */}

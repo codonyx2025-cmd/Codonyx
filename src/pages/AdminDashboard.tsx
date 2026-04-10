@@ -426,12 +426,11 @@ const AdminDashboard = () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (inviteConfig) {
-      // Update existing config
+      // Update existing config — preserve current is_active status
       const { error } = await supabase
         .from("invite_tokens")
         .update({ 
           expires_at: expirationDate.toISOString(),
-          is_active: true
         })
         .eq("id", inviteConfig.id);
 
@@ -1483,7 +1482,7 @@ const AdminDashboard = () => {
                                       {bid.bid_status === "accepted" ? "Submitted" : bid.bid_status}
                                     </Badge>
                                   </TableCell>
-                                  <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm")}</TableCell>
+                                  <TableCell className="text-muted-foreground text-xs font-mono whitespace-nowrap">{format(new Date(bid.created_at), "MMM d, yyyy HH:mm:ss.SSS")}</TableCell>
                                 </TableRow>
                               );
                             })}
