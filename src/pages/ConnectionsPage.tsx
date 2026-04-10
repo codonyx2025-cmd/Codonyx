@@ -322,7 +322,7 @@ export default function ConnectionsPage() {
                   variant="outline"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleCancelRequest(connection.id);
+                    setCancelConfirm(connection);
                   }}
                   className="text-destructive hover:text-destructive"
                 >
