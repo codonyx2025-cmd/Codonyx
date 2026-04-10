@@ -1,0 +1,1 @@
+ALTER TABLE public.deals ADD COLUMN currency text NOT NULL DEFAULT 'INR';
