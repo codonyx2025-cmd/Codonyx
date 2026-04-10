@@ -192,6 +192,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          currency: string
           deal_status: string
           description: string | null
           document_url: string | null
@@ -205,6 +206,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          currency?: string
           deal_status?: string
           description?: string | null
           document_url?: string | null
@@ -218,6 +220,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          currency?: string
           deal_status?: string
           description?: string | null
           document_url?: string | null

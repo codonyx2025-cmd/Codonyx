@@ -105,6 +105,7 @@ const AdminDashboard = () => {
   const [newDealTarget, setNewDealTarget] = useState("");
   const [newDealDocFile, setNewDealDocFile] = useState<File | null>(null);
   const [newDealMinBid, setNewDealMinBid] = useState("");
+  const [newDealCurrency, setNewDealCurrency] = useState<"INR" | "USD">("INR");
   const [accountAction, setAccountAction] = useState<{ user: PendingUser; type: "deactivate" | "delete" } | null>(null);
   const [showDealConfirm, setShowDealConfirm] = useState(false);
   const [accountActionLoading, setAccountActionLoading] = useState(false);
@@ -114,12 +115,14 @@ const AdminDashboard = () => {
   // Deal filters
   const [dealSearchTerm, setDealSearchTerm] = useState("");
   const [dealStatusFilter, setDealStatusFilter] = useState("all");
+  const [dealCurrencyFilter, setDealCurrencyFilter] = useState("all");
   const [dealSortBy, setDealSortBy] = useState<"date" | "price">("date");
   const [dealSortOrder, setDealSortOrder] = useState<"desc" | "asc">("desc");
   const [dealShowCount, setDealShowCount] = useState(15);
   // Bid filters
   const [bidSearchTerm, setBidSearchTerm] = useState("");
   const [bidStatusFilter, setBidStatusFilter] = useState("all");
+  const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
   const [bidSortBy, setBidSortBy] = useState<"date" | "amount">("date");
   const [bidSortOrder, setBidSortOrder] = useState<"desc" | "asc">("desc");
   const [bidShowCount, setBidShowCount] = useState(15);
@@ -278,16 +281,19 @@ const AdminDashboard = () => {
       created_by: user?.id,
       document_url: documentUrl,
       min_bid_amount: newDealMinBid ? parseFloat(newDealMinBid) : null,
+      currency: newDealCurrency,
     } as any);
     if (error) {
       showErrorToast("Failed to create deal", { description: "Please try again." });
     } else {
-      showSuccessToast("Deal created and published!");
+      const currencySymbol = newDealCurrency === "USD" ? "$" : "₹";
+      showSuccessToast(`Deal created and published! Target: ${currencySymbol}${parseFloat(newDealTarget).toLocaleString()} (${newDealCurrency})`);
       setNewDealTitle("");
       setNewDealDescription("");
       setNewDealTarget("");
       setNewDealMinBid("");
       setNewDealDocFile(null);
+      setNewDealCurrency("INR");
       setShowDealConfirm(false);
       fetchDeals();
     }
@@ -1072,11 +1078,23 @@ const AdminDashboard = () => {
                       <Input placeholder="Deal title" value={newDealTitle} onChange={(e) => setNewDealTitle(e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Target Amount (₹) *</Label>
+                      <Label>Currency *</Label>
+                      <Select value={newDealCurrency} onValueChange={(v) => setNewDealCurrency(v as "INR" | "USD")}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="INR">₹ INR (Indian Rupee)</SelectItem>
+                          <SelectItem value="USD">$ USD (US Dollar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Target Amount ({newDealCurrency === "USD" ? "$" : "₹"}) *</Label>
                       <Input type="number" placeholder="e.g. 10000000" value={newDealTarget} onChange={(e) => setNewDealTarget(e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <Label>Minimum Bid Amount (₹)</Label>
+                      <Label>Minimum Bid Amount ({newDealCurrency === "USD" ? "$" : "₹"})</Label>
                       <Input type="number" placeholder="e.g. 500000" value={newDealMinBid} onChange={(e) => setNewDealMinBid(e.target.value)} />
                     </div>
                     <div className="space-y-2">
@@ -1122,6 +1140,16 @@ const AdminDashboard = () => {
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Select value={dealCurrencyFilter} onValueChange={setDealCurrencyFilter}>
+                      <SelectTrigger className="w-[120px] h-9">
+                        <SelectValue placeholder="Currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Currency</SelectItem>
+                        <SelectItem value="INR">₹ INR</SelectItem>
+                        <SelectItem value="USD">$ USD</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <Select value={dealSortBy} onValueChange={(v) => setDealSortBy(v as any)}>
                       <SelectTrigger className="w-[130px] h-9">
                         <SelectValue placeholder="Sort by" />
@@ -1139,6 +1167,7 @@ const AdminDashboard = () => {
                   {(() => {
                     const filtered = deals
                       .filter(d => dealStatusFilter === "all" || d.deal_status === dealStatusFilter)
+                      .filter(d => dealCurrencyFilter === "all" || (d.currency || "INR") === dealCurrencyFilter)
                       .filter(d => !dealSearchTerm || d.title.toLowerCase().includes(dealSearchTerm.toLowerCase()))
                       .sort((a, b) => {
                         if (dealSortBy === "price") {
@@ -1170,14 +1199,15 @@ const AdminDashboard = () => {
                           <TableBody>
                             {visible.map((deal: any) => {
                               const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id);
+                              const cs = (deal.currency || "INR") === "USD" ? "$" : "₹";
                               return (
                                 <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
                                   <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
                                   <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
                                     {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
                                   </TableCell>
-                                  <TableCell className="whitespace-nowrap">₹{Number(deal.target_amount).toLocaleString()}</TableCell>
-                                  <TableCell className="whitespace-nowrap">₹{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap">{cs}{Number(deal.target_amount).toLocaleString()} <span className="text-xs text-muted-foreground">{deal.currency || "INR"}</span></TableCell>
+                                  <TableCell className="whitespace-nowrap">{cs}{Number(deal.raised_amount).toLocaleString()}</TableCell>
                                   <TableCell>
                                     <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
                                       {deal.deal_status}
@@ -1241,11 +1271,11 @@ const AdminDashboard = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Target Amount</p>
-                          <p className="font-medium">₹{Number(selectedDealDetail.target_amount).toLocaleString()}</p>
+                          <p className="font-medium">{(selectedDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(selectedDealDetail.target_amount).toLocaleString()} <span className="text-xs text-muted-foreground">{selectedDealDetail.currency || "INR"}</span></p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Raised Amount</p>
-                          <p className="font-medium">₹{Number(selectedDealDetail.raised_amount).toLocaleString()}</p>
+                          <p className="font-medium">{(selectedDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(selectedDealDetail.raised_amount).toLocaleString()}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
@@ -1255,7 +1285,7 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Min Bid</p>
-                          <p className="font-medium">{selectedDealDetail.min_bid_amount ? `₹${Number(selectedDealDetail.min_bid_amount).toLocaleString()}` : "Not set"}</p>
+                          <p className="font-medium">{selectedDealDetail.min_bid_amount ? `${(selectedDealDetail.currency || "INR") === "USD" ? "$" : "₹"}${Number(selectedDealDetail.min_bid_amount).toLocaleString()}` : "Not set"}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Bids</p>
@@ -1358,6 +1388,16 @@ const AdminDashboard = () => {
                         <SelectItem value="withdrawn">Withdrawn</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Select value={bidCurrencyFilter} onValueChange={setBidCurrencyFilter}>
+                      <SelectTrigger className="w-[120px] h-9">
+                        <SelectValue placeholder="Currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Currency</SelectItem>
+                        <SelectItem value="INR">₹ INR</SelectItem>
+                        <SelectItem value="USD">$ USD</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <Select value={bidSortBy} onValueChange={(v) => setBidSortBy(v as any)}>
                       <SelectTrigger className="w-[130px] h-9">
                         <SelectValue placeholder="Sort by" />
@@ -1375,6 +1415,11 @@ const AdminDashboard = () => {
                   {(() => {
                     const filtered = dealBids
                       .filter((bid: any) => bidStatusFilter === "all" || bid.bid_status === bidStatusFilter)
+                      .filter((bid: any) => {
+                        if (bidCurrencyFilter === "all") return true;
+                        const deal = deals.find((d: any) => d.id === bid.deal_id);
+                        return (deal?.currency || "INR") === bidCurrencyFilter;
+                      })
                       .filter((bid: any) => {
                         if (!bidSearchTerm) return true;
                         const term = bidSearchTerm.toLowerCase();
@@ -1426,7 +1471,7 @@ const AdminDashboard = () => {
                                     </div>
                                   </TableCell>
                                   <TableCell className="whitespace-nowrap">{deal?.title || "Unknown"}</TableCell>
-                                  <TableCell className="whitespace-nowrap">₹{Number(bid.bid_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap">{((deal?.currency || "INR") === "USD" ? "$" : "₹")}{Number(bid.bid_amount).toLocaleString()} <span className="text-xs text-muted-foreground">{deal?.currency || "INR"}</span></TableCell>
                                   <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
                                     {bid.notes || <span className="italic text-muted-foreground/50">No notes</span>}
                                   </TableCell>
@@ -1484,7 +1529,7 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Bid Amount</p>
-                          <p className="font-medium text-primary">₹{Number(selectedBidDetail.bid_amount).toLocaleString()}</p>
+                          <p className="font-medium text-primary">{((selectedBidDetail.deal?.currency || "INR") === "USD" ? "$" : "₹")}{Number(selectedBidDetail.bid_amount).toLocaleString()} {selectedBidDetail.deal?.currency || "INR"}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
@@ -1504,7 +1549,7 @@ const AdminDashboard = () => {
                         <>
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-wider">Deal Target</p>
-                            <p className="font-medium">₹{Number(selectedBidDetail.deal.target_amount).toLocaleString()}</p>
+                            <p className="font-medium">{((selectedBidDetail.deal?.currency || "INR") === "USD" ? "$" : "₹")}{Number(selectedBidDetail.deal.target_amount).toLocaleString()} {selectedBidDetail.deal.currency || "INR"}</p>
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Deal Description</p>
@@ -1742,7 +1787,7 @@ const AdminDashboard = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Deal Creation</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to create and publish the deal "{newDealTitle}" with a target amount of ${newDealTarget}? This will be visible to all approved distributors.
+                Are you sure you want to create and publish the deal "{newDealTitle}" with a target amount of {newDealCurrency === "USD" ? "$" : "₹"}{parseFloat(newDealTarget || "0").toLocaleString()} ({newDealCurrency})? This will be visible to all approved distributors.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

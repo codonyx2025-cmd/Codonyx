@@ -33,6 +33,7 @@ interface Deal {
   created_at: string;
   min_bid_amount: number | null;
   document_url: string | null;
+  currency?: string;
 }
 
 interface Bid {
@@ -184,11 +185,13 @@ export default function DistributorDashboard() {
       return;
     }
 
+    const dealCurrSym = (selectedDeal.currency || "INR") === "USD" ? "$" : "₹";
+
     // Bid must not exceed target amount
     if (amount > selectedDeal.target_amount) {
       toast({
         title: "Bid amount too high",
-        description: `Bid amount cannot exceed the target of ₹${Number(selectedDeal.target_amount).toLocaleString()}.`,
+        description: `Bid amount cannot exceed the target of ${dealCurrSym}${Number(selectedDeal.target_amount).toLocaleString()}.`,
         variant: "destructive",
       });
       return;
@@ -198,7 +201,7 @@ export default function DistributorDashboard() {
     if (minBid > 0 && amount < minBid) {
       toast({
         title: "Bid amount too low",
-        description: `Minimum bid for this deal is ₹${minBid.toLocaleString()}. You can't bid less than this amount.`,
+        description: `Minimum bid for this deal is ${dealCurrSym}${minBid.toLocaleString()}. You can't bid less than this amount.`,
         variant: "destructive",
       });
       return;
@@ -255,10 +258,11 @@ export default function DistributorDashboard() {
 
     // Find the deal to validate against target
     const deal = allDeals.find(d => d.id === editingBid.deal_id);
+    const editCurrSym = (deal?.currency || "INR") === "USD" ? "$" : "₹";
     if (deal && amount > deal.target_amount) {
       toast({
         title: "Bid amount too high",
-        description: `Bid amount cannot exceed the target of ₹${Number(deal.target_amount).toLocaleString()}.`,
+        description: `Bid amount cannot exceed the target of ${editCurrSym}${Number(deal.target_amount).toLocaleString()}.`,
         variant: "destructive",
       });
       return;
@@ -280,10 +284,14 @@ export default function DistributorDashboard() {
     setIsUpdatingBid(false);
   };
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`;
-    if (amount >= 100000) return `₹${(amount / 100000).toFixed(2)} L`;
-    return `₹${amount.toLocaleString()}`;
+  const formatCurrency = (amount: number, currency?: string) => {
+    const c = currency || "INR";
+    const sym = c === "USD" ? "$" : "₹";
+    if (c === "INR") {
+      if (amount >= 10000000) return `${sym}${(amount / 10000000).toFixed(2)} Cr`;
+      if (amount >= 100000) return `${sym}${(amount / 100000).toFixed(2)} L`;
+    }
+    return `${sym}${amount.toLocaleString()}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -547,11 +555,11 @@ export default function DistributorDashboard() {
                               <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Target</span>
-                                  <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount)}</span>
+                                  <span className="font-semibold text-foreground">{formatCurrency(deal.target_amount, deal.currency)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Raised</span>
-                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount)}</span>
+                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount, deal.currency)}</span>
                                 </div>
                                 <div className="w-full bg-muted rounded-full h-2">
                                   <div
@@ -574,7 +582,7 @@ export default function DistributorDashboard() {
                                 )}
                                 {existingBid ? (
                                   <p className="text-sm text-muted-foreground">
-                                    You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount)}</span>
+                                    You've bid <span className="font-semibold text-foreground">{formatCurrency(existingBid.bid_amount, deal.currency)}</span>
                                     {" "}<Badge className={getStatusColor(existingBid.bid_status)}>{existingBid.bid_status === "accepted" ? "Submitted" : existingBid.bid_status}</Badge>
                                   </p>
                                 ) : (
@@ -620,7 +628,7 @@ export default function DistributorDashboard() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-foreground">{formatCurrency(bid.bid_amount)}</span>
+                            <span className="font-semibold text-foreground">{formatCurrency(bid.bid_amount, allDeals.find(d => d.id === bid.deal_id)?.currency)}</span>
                             <Badge className={getStatusColor(bid.bid_status)}>{getBidDisplayStatus(bid)}</Badge>
                             {canEditBid(bid) && (
                               <Button variant="outline" size="sm" onClick={() => handleEditBid(bid)}>
@@ -656,17 +664,17 @@ export default function DistributorDashboard() {
           <DialogHeader>
             <DialogTitle>Place Bid on "{selectedDeal?.title}"</DialogTitle>
             <DialogDescription>
-              Target: {selectedDeal && formatCurrency(selectedDeal.target_amount)}
+              Target: {selectedDeal && formatCurrency(selectedDeal.target_amount, selectedDeal.currency)} ({selectedDeal?.currency || "INR"})
               {selectedDeal?.min_bid_amount && (
                 <span className="block mt-1 text-amber-600 font-medium">
-                  Minimum Bid: ₹{Number(selectedDeal.min_bid_amount).toLocaleString()}
+                  Minimum Bid: {(selectedDeal.currency || "INR") === "USD" ? "$" : "₹"}{Number(selectedDeal.min_bid_amount).toLocaleString()}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Bid Amount (₹) *</Label>
+              <Label>Bid Amount ({(selectedDeal?.currency || "INR") === "USD" ? "$" : "₹"}) *</Label>
               <Input
                 type="number"
                 min="1"
@@ -705,7 +713,7 @@ export default function DistributorDashboard() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Bid Amount (₹) *</Label>
+              <Label>Bid Amount ({(allDeals.find(d => d.id === editingBid?.deal_id)?.currency || "INR") === "USD" ? "$" : "₹"}) *</Label>
               <Input
                 type="number"
                 min="1"

@@ -12,6 +12,16 @@ import { Check, X, User, Users, Clock, UserCheck, Mail } from "lucide-react";
 import { BackButton } from "@/components/layout/BackButton";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -41,6 +51,7 @@ export default function ConnectionsPage() {
   const [acceptedConnections, setAcceptedConnections] = useState<Connection[]>([]);
   const [pendingReceived, setPendingReceived] = useState<Connection[]>([]);
   const [pendingSent, setPendingSent] = useState<Connection[]>([]);
+  const [cancelConfirm, setCancelConfirm] = useState<Connection | null>(null);
 
   useEffect(() => {
     loadConnections();
@@ -189,16 +200,20 @@ export default function ConnectionsPage() {
 
   const handleCancelRequest = async (connectionId: string) => {
     try {
+      // Withdraw with cooldown — mark withdrawn_at so re-request is blocked for 3 weeks
       const { error } = await supabase
         .from("connections")
-        .delete()
+        .update({ 
+          status: "rejected" as any,
+          withdrawn_at: new Date().toISOString(),
+        })
         .eq("id", connectionId);
 
       if (error) throw error;
 
       toast({
         title: "Request Cancelled",
-        description: "Your connection request has been cancelled.",
+        description: "Your connection request has been cancelled. You can resend after 3 weeks.",
       });
 
       loadConnections();
@@ -210,6 +225,7 @@ export default function ConnectionsPage() {
         variant: "destructive",
       });
     }
+    setCancelConfirm(null);
   };
 
   const getInitials = (name: string) => {
@@ -306,7 +322,7 @@ export default function ConnectionsPage() {
                   variant="outline"
                   onClick={(e) => {
                     e.preventDefault();
-                    handleCancelRequest(connection.id);
+                    setCancelConfirm(connection);
                   }}
                   className="text-destructive hover:text-destructive"
                 >
@@ -332,9 +348,9 @@ export default function ConnectionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen flex flex-col bg-background">
         <DashboardNavbar />
-        <main className="pt-24 pb-16">
+        <main className="flex-1 pt-24 pb-16">
           <div className="container mx-auto px-6">
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -347,9 +363,9 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <DashboardNavbar />
-      <main className="pt-24 pb-16">
+      <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-6 max-w-4xl">
           <BackButton />
           <div className="mb-8">
@@ -451,6 +467,29 @@ export default function ConnectionsPage() {
         </div>
       </main>
       <Footer />
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={!!cancelConfirm} onOpenChange={(open) => !open && setCancelConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Connection Request?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel your connection request to <strong>{cancelConfirm ? getOtherProfile(cancelConfirm)?.full_name : ""}</strong>?
+              <br /><br />
+              <span className="text-amber-600 font-medium">⚠️ After cancelling, you will not be able to send a new request to this person for 3 weeks.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Request</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => cancelConfirm && handleCancelRequest(cancelConfirm.id)}
+            >
+              Yes, Cancel Request
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
