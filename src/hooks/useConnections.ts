@@ -41,7 +41,6 @@ export function useConnections(currentProfileId: string | null) {
     }
 
     try {
-      // Parallel fetch for sent and received connections
       const [sentResult, receivedResult] = await Promise.all([
         supabase
           .from("connections")
@@ -92,7 +91,6 @@ export function useConnections(currentProfileId: string | null) {
 
     if (!connection) return { status: "none" };
 
-    // Check if this was a withdrawn connection with active cooldown
     if (connection.withdrawn_at) {
       const withdrawnDate = new Date(connection.withdrawn_at).getTime();
       const cooldownEnd = withdrawnDate + THREE_WEEKS_MS;
@@ -123,7 +121,6 @@ export function useConnections(currentProfileId: string | null) {
     if (!currentProfileId) return false;
 
     try {
-      // Check for existing withdrawn connection with cooldown
       const existingConn = connections.find(
         c => (c.sender_id === currentProfileId && c.receiver_id === targetProfileId) ||
              (c.sender_id === targetProfileId && c.receiver_id === currentProfileId)
@@ -140,11 +137,9 @@ export function useConnections(currentProfileId: string | null) {
           });
           return false;
         }
-        // Cooldown expired, delete the old withdrawn record first
         await supabase.from("connections").delete().eq("id", existingConn.id);
       }
 
-      // Also check for any existing active connection (prevent duplicate)
       if (existingConn && !existingConn.withdrawn_at) {
         toast({
           title: "Already connected",
@@ -153,26 +148,10 @@ export function useConnections(currentProfileId: string | null) {
         return false;
       }
 
-      const { error } = await supabase
-        .from("connections")
-        .insert({
-          sender_id: currentProfileId,
-          receiver_id: targetProfileId,
-        });
-
-      if (error) {
-        console.error("Error sending connection request:", error);
-        toast({
-          title: "Error",
-          description: "Failed to send connection request. Please try again.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Optimistic update — add connection immediately
+      // Optimistic update FIRST
+      const optimisticId = "optimistic-" + Date.now();
       setConnections(prev => [...prev, {
-        id: "optimistic-" + Date.now(),
+        id: optimisticId,
         sender_id: currentProfileId,
         receiver_id: targetProfileId,
         status: "pending" as const,
@@ -185,6 +164,26 @@ export function useConnections(currentProfileId: string | null) {
         title: "Request Sent",
         description: "Your connection request has been sent.",
       });
+
+      // Fire DB insert in background
+      const { error } = await supabase
+        .from("connections")
+        .insert({
+          sender_id: currentProfileId,
+          receiver_id: targetProfileId,
+        });
+
+      if (error) {
+        // Rollback optimistic update
+        setConnections(prev => prev.filter(c => c.id !== optimisticId));
+        console.error("Error sending connection request:", error);
+        toast({
+          title: "Error",
+          description: "Failed to send connection request. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
       // Send email notification in background (non-blocking)
       (async () => {
@@ -215,7 +214,7 @@ export function useConnections(currentProfileId: string | null) {
         }
       })();
 
-      // Refresh in background to get real ID
+      // Background refresh to get real ID
       fetchConnections();
       return true;
     } catch (error) {
@@ -225,6 +224,10 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const acceptConnection = async (connectionId: string) => {
+    // Optimistic update FIRST
+    setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "accepted" as const } : c));
+    toast({ title: "Connection Accepted", description: "You are now connected." });
+
     try {
       const { error } = await supabase
         .from("connections")
@@ -232,22 +235,12 @@ export function useConnections(currentProfileId: string | null) {
         .eq("id", connectionId);
 
       if (error) {
+        // Rollback
+        setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "pending" as const } : c));
         console.error("Error accepting connection:", error);
-        toast({
-          title: "Error",
-          description: "Failed to accept connection request.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to accept connection request.", variant: "destructive" });
         return false;
       }
-
-      // Optimistic update
-      setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "accepted" as const } : c));
-
-      toast({
-        title: "Connection Accepted",
-        description: "You are now connected.",
-      });
 
       // Send acceptance email in background
       (async () => {
@@ -255,7 +248,6 @@ export function useConnections(currentProfileId: string | null) {
           const connection = connections.find(c => c.id === connectionId);
           if (connection && currentProfileId) {
             const senderId = connection.sender_id;
-            
             const [acceptorResult, senderResult] = await Promise.all([
               supabase.from("profiles").select("full_name, headline, organisation, user_type").eq("id", currentProfileId).single(),
               supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
@@ -281,7 +273,6 @@ export function useConnections(currentProfileId: string | null) {
         }
       })();
 
-      fetchConnections();
       return true;
     } catch (error) {
       console.error("Error accepting connection:", error);
@@ -290,6 +281,10 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const rejectConnection = async (connectionId: string) => {
+    // Optimistic update
+    setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "rejected" as const } : c));
+    toast({ title: "Request Declined", description: "Connection request has been declined." });
+
     try {
       const { error } = await supabase
         .from("connections")
@@ -297,21 +292,13 @@ export function useConnections(currentProfileId: string | null) {
         .eq("id", connectionId);
 
       if (error) {
+        // Rollback
+        setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "pending" as const } : c));
         console.error("Error rejecting connection:", error);
-        toast({
-          title: "Error",
-          description: "Failed to reject connection request.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to reject connection request.", variant: "destructive" });
         return false;
       }
 
-      toast({
-        title: "Request Declined",
-        description: "Connection request has been declined.",
-      });
-      
-      await fetchConnections();
       return true;
     } catch (error) {
       console.error("Error rejecting connection:", error);
@@ -320,31 +307,28 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const withdrawConnection = async (connectionId: string) => {
+    const now = new Date().toISOString();
+    // Optimistic update
+    setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "rejected" as const, withdrawn_at: now } : c));
+    toast({ title: "Request Withdrawn", description: "Connection has been disconnected. You can reconnect after 3 weeks." });
+
     try {
       const { error } = await supabase
         .from("connections")
         .update({ 
           status: "rejected" as any,
-          withdrawn_at: new Date().toISOString(),
+          withdrawn_at: now,
         })
         .eq("id", connectionId);
 
       if (error) {
+        // Rollback
+        setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "pending" as const, withdrawn_at: null } : c));
         console.error("Error withdrawing connection:", error);
-        toast({
-          title: "Error",
-          description: "Failed to withdraw connection request.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to withdraw connection request.", variant: "destructive" });
         return false;
       }
 
-      toast({
-        title: "Request Withdrawn",
-        description: "Connection has been disconnected. You can reconnect after 3 weeks.",
-      });
-      
-      await fetchConnections();
       return true;
     } catch (error) {
       console.error("Error withdrawing connection:", error);
@@ -353,6 +337,11 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const removeConnection = async (connectionId: string) => {
+    // Optimistic update - remove from list
+    const backup = connections;
+    setConnections(prev => prev.filter(c => c.id !== connectionId));
+    toast({ title: "Connection Removed", description: "Connection has been removed." });
+
     try {
       const { error } = await supabase
         .from("connections")
@@ -360,21 +349,13 @@ export function useConnections(currentProfileId: string | null) {
         .eq("id", connectionId);
 
       if (error) {
+        // Rollback
+        setConnections(backup);
         console.error("Error removing connection:", error);
-        toast({
-          title: "Error",
-          description: "Failed to remove connection.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to remove connection.", variant: "destructive" });
         return false;
       }
 
-      toast({
-        title: "Connection Removed",
-        description: "Connection has been removed.",
-      });
-      
-      await fetchConnections();
       return true;
     } catch (error) {
       console.error("Error removing connection:", error);

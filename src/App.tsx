@@ -8,17 +8,19 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Loader2 } from "lucide-react";
 
-// Lazy-loaded pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
-const AuthPage = lazy(() => import("./pages/AuthPage"));
+// Eagerly load critical pages for instant routing
+import Index from "./pages/Index";
+import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
+import ProfileDetailPage from "./pages/ProfileDetailPage";
+import EditProfilePage from "./pages/EditProfilePage";
+import ConnectionsPage from "./pages/ConnectionsPage";
+
+// Lazy-loaded pages (less frequently visited)
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
-const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdvisorsPage = lazy(() => import("./pages/AdvisorsPage"));
 const LaboratoriesPage = lazy(() => import("./pages/LaboratoriesPage"));
-const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
-const ProfileDetailPage = lazy(() => import("./pages/ProfileDetailPage"));
-const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage"));
 const PublicationsPage = lazy(() => import("./pages/PublicationsPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -41,10 +43,10 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,      // 5 minutes before data is considered stale
-      gcTime: 10 * 60 * 1000,         // 10 minutes garbage collection
-      retry: 2,                        // Retry failed queries twice
-      refetchOnWindowFocus: false,     // Don't refetch on tab switch
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: 2,
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -68,18 +70,20 @@ const App = () => (
           <Suspense fallback={<PageLoader />}>
             <ErrorBoundary>
               <Routes>
+                {/* Eagerly loaded - instant navigation */}
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/~oauth/*" element={<AuthPage />} />
-                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/edit-profile" element={<EditProfilePage />} />
+                <Route path="/connections" element={<ConnectionsPage />} />
+                <Route path="/profile/:id" element={<ProfileDetailPage />} />
+                {/* Lazy loaded */}
+                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/advisors" element={<AdvisorsPage />} />
                 <Route path="/laboratories" element={<LaboratoriesPage />} />
-                <Route path="/edit-profile" element={<EditProfilePage />} />
-                <Route path="/connections" element={<ConnectionsPage />} />
                 <Route path="/publications" element={<PublicationsPage />} />
-                <Route path="/profile/:id" element={<ProfileDetailPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/investments" element={<InvestmentsPage />} />
