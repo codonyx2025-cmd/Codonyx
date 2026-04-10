@@ -241,46 +241,44 @@ export default function EditProfilePage() {
       updateData.research_areas = researchAreas.trim() || null;
     }
 
-    const { error } = await supabase
+    // Save profile and custom fields in parallel for speed
+    const profilePromise = supabase
       .from("profiles")
       .update(updateData)
       .eq("user_id", session.user.id);
 
-    if (error) {
+    const customFieldsPromise = (profileId && Object.keys(customFieldValues).length > 0)
+      ? supabase
+          .from("custom_profile_values")
+          .upsert(
+            Object.entries(customFieldValues).map(([fieldId, value]) => ({
+              profile_id: profileId,
+              field_id: fieldId,
+              value: value.trim() || null,
+            })),
+            { onConflict: "profile_id,field_id" }
+          )
+      : Promise.resolve({ error: null });
+
+    const [profileResult, customResult] = await Promise.all([profilePromise, customFieldsPromise]);
+
+    if (profileResult.error) {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
+    } else if (customResult.error) {
+      toast({
+        title: "Partial update",
+        description: "Profile updated, but additional details could not be saved. Please try again.",
+        variant: "destructive",
+      });
     } else {
-      // Save custom field values in a single upsert for reliability and performance
-      let customValuesError: Error | null = null;
-      if (profileId && Object.keys(customFieldValues).length > 0) {
-        const upserts = Object.entries(customFieldValues).map(([fieldId, value]) => ({
-          profile_id: profileId,
-          field_id: fieldId,
-          value: value.trim() || null,
-        }));
-
-        const { error: upsertError } = await supabase
-          .from("custom_profile_values")
-          .upsert(upserts, { onConflict: "profile_id,field_id" });
-
-        customValuesError = upsertError;
-      }
-
-      if (customValuesError) {
-        toast({
-          title: "Partial update",
-          description: "Profile updated, but additional details could not be saved. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Your profile has been updated.",
-        });
-      }
+      toast({
+        title: "Success",
+        description: "Your profile has been updated.",
+      });
     }
 
     setIsSaving(false);
