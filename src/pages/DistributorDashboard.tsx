@@ -185,11 +185,13 @@ export default function DistributorDashboard() {
       return;
     }
 
+    const dealCurrSym = (selectedDeal.currency || "INR") === "USD" ? "$" : "₹";
+
     // Bid must not exceed target amount
     if (amount > selectedDeal.target_amount) {
       toast({
         title: "Bid amount too high",
-        description: `Bid amount cannot exceed the target of ₹${Number(selectedDeal.target_amount).toLocaleString()}.`,
+        description: `Bid amount cannot exceed the target of ${dealCurrSym}${Number(selectedDeal.target_amount).toLocaleString()}.`,
         variant: "destructive",
       });
       return;
@@ -199,7 +201,7 @@ export default function DistributorDashboard() {
     if (minBid > 0 && amount < minBid) {
       toast({
         title: "Bid amount too low",
-        description: `Minimum bid for this deal is ₹${minBid.toLocaleString()}. You can't bid less than this amount.`,
+        description: `Minimum bid for this deal is ${dealCurrSym}${minBid.toLocaleString()}. You can't bid less than this amount.`,
         variant: "destructive",
       });
       return;
