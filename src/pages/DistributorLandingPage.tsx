@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, TrendingUp, Shield, Globe, BarChart3, Handshake, CheckCircle } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import heroHealthcare3 from "@/assets/hero-healthcare-3.jpg";
+import distributorDealsImage from "@/assets/distributor-deals.jpg";
 
 const benefits = [
   { icon: TrendingUp, title: "Exclusive Deals", desc: "Access curated investment deals in molecular science and AI healthcare published by Codonyx." },
@@ -24,7 +24,7 @@ const DistributorLandingPage = () => {
         {/* Hero + CTA */}
         <section className="relative pt-20 overflow-hidden">
           <div className="absolute inset-0">
-            <img src={heroHealthcare3} alt="" className="w-full h-full object-cover" aria-hidden="true" />
+            <img src={distributorDealsImage} alt="Distribution deals and partnerships" className="w-full h-full object-cover" loading="eager" width={1280} height={720} />
             <div className="absolute inset-0 bg-gradient-to-b from-navy/90 via-navy/80 to-navy/95" />
           </div>
           <div className="container mx-auto px-6 lg:px-8 relative z-10 py-16 lg:py-24">
