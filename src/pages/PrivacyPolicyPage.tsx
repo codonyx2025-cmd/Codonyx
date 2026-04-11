@@ -27,7 +27,9 @@ const PrivacyPolicyPage = () => {
             <h2 className="text-2xl font-semibold text-foreground">9. Contact Us</h2>
             <p className="text-muted-foreground">
               If you have any questions about this privacy policy or our data practices, please contact us 
-              through our contact page or email us at info@codonyx.org.
+              through our contact page or email us at 
+              <a href="mailto:legal@codonyx.org" className="text-primary hover:underline">
+                legal@codonyx.org.
             </p>
           </section>
         </div>
