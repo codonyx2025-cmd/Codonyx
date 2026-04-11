@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Linkedin, Mail } from "lucide-react";
 import codonyxLogo from "@/assets/codonyx_logo.png";
 
