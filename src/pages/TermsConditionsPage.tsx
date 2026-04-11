@@ -26,7 +26,7 @@ export default function TermsConditionsPage() {
                   By accessing and using the Codonyx platform ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this Service.
                 </p>
                 <p>
-                  These Terms & Conditions apply to all users of the platform, including advisors, laboratories, and any other visitors.
+                  These Terms & Conditions apply to all users of the platform, including advisors, laboratories and any other visitors.
                 </p>
               </section>
 
@@ -47,7 +47,7 @@ export default function TermsConditionsPage() {
                   3. User Accounts
                 </h2>
                 <p className="mb-4">
-                  When you create an account with us, you must provide accurate, complete, and current information. Failure to do so constitutes a breach of these Terms.
+                  When you create an account with us, you must provide accurate, complete and current information. Failure to do so constitutes a breach of these Terms.
                 </p>
                 <p className="mb-4">
                   You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password.
@@ -69,7 +69,7 @@ export default function TermsConditionsPage() {
                   <li>Impersonate or attempt to impersonate another user or person</li>
                   <li>Engage in any conduct that restricts or inhibits anyone's use of the Service</li>
                   <li>Attempt to gain unauthorized access to any portion of the Service</li>
-                  <li>Use the Service to transmit spam, unsolicited communications, or malware</li>
+                  <li>Use the Service to transmit spam, unsolicited communications or malware</li>
                   <li>Share or distribute confidential information obtained through the platform without authorization</li>
                 </ul>
               </section>
@@ -79,10 +79,10 @@ export default function TermsConditionsPage() {
                   5. Intellectual Property
                 </h2>
                 <p className="mb-4">
-                  The Service and its original content, features, and functionality are owned by Codonyx and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+                  The Service and its original content, features and functionality are owned by Codonyx and are protected by international copyright, trademark, patent, trade secret and other intellectual property laws.
                 </p>
                 <p>
-                  You retain ownership of any content you submit to the platform, but grant Codonyx a license to use, display, and distribute such content in connection with the Service.
+                  You retain ownership of any content you submit to the platform, but grant Codonyx a license to use, display and distribute such content in connection with the Service.
                 </p>
               </section>
 
