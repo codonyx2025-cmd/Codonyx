@@ -105,7 +105,7 @@ export default function AuthPage() {
         // Race session check with a 3s timeout to prevent hanging
         const sessionResult = await Promise.race([
           supabase.auth.getSession(),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
         ]);
 
         if (cancelled) return;
@@ -445,12 +445,12 @@ export default function AuthPage() {
     }
   };
 
-  // Fallback: if auth check hangs for 4s, show the form. No auto-reload.
+  // Fallback: if auth check hangs for 2s, show the form. No auto-reload.
   useEffect(() => {
     if (!isCheckingAuth) return;
     const timer = setTimeout(() => {
       setIsCheckingAuth(false);
-    }, 4000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [isCheckingAuth]);
 

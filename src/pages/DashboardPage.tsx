@@ -158,13 +158,6 @@ export default function DashboardPage() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (user) {
-        await loadProfile(user.id);
-        return;
-      }
-
       navigate("/auth", { replace: true });
     };
 
