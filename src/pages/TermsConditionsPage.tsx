@@ -146,8 +146,8 @@ export default function TermsConditionsPage() {
                 </h2>
                 <p>
                   If you have any questions about these Terms, please contact us at{" "}
-                  <a href="mailto:legal@codonyx.org" className="text-primary hover:underline">
-                    legal@codonyx.org
+                  <a href="mailto:info@codonyx.org" className="text-primary hover:underline">
+                    info@codonyx.org
                   </a>
                 </p>
               </section>
