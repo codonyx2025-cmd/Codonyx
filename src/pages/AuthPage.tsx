@@ -32,6 +32,7 @@ const features = [
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const isFormSigningIn = useRef(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -132,6 +133,8 @@ export default function AuthPage() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return;
+      // Skip if form-based sign-in is handling navigation
+      if (isFormSigningIn.current) return;
 
       if (!session) {
         if (event === "SIGNED_OUT") {
@@ -163,6 +166,7 @@ export default function AuthPage() {
     e.preventDefault();
     setIsLoading(true);
     hasShownUnauthorizedToast.current = false;
+    isFormSigningIn.current = true;
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -171,6 +175,7 @@ export default function AuthPage() {
       });
 
       if (error) {
+        isFormSigningIn.current = false;
         let errorMessage = error.message;
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
           errorMessage = "Network error. Please check your internet connection and try again.";
@@ -188,13 +193,19 @@ export default function AuthPage() {
       }
 
       if (data.session) {
-        const approved = await validateApprovedSession(data.session.user.id);
+        const { approved, deactivated } = await isSessionApproved(data.session.user.id);
         if (!approved) {
+          isFormSigningIn.current = false;
+          await signOutUnauthorized(deactivated);
           return;
         }
+        // Navigate immediately - don't wait for onAuthStateChange
         navigate("/dashboard", { replace: true });
+      } else {
+        isFormSigningIn.current = false;
       }
     } catch (error: any) {
+      isFormSigningIn.current = false;
       console.error("Sign in error:", error);
       const isNetworkError = error?.message?.includes("Failed to fetch") || error?.message?.includes("NetworkError");
       toast({
