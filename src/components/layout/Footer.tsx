@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Linkedin, Mail } from "lucide-react";
 import codonyxLogo from "@/assets/codonyx_logo.png";
 
@@ -18,6 +18,12 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const location = useLocation();
+  const handleFooterClick = (href: string) => {
+    if (location.pathname === href) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
   return (
     <footer className="bg-navy border-t border-white/10">
       <div className="container mx-auto px-6 lg:px-8 py-16">
@@ -61,7 +67,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.solutions.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
+                  <Link to={link.href} onClick={() => handleFooterClick(link.href)} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
@@ -77,7 +83,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
+                  <Link to={link.href} onClick={() => handleFooterClick(link.href)} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
@@ -93,7 +99,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.compliance.map((link) => (
                 <li key={link.name}>
-                  <Link to={link.href} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
+                  <Link to={link.href} onClick={() => handleFooterClick(link.href)} className="text-sm text-white/60 hover:text-emerald-glow transition-colors font-body">
                     {link.name}
                   </Link>
                 </li>
