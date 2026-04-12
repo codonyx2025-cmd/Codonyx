@@ -143,16 +143,20 @@ export default function AuthPage() {
         return;
       }
 
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-        (async () => {
-          const approved = await validateApprovedSession(session.user.id);
+      // IMPORTANT: Do NOT await inside onAuthStateChange to prevent deadlocks.
+      // Fire-and-forget the validation.
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        isSessionApproved(session.user.id).then(({ approved, deactivated }) => {
           if (cancelled) return;
           if (approved) {
             navigate("/dashboard", { replace: true });
-            return;
+          } else {
+            signOutUnauthorized(deactivated);
+            setIsCheckingAuth(false);
           }
-          setIsCheckingAuth(false);
-        })();
+        }).catch(() => {
+          if (!cancelled) setIsCheckingAuth(false);
+        });
       }
     });
 
@@ -639,10 +643,10 @@ export default function AuthPage() {
                 <Input
                   type="text"
                   maxLength={6}
-                  placeholder="000000"
+                  placeholder="Enter 6-digit code"
                   value={resetOtp}
                   onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="text-center text-2xl tracking-[0.5em] font-mono"
+                  className="text-center text-lg tracking-widest font-mono"
                   required
                 />
                 <div className="flex justify-end">
