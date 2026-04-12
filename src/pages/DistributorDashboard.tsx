@@ -80,10 +80,20 @@ export default function DistributorDashboard() {
   const [editBidNotes, setEditBidNotes] = useState("");
   const [isUpdatingBid, setIsUpdatingBid] = useState(false);
   const [dealShowCount, setDealShowCount] = useState(15);
+  const [dealSearchTerm, setDealSearchTerm] = useState("");
+  const [dealCurrencyFilter, setDealCurrencyFilter] = useState("all");
   const [bidShowCount, setBidShowCount] = useState(15);
   const [bidSearchTerm, setBidSearchTerm] = useState("");
   const [bidStatusFilter, setBidStatusFilter] = useState("all");
   const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
+
+  const filteredDeals = useMemo(() => {
+    return deals.filter(deal => {
+      const matchesSearch = !dealSearchTerm || deal.title.toLowerCase().includes(dealSearchTerm.toLowerCase());
+      const matchesCurrency = dealCurrencyFilter === "all" || (deal.currency || "INR") === dealCurrencyFilter;
+      return matchesSearch && matchesCurrency;
+    });
+  }, [deals, dealSearchTerm, dealCurrencyFilter]);
 
   const filteredMyBids = useMemo(() => {
     return myBids.filter(bid => {
@@ -552,12 +562,32 @@ export default function DistributorDashboard() {
                 <CardDescription>Published deals you can bid on</CardDescription>
               </CardHeader>
               <CardContent>
-                {deals.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No deals available at the moment.</p>
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Input
+                    placeholder="Search by deal name..."
+                    value={dealSearchTerm}
+                    onChange={(e) => { setDealSearchTerm(e.target.value); setDealShowCount(15); }}
+                    className="w-48"
+                  />
+                  <select
+                    value={dealCurrencyFilter}
+                    onChange={(e) => { setDealCurrencyFilter(e.target.value); setDealShowCount(15); }}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">All Currencies</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                  </select>
+                </div>
+                {filteredDeals.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    {deals.length === 0 ? "No deals available at the moment." : "No deals match your filters."}
+                  </p>
                 ) : (
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
-                      {deals.slice(0, dealShowCount).map((deal) => {
+                      {filteredDeals.slice(0, dealShowCount).map((deal) => {
                         const progress = deal.target_amount > 0 ? (deal.raised_amount / deal.target_amount) * 100 : 0;
                         const existingBid = myBids.find(b => b.deal_id === deal.id && b.bid_status !== "withdrawn");
                         return (
@@ -616,10 +646,10 @@ export default function DistributorDashboard() {
                         );
                       })}
                     </div>
-                    {deals.length > dealShowCount && (
+                    {filteredDeals.length > dealShowCount && (
                       <div className="flex justify-center gap-2 mt-4">
                         <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDealShowCount(deals.length)}>Show All ({deals.length})</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filteredDeals.length)}>Show All ({filteredDeals.length})</Button>
                       </div>
                     )}
                   </>
