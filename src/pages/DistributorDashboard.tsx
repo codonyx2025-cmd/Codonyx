@@ -562,8 +562,28 @@ export default function DistributorDashboard() {
                 <CardDescription>Published deals you can bid on</CardDescription>
               </CardHeader>
               <CardContent>
-                {deals.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No deals available at the moment.</p>
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Input
+                    placeholder="Search by deal name..."
+                    value={dealSearchTerm}
+                    onChange={(e) => { setDealSearchTerm(e.target.value); setDealShowCount(15); }}
+                    className="w-48"
+                  />
+                  <select
+                    value={dealCurrencyFilter}
+                    onChange={(e) => { setDealCurrencyFilter(e.target.value); setDealShowCount(15); }}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">All Currencies</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                  </select>
+                </div>
+                {filteredDeals.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    {deals.length === 0 ? "No deals available at the moment." : "No deals match your filters."}
+                  </p>
                 ) : (
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
