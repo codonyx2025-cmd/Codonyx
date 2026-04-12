@@ -87,6 +87,14 @@ export default function DistributorDashboard() {
   const [bidStatusFilter, setBidStatusFilter] = useState("all");
   const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
 
+  const filteredDeals = useMemo(() => {
+    return deals.filter(deal => {
+      const matchesSearch = !dealSearchTerm || deal.title.toLowerCase().includes(dealSearchTerm.toLowerCase());
+      const matchesCurrency = dealCurrencyFilter === "all" || (deal.currency || "INR") === dealCurrencyFilter;
+      return matchesSearch && matchesCurrency;
+    });
+  }, [deals, dealSearchTerm, dealCurrencyFilter]);
+
   const filteredMyBids = useMemo(() => {
     return myBids.filter(bid => {
       const deal = allDeals.find(d => d.id === bid.deal_id);
