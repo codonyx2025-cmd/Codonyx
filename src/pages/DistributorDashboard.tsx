@@ -646,10 +646,10 @@ export default function DistributorDashboard() {
                         );
                       })}
                     </div>
-                    {deals.length > dealShowCount && (
+                    {filteredDeals.length > dealShowCount && (
                       <div className="flex justify-center gap-2 mt-4">
                         <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDealShowCount(deals.length)}>Show All ({deals.length})</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filteredDeals.length)}>Show All ({filteredDeals.length})</Button>
                       </div>
                     )}
                   </>
