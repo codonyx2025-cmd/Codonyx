@@ -62,13 +62,18 @@ export default function LaboratoriesPage() {
       // Load approved laboratories with new fields
       const { data: laboratoriesData } = await supabase
         .from("profiles")
-        .select("id, full_name, headline, bio, location, organisation, avatar_url, linkedin_url, company_type, company_size, founded_year, website_url, services, research_areas")
+        .select("id, full_name, headline, bio, location, organisation, avatar_url, linkedin_url, company_type, company_size, founded_year, website_url, services, research_areas, user_id")
         .eq("user_type", "laboratory")
         .eq("approval_status", "approved")
         .order("full_name");
 
       if (laboratoriesData) {
-        setLaboratories(laboratoriesData);
+        const { data: adminRoles } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        const adminUserIds = new Set((adminRoles || []).map(r => r.user_id));
+        setLaboratories(laboratoriesData.filter(l => !adminUserIds.has(l.user_id)).map(({ user_id, ...rest }) => rest) as Laboratory[]);
       }
       setIsLoading(false);
     };
