@@ -172,6 +172,7 @@ serve(async (req: Request) => {
               <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #f1f5f9;">
                 <span style="color:#059669;font-size:18px;font-weight:700;">Codonyx</span>
                 <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">© ${year} Codonyx. All rights reserved.</p>
+                <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">For any contact, email us at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;">info@codonyx.org</a></p>
               </td></tr>
             </table>
           </td></tr>
