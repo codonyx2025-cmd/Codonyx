@@ -131,7 +131,8 @@ const handler = async (req: Request): Promise<Response> => {
                     <span style="color: #059669; font-size: 18px; font-weight: 700;">Codonyx</span>
                     <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0;">Connecting professionals in science and innovation.</p>
                     <p style="color: #cbd5e1; font-size: 11px; margin: 4px 0 0;">© ${new Date().getFullYear()} Codonyx. All rights reserved.</p>
-                    <p style="color: #cbd5e1; font-size: 11px; margin: 12px 0 0;">If you didn't expect this email, you can safely ignore it.</p>
+                    <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0;">For any contact, email us at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;">info@codonyx.org</a></p>
+                    <p style="color: #cbd5e1; font-size: 11px; margin: 8px 0 0;">If you didn't expect this email, you can safely ignore it.</p>
                   </td></tr>
                 </table>
               </td></tr>
