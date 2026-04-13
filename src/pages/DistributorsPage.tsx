@@ -56,18 +56,14 @@ export default function DistributorsPage() {
 
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, headline, bio, location, organisation, avatar_url, region, distribution_capacity, user_id")
+        .select("id, full_name, headline, bio, location, organisation, avatar_url, region, distribution_capacity, user_id, email")
         .eq("user_type", "distributor")
         .eq("approval_status", "approved")
         .order("full_name");
 
       if (data) {
-        const { data: adminRoles } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-        const adminUserIds = new Set((adminRoles || []).map(r => r.user_id));
-        setDistributors(data.filter(d => !adminUserIds.has(d.user_id)).map(({ user_id, ...rest }) => rest) as Distributor[]);
+        const adminEmails = ["dashriday856@gmail.com", "info@codonyx.org"];
+        setDistributors(data.filter(d => !adminEmails.includes((d as any).email?.toLowerCase())).map(({ user_id, email, ...rest }) => rest) as Distributor[]);
       }
       setIsLoading(false);
     };

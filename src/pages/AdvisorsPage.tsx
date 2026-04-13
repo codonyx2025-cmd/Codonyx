@@ -67,13 +67,8 @@ export default function AdvisorsPage() {
         .order("full_name");
 
       if (advisorsData) {
-        // Filter out admin profiles
-        const { data: adminRoles } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "admin");
-        const adminUserIds = new Set((adminRoles || []).map(r => r.user_id));
-        setAdvisors(advisorsData.filter(a => !adminUserIds.has(a.user_id)).map(({ user_id, ...rest }) => rest) as Advisor[]);
+        const adminEmails = ["dashriday856@gmail.com", "info@codonyx.org"];
+        setAdvisors(advisorsData.filter(a => !adminEmails.includes((a as any).email?.toLowerCase())).map(({ user_id, ...rest }) => rest) as Advisor[]);
       }
       setIsLoading(false);
     };
