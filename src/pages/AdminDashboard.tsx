@@ -315,6 +315,31 @@ const AdminDashboard = () => {
     } else {
       const currencySymbol = newDealCurrency === "USD" ? "$" : "₹";
       showSuccessToast(`Deal created and published! Target: ${currencySymbol}${parseFloat(newDealTarget).toLocaleString()} (${newDealCurrency})`);
+      
+      // Notify all approved distributors about the new deal
+      (async () => {
+        try {
+          const { data: distributors } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("user_type", "distributor")
+            .eq("approval_status", "approved");
+
+          if (distributors && distributors.length > 0) {
+            const notifications = distributors.map(d => ({
+              profile_id: d.id,
+              type: "new_deal",
+              title: "New Deal Available",
+              message: `New deal "${newDealTitle}" is now available. ${currencySymbol}${parseFloat(newDealTarget).toLocaleString()} ${newDealCurrency}.`,
+              link: "/distributor-dashboard",
+            }));
+            await supabase.from("notifications").insert(notifications);
+          }
+        } catch (e) {
+          console.error("Error sending deal notifications:", e);
+        }
+      })();
+      
       setNewDealTitle("");
       setNewDealDescription("");
       setNewDealTarget("");
