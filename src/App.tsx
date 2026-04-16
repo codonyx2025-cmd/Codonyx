@@ -16,6 +16,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ProfileDetailPage from "./pages/ProfileDetailPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import ConnectionsPage from "./pages/ConnectionsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 // Lazy-loaded pages (less frequently visited)
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -80,6 +81,7 @@ const App = () => (
                 <Route path="/edit-profile" element={<EditProfilePage />} />
                 <Route path="/connections" element={<ConnectionsPage />} />
                 <Route path="/profile/:id" element={<ProfileDetailPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
                 {/* Lazy loaded */}
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />

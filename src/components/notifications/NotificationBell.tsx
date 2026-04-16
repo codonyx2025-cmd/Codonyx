@@ -36,6 +36,26 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // On mobile, the bell navigates to a dedicated full-page notifications view.
+  if (isMobile) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative h-10 w-10"
+        onClick={() => navigate("/notifications")}
+        aria-label="Notifications"
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold animate-pulse">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </Button>
+    );
+  }
+
   const getInitials = (name: string) =>
     name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 

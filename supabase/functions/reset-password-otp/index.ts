@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { renderEmailLayout, renderOtpCode, escapeHtml } from "../_shared/email-layout.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -103,48 +104,27 @@ serve(async (req: Request) => {
       }
 
       // Send email
-      const year = new Date().getFullYear();
-      const html = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-        <body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f8fafc;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:48px 20px;">
-            <tr><td align="center">
-              <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-                <tr><td style="background:linear-gradient(135deg,#059669 0%,#047857 50%,#065f46 100%);padding:40px 32px;text-align:center;">
-                  <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">Password Recovery 🔐</h1>
-                  <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">Reset your password securely</p>
-                </td></tr>
-                <tr><td style="padding:40px 32px;">
-                  <p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">
-                    Hello <strong style="color:#1e293b;">${profile.full_name}</strong>,
-                  </p>
-                  <p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">
-                    You recently requested to reset your password. Use the code below to verify your identity:
-                  </p>
-                  <div style="text-align:center;margin:0 0 24px;">
-                    <span style="display:inline-block;background:#f1f5f9;border:2px solid #059669;border-radius:12px;padding:16px 40px;font-size:32px;font-weight:700;letter-spacing:8px;color:#1e293b;">
-                      ${code}
-                    </span>
-                  </div>
-                  <p style="color:#64748b;font-size:14px;line-height:1.6;margin:0 0 8px;">
-                    This code will expire in <strong>10 minutes</strong>.
-                  </p>
-                  <p style="color:#94a3b8;font-size:13px;margin:0;">
-                    If you didn't request this, you can safely ignore this email.
-                  </p>
-                </td></tr>
-                <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #f1f5f9;">
-                  <span style="color:#059669;font-size:18px;font-weight:700;">Codonyx</span>
-                  <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">© ${year} Codonyx. All rights reserved.</p>
-                  <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">For any contact, email us at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;">info@codonyx.org</a></p>
-                </td></tr>
-              </table>
-            </td></tr>
-          </table>
-        </body></html>
+      const body = `
+        <p style="color:#0f172a;font-size:17px;font-weight:600;margin:0 0 8px;">Hello ${escapeHtml(profile.full_name)},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 8px;">
+          We received a request to reset your Codonyx password. Use the verification code below to continue:
+        </p>
+        ${renderOtpCode(code)}
+        <p style="color:#64748b;font-size:14px;line-height:1.6;margin:8px 0 0;text-align:center;">
+          This code will expire in <strong style="color:#059669;">10 minutes</strong>.
+        </p>
+        <p style="color:#94a3b8;font-size:13px;margin:18px 0 0;text-align:center;line-height:1.5;">
+          If you didn't request this, you can safely ignore this email — your password won't change.
+        </p>
       `;
+      const html = renderEmailLayout({
+        preheader: "Your Codonyx password reset code",
+        headerEmoji: "🔐",
+        headerTitle: "Password Recovery",
+        headerSubtitle: "Reset your password securely",
+        body,
+        footerNote: "🛡️ For your security, never share this code with anyone. Codonyx will never ask for your code via phone or email.",
+      });
 
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",

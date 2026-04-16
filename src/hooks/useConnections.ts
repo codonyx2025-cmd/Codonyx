@@ -189,7 +189,7 @@ export function useConnections(currentProfileId: string | null) {
       (async () => {
         try {
           const [senderResult, receiverResult] = await Promise.all([
-            supabase.from("profiles").select("full_name, headline, organisation, bio, user_type").eq("id", currentProfileId).single(),
+            supabase.from("profiles").select("full_name, headline, organisation, bio, user_type, avatar_url").eq("id", currentProfileId).single(),
             supabase.from("profiles").select("full_name, email").eq("id", targetProfileId).single(),
           ]);
 
@@ -220,6 +220,8 @@ export function useConnections(currentProfileId: string | null) {
                 senderTitle: senderProfile.headline || "",
                 senderOrganization: senderProfile.organisation || "",
                 senderBio: senderProfile.bio || "",
+                senderAvatarUrl: senderProfile.avatar_url || "",
+                senderUserType: senderProfile.user_type || "",
                 connectionPageUrl: `${window.location.origin}/connections`,
               },
             });
@@ -277,7 +279,7 @@ export function useConnections(currentProfileId: string | null) {
       try {
         if (senderId && currentProfileId) {
           const [acceptorResult, senderResult] = await Promise.all([
-            supabase.from("profiles").select("full_name, headline, organisation, user_type").eq("id", currentProfileId).single(),
+            supabase.from("profiles").select("full_name, headline, organisation, user_type, avatar_url").eq("id", currentProfileId).single(),
             supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
           ]);
 
@@ -306,6 +308,7 @@ export function useConnections(currentProfileId: string | null) {
                 senderHeadline: acceptorResult.data.headline || "",
                 senderOrganisation: acceptorResult.data.organisation || "",
                 senderUserType: acceptorResult.data.user_type || "",
+                senderAvatarUrl: acceptorResult.data.avatar_url || "",
                 loginUrl: window.location.origin + "/auth",
               },
             });

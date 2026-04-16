@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { renderEmailLayout, renderCtaButton, renderPill, escapeHtml, BRAND } from "../_shared/email-layout.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -14,7 +15,6 @@ const corsHeaders = {
 
 type NotificationType = "connection_accepted" | "registration_approved" | "registration_rejected" | "registration_submitted";
 
-// Types that require admin role
 const ADMIN_ONLY_TYPES: NotificationType[] = ["registration_approved", "registration_rejected"];
 
 interface NotificationRequest {
@@ -25,76 +25,154 @@ interface NotificationRequest {
   senderHeadline?: string;
   senderOrganisation?: string;
   senderUserType?: string;
+  senderAvatarUrl?: string;
   userType?: string;
   loginUrl?: string;
 }
 
-function getEmailContent(data: NotificationRequest): { subject: string; html: string } {
-  const year = new Date().getFullYear();
-  const baseUrl = data.loginUrl || "https://codonyx.lovable.app/auth";
+function roleLabel(t?: string) {
+  if (t === "advisor") return "Advisor";
+  if (t === "laboratory") return "Laboratory";
+  if (t === "distributor") return "Distribution Partner";
+  return "Member";
+}
 
-  const wrapper = (header: string, subtitle: string, body: string) => `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-    <body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f8fafc;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:48px 20px;">
-        <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-            <tr><td style="background:linear-gradient(135deg,#059669 0%,#047857 50%,#065f46 100%);padding:40px 32px;text-align:center;">
-              <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">${header}</h1>
-              <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">${subtitle}</p>
-            </td></tr>
-            <tr><td style="padding:40px 32px;">${body}</td></tr>
-            <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #f1f5f9;">
-              <span style="color:#059669;font-size:18px;font-weight:700;">Codonyx</span>
-              <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">© ${year} Codonyx. All rights reserved.</p>
-              <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">For any contact, email us at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;">info@codonyx.org</a></p>
-            </td></tr>
-          </table>
-        </td></tr>
-      </table>
-    </body></html>
-  `;
+function getEmailContent(data: NotificationRequest): { subject: string; html: string } {
+  const baseUrl = data.loginUrl || `${BRAND.websiteUrl}/auth`;
 
   switch (data.type) {
-    case "connection_accepted":
+    case "connection_accepted": {
+      const initial = (data.senderName || "U").charAt(0).toUpperCase();
+      const avatarBlock = data.senderAvatarUrl
+        ? `<img src="${escapeHtml(data.senderAvatarUrl)}" alt="${escapeHtml(data.senderName || "")}" width="72" height="72" style="display:block;width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #ffffff;box-shadow:0 4px 12px rgba(5,150,105,0.2);" />`
+        : `<div style="width:72px;height:72px;background:linear-gradient(135deg,#10b981,#047857);border-radius:50%;text-align:center;line-height:72px;border:3px solid #ffffff;box-shadow:0 4px 12px rgba(5,150,105,0.2);">
+             <span style="color:#ffffff;font-size:28px;font-weight:700;line-height:72px;">${escapeHtml(initial)}</span>
+           </div>`;
+
+      const body = `
+        <p style="color:#0f172a;font-size:17px;font-weight:600;margin:0 0 8px;">Great news, ${escapeHtml(data.recipientName)}! 🎉</p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 26px;">
+          <strong style="color:#059669;">${escapeHtml(data.senderName || "")}</strong> accepted your connection request. You're now part of each other's professional network on ${BRAND.name}.
+        </p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(145deg,#f0fdf4 0%,#ecfdf5 100%);border-radius:14px;border:1px solid #bbf7d0;margin:0 0 28px;">
+          <tr><td style="padding:22px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="72" valign="top" style="padding-right:16px;">${avatarBlock}</td>
+                <td valign="top">
+                  <p style="margin:0 0 4px;color:#065f46;font-size:17px;font-weight:700;">${escapeHtml(data.senderName || "")}</p>
+                  ${data.senderUserType ? `<p style="margin:0 0 6px;">${renderPill(roleLabel(data.senderUserType))}</p>` : ""}
+                  ${data.senderHeadline ? `<p style="margin:4px 0 2px;color:#0f172a;font-size:13px;font-weight:500;">${escapeHtml(data.senderHeadline)}</p>` : ""}
+                  ${data.senderOrganisation ? `<p style="margin:0;color:#64748b;font-size:13px;">${escapeHtml(data.senderOrganisation)}</p>` : ""}
+                </td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+
+        ${renderCtaButton("View Your Connections", baseUrl.replace("/auth", "/connections"))}
+      `;
+
       return {
         subject: `${data.senderName} accepted your connection request | Codonyx`,
-        html: wrapper("Connection Accepted! 🎉", "Great news from the Codonyx network",
-          `<p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">Hello <strong style="color:#1e293b;">${data.recipientName}</strong>,</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;"><strong style="color:#059669;">${data.senderName}</strong> has accepted your connection request on Codonyx.</p>
-          ${data.senderHeadline || data.senderOrganisation || data.senderUserType ? `<div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin:0 0 24px;"><p style="margin:0;color:#1e293b;font-weight:600;font-size:15px;">${data.senderName}</p>${data.senderUserType ? `<p style="margin:4px 0 0;color:#059669;font-size:13px;text-transform:capitalize;">${data.senderUserType}</p>` : ""}${data.senderHeadline ? `<p style="margin:4px 0 0;color:#475569;font-size:14px;">${data.senderHeadline}</p>` : ""}${data.senderOrganisation ? `<p style="margin:4px 0 0;color:#64748b;font-size:13px;">${data.senderOrganisation}</p>` : ""}</div>` : ""}
-          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center"><a href="${baseUrl.replace('/auth', '/connections')}" style="display:inline-block;background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:10px;font-size:16px;font-weight:600;">View Your Connections</a></td></tr></table>`),
+        html: renderEmailLayout({
+          preheader: `${data.senderName} is now connected with you`,
+          headerEmoji: "✅",
+          headerTitle: "Connection Accepted!",
+          headerSubtitle: "Your network just grew",
+          body,
+        }),
       };
-    case "registration_approved":
+    }
+
+    case "registration_approved": {
+      const body = `
+        <p style="color:#0f172a;font-size:17px;font-weight:600;margin:0 0 8px;">Welcome aboard, ${escapeHtml(data.recipientName)}! 🎊</p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 22px;">
+          Your account has been <strong style="color:#059669;">verified successfully</strong>. You can now sign in using the credentials you set during registration.
+        </p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;margin:0 0 28px;">
+          <tr><td style="padding:18px 22px;">
+            <p style="margin:0 0 4px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Your Role</p>
+            <p style="margin:0;">${renderPill(roleLabel(data.userType))}</p>
+          </td></tr>
+        </table>
+
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">
+          Start connecting with professionals, share your expertise, and explore opportunities tailored to your role.
+        </p>
+
+        ${renderCtaButton("Sign In to Codonyx", baseUrl)}
+      `;
       return {
-        subject: `Your Codonyx account has been verified! 🎉`,
-        html: wrapper("Account Verified! ✅", "Welcome to the Codonyx network",
-          `<p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">Hello <strong style="color:#1e293b;">${data.recipientName}</strong>,</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">Your account has been <strong style="color:#059669;">verified successfully</strong>. You can now sign in using the login credentials you set during registration.</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">Your role: <strong style="color:#059669;">${data.userType === "advisor" ? "Advisor" : data.userType === "laboratory" ? "Laboratory" : "Distribution Partner"}</strong></p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 32px;">Start connecting with professionals and explore the platform.</p>
-          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center"><a href="${baseUrl}" style="display:inline-block;background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:10px;font-size:16px;font-weight:600;">Sign In to Codonyx</a></td></tr></table>`),
+        subject: `Welcome to Codonyx — Your account is verified ✅`,
+        html: renderEmailLayout({
+          preheader: "Your Codonyx account is now active",
+          headerEmoji: "🎉",
+          headerTitle: "Account Verified!",
+          headerSubtitle: `Welcome to the ${BRAND.name} network`,
+          body,
+        }),
       };
-    case "registration_rejected":
+    }
+
+    case "registration_rejected": {
+      const body = `
+        <p style="color:#0f172a;font-size:17px;font-weight:600;margin:0 0 8px;">Hello ${escapeHtml(data.recipientName)},</p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 16px;">
+          Thank you for your interest in joining ${BRAND.name} as a <strong>${roleLabel(data.userType)}</strong>.
+        </p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 16px;">
+          After careful review, we are unable to approve your registration at this time. This may be due to incomplete information or specific verification requirements.
+        </p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">
+          If you believe this was made in error, or you'd like to provide additional details and reapply, please reach out to our team.
+        </p>
+        ${renderCtaButton("Contact Support", `mailto:${BRAND.contactEmail}`)}
+      `;
       return {
         subject: `Update on your Codonyx registration`,
-        html: wrapper("Registration Update", "An update on your Codonyx account",
-          `<p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">Hello <strong style="color:#1e293b;">${data.recipientName}</strong>,</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">We regret to inform you that your registration as a <strong>${data.userType === "advisor" ? "Advisor" : data.userType === "laboratory" ? "Laboratory" : "Distribution Partner"}</strong> on Codonyx has not been approved at this time.</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">This could be due to incomplete information or verification requirements. If you believe this is an error or would like to reapply, please contact us.</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 32px;">Please reach out at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;font-weight:500;">info@codonyx.org</a> for any questions.</p>`),
+        html: renderEmailLayout({
+          preheader: "An update on your Codonyx registration",
+          headerEmoji: "📋",
+          headerTitle: "Registration Update",
+          headerSubtitle: "Regarding your application",
+          body,
+        }),
       };
-    case "registration_submitted":
+    }
+
+    case "registration_submitted": {
+      const body = `
+        <p style="color:#0f172a;font-size:17px;font-weight:600;margin:0 0 8px;">Thanks for joining us, ${escapeHtml(data.recipientName)}!</p>
+        <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 22px;">
+          We've received your registration as a <strong style="color:#059669;">${roleLabel(data.userType)}</strong>. Our team is currently reviewing your application.
+        </p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fffbeb;border-radius:12px;border:1px solid #fde68a;margin:0 0 24px;">
+          <tr><td style="padding:18px 22px;">
+            <p style="margin:0 0 6px;color:#92400e;font-size:14px;font-weight:600;">⏳ Status: Under Review</p>
+            <p style="margin:0;color:#78350f;font-size:13px;line-height:1.5;">You'll receive an email once a decision has been made — typically within 1-2 business days.</p>
+          </td></tr>
+        </table>
+
+        <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">
+          💡 Please do not attempt to sign in until your account has been approved.
+        </p>
+      `;
       return {
         subject: `Registration Received — Codonyx`,
-        html: wrapper("Registration Received ✅", "Thank you for registering with Codonyx",
-          `<p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px;">Hello <strong style="color:#1e293b;">${data.recipientName}</strong>,</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">Thank you for registering as a <strong style="color:#059669;">${data.userType === "advisor" ? "Advisor" : data.userType === "laboratory" ? "Laboratory" : "Distribution Partner"}</strong> on Codonyx.</p>
-          <p style="color:#475569;font-size:16px;line-height:1.7;margin:0 0 16px;">Your registration is currently <strong style="color:#d97706;">under review</strong>. You will be notified via email once a decision has been made.</p>
-          <div style="background:#f1f5f9;border-radius:10px;padding:16px 20px;margin:0 0 24px;"><p style="margin:0;color:#64748b;font-size:14px;">💡 Please do not attempt to sign in until your account has been approved.</p></div>`),
+        html: renderEmailLayout({
+          preheader: "Your Codonyx registration is under review",
+          headerEmoji: "📝",
+          headerTitle: "Registration Received",
+          headerSubtitle: `Welcome to ${BRAND.name}`,
+          body,
+        }),
       };
+    }
   }
 }
 
@@ -113,11 +191,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // registration_submitted is sent right after signup — no auth needed
     let userId: string | null = null;
 
     if (data.type !== "registration_submitted") {
-      // Authenticate the caller for all other types
       const authHeader = req.headers.get("Authorization");
       if (!authHeader?.startsWith("Bearer ")) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -140,14 +216,6 @@ const handler = async (req: Request): Promise<Response> => {
       userId = user.id;
     }
 
-    if (!data.recipientEmail || !data.recipientName || !data.type) {
-      return new Response(
-        JSON.stringify({ error: "recipientEmail, recipientName, and type are required." }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // For admin-only notification types, verify admin role server-side
     if (ADMIN_ONLY_TYPES.includes(data.type)) {
       if (!userId) {
         return new Response(JSON.stringify({ error: "Forbidden: Admin role required" }), {
