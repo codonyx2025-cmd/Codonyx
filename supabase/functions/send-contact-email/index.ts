@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { renderEmailLayout, renderCtaButton, escapeHtml } from "../_shared/email-layout.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -8,10 +9,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// --- In-memory rate limiter ---
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 3; // max 3 requests per minute per IP
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 3;
 
 function isRateLimited(key: string): boolean {
   const now = Date.now();
@@ -24,14 +24,12 @@ function isRateLimited(key: string): boolean {
   return entry.count > RATE_LIMIT_MAX;
 }
 
-// Periodic cleanup to prevent memory leaks
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of rateLimitMap) {
     if (now > entry.resetAt) rateLimitMap.delete(key);
   }
 }, 5 * 60_000);
-// --- End rate limiter ---
 
 interface ContactEmailRequest {
   name: string;
@@ -45,7 +43,6 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limit by IP
   const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (isRateLimited(`contact:${clientIP}`)) {
     return new Response(
@@ -66,6 +63,47 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending contact form email from:", email);
 
+    const fieldRow = (label: string, value: string, isLink = false) => `
+      <tr><td style="padding:14px 0;border-bottom:1px solid #f1f5f9;">
+        <p style="margin:0 0 4px;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">${escapeHtml(label)}</p>
+        <p style="margin:0;color:#0f172a;font-size:15px;line-height:1.5;">${isLink ? `<a href="mailto:${escapeHtml(value)}" style="color:#059669;text-decoration:none;">${escapeHtml(value)}</a>` : escapeHtml(value)}</p>
+      </td></tr>`;
+
+    const messageHtml = escapeHtml(message).replace(/\n/g, "<br>");
+
+    const body = `
+      <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 20px;">
+        A new message has been submitted through the Codonyx contact form.
+      </p>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;margin:0 0 24px;">
+        <tr><td style="padding:8px 22px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            ${fieldRow("Name", name)}
+            ${fieldRow("Email", email, true)}
+            ${organisation ? fieldRow("Organisation", organisation) : ""}
+          </table>
+        </td></tr>
+      </table>
+
+      <div style="margin:0 0 24px;">
+        <p style="margin:0 0 8px;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">Message</p>
+        <div style="background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;">
+          <p style="margin:0;color:#0f172a;font-size:15px;line-height:1.7;">${messageHtml}</p>
+        </div>
+      </div>
+
+      ${renderCtaButton(`Reply to ${name}`, `mailto:${email}`)}
+    `;
+
+    const html = renderEmailLayout({
+      preheader: `New contact form submission from ${name}`,
+      headerEmoji: "💬",
+      headerTitle: "New Contact Form Submission",
+      headerSubtitle: "Someone reached out via the Codonyx website",
+      body,
+    });
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -77,59 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: ["info@codonyx.org"],
         reply_to: email,
         subject: `New Contact Form Submission from ${name}`,
-        html: `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-          <body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f8fafc;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:48px 20px;">
-              <tr><td align="center">
-                <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-                  <tr>
-                    <td style="background:linear-gradient(135deg,#059669 0%,#047857 50%,#065f46 100%);padding:40px 32px;text-align:center;">
-                      <h1 style="color:#ffffff;margin:0;font-size:24px;font-weight:700;">New Contact Form Submission</h1>
-                      <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">Someone reached out via the Codonyx website</p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:40px 32px;">
-                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-                        <tr><td style="padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                          <strong style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Name</strong>
-                          <p style="color:#1e293b;font-size:16px;margin:4px 0 0;">${name}</p>
-                        </td></tr>
-                        <tr><td style="padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                          <strong style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Email</strong>
-                          <p style="color:#1e293b;font-size:16px;margin:4px 0 0;"><a href="mailto:${email}" style="color:#059669;text-decoration:none;">${email}</a></p>
-                        </td></tr>
-                        ${organisation ? `<tr><td style="padding:12px 0;border-bottom:1px solid #f1f5f9;">
-                          <strong style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Organisation</strong>
-                          <p style="color:#1e293b;font-size:16px;margin:4px 0 0;">${organisation}</p>
-                        </td></tr>` : ""}
-                        <tr><td style="padding:12px 0;">
-                          <strong style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1px;">Message</strong>
-                          <p style="color:#1e293b;font-size:16px;margin:4px 0 0;line-height:1.6;">${message.replace(/\n/g, "<br>")}</p>
-                        </td></tr>
-                      </table>
-                      <table width="100%" cellpadding="0" cellspacing="0">
-                        <tr><td align="center">
-                          <a href="mailto:${email}" style="display:inline-block;background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:600;">
-                            Reply to ${name}
-                          </a>
-                        </td></tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #f1f5f9;">
-                    <p style="color:#94a3b8;font-size:12px;margin:0;">© ${new Date().getFullYear()} Codonyx. Contact form submission.</p>
-                    <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">For any contact, email us at <a href="mailto:info@codonyx.org" style="color:#059669;text-decoration:none;">info@codonyx.org</a></p>
-                  </td></tr>
-                </table>
-              </td></tr>
-            </table>
-          </body>
-          </html>
-        `,
+        html,
       }),
     });
 
