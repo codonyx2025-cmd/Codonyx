@@ -239,6 +239,9 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const acceptConnection = async (connectionId: string) => {
+    const existingConnection = connections.find(c => c.id === connectionId);
+    let senderId = existingConnection?.sender_id;
+
     // Optimistic update FIRST
     setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "accepted" as const } : c));
     toast({ title: "Connection Accepted", description: "You are now connected." });
@@ -257,49 +260,60 @@ export function useConnections(currentProfileId: string | null) {
         return false;
       }
 
-      // Send acceptance email and create notification in background
-      // Capture sender_id before async work to avoid stale closure
-      const connection = connections.find(c => c.id === connectionId);
-      const senderId = connection?.sender_id;
-      (async () => {
-        try {
-          if (senderId && currentProfileId) {
-            const [acceptorResult, senderResult] = await Promise.all([
-              supabase.from("profiles").select("full_name, headline, organisation, user_type").eq("id", currentProfileId).single(),
-              supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
-            ]);
+      if (!senderId) {
+        const { data: connectionRecord, error: connectionLookupError } = await supabase
+          .from("connections")
+          .select("sender_id")
+          .eq("id", connectionId)
+          .maybeSingle();
 
-            if (acceptorResult.data?.full_name) {
-              // Create in-app notification for the sender
-              await supabase.from("notifications").insert({
-                profile_id: senderId,
-                type: "connection_accepted",
-                title: "Connection Accepted",
-                message: `${acceptorResult.data.full_name} accepted your connection request.`,
-                link: `/profile/${currentProfileId}`,
-                related_profile_id: currentProfileId,
-              });
-            }
+        if (connectionLookupError) {
+          console.error("Error loading accepted connection sender:", connectionLookupError);
+        }
 
-            if (senderResult.data?.email && acceptorResult.data?.full_name) {
-              await supabase.functions.invoke("send-notification-email", {
-                body: {
-                  type: "connection_accepted",
-                  recipientEmail: senderResult.data.email,
-                  recipientName: senderResult.data.full_name,
-                  senderName: acceptorResult.data.full_name,
-                  senderHeadline: acceptorResult.data.headline || "",
-                  senderOrganisation: acceptorResult.data.organisation || "",
-                  senderUserType: acceptorResult.data.user_type || "",
-                  loginUrl: window.location.origin + "/auth",
-                },
-              });
+        senderId = connectionRecord?.sender_id;
+      }
+
+      try {
+        if (senderId && currentProfileId) {
+          const [acceptorResult, senderResult] = await Promise.all([
+            supabase.from("profiles").select("full_name, headline, organisation, user_type").eq("id", currentProfileId).single(),
+            supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
+          ]);
+
+          if (acceptorResult.data?.full_name) {
+            const { error: notificationError } = await supabase.from("notifications").insert({
+              profile_id: senderId,
+              type: "connection_accepted",
+              title: "Connection Accepted",
+              message: `${acceptorResult.data.full_name} accepted your connection request.`,
+              link: `/profile/${currentProfileId}`,
+              related_profile_id: currentProfileId,
+            });
+
+            if (notificationError) {
+              console.error("Error creating acceptance notification:", notificationError);
             }
           }
-        } catch (emailError) {
-          console.error("Error sending acceptance email:", emailError);
+
+          if (senderResult.data?.email && acceptorResult.data?.full_name) {
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                type: "connection_accepted",
+                recipientEmail: senderResult.data.email,
+                recipientName: senderResult.data.full_name,
+                senderName: acceptorResult.data.full_name,
+                senderHeadline: acceptorResult.data.headline || "",
+                senderOrganisation: acceptorResult.data.organisation || "",
+                senderUserType: acceptorResult.data.user_type || "",
+                loginUrl: window.location.origin + "/auth",
+              },
+            });
+          }
         }
-      })();
+      } catch (emailError) {
+        console.error("Error sending acceptance email:", emailError);
+      }
 
       return true;
     } catch (error) {

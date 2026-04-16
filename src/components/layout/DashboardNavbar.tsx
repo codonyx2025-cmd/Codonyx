@@ -236,9 +236,8 @@ export function DashboardNavbar() {
               </Link>
             )}
             {/* Mobile notification bell */}
-            <div className="flex items-center gap-2 py-2">
+            <div className="flex items-center py-2">
               <NotificationBell profileId={profile?.id || null} />
-              <span className="text-sm font-medium tracking-wide uppercase text-muted-foreground">Notifications</span>
             </div>
             {navLinks.map((link) => (
               <Link
