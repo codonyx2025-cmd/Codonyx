@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PendingUserDetailModal } from "@/components/admin/PendingUserDetailModal";
 import { CustomFieldsManager } from "@/components/admin/CustomFieldsManager";
 import { KeywordSuggestionsManager } from "@/components/admin/KeywordSuggestionsManager";
+import { BannerImagesManager } from "@/components/admin/BannerImagesManager";
 import { BackButton } from "@/components/layout/BackButton";
 import {
   AlertDialog,
@@ -638,6 +639,9 @@ const AdminDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="keyword-suggestions" className="text-xs sm:text-sm">
               <Settings2 className="h-3 w-3 mr-1" />Keywords
+            </TabsTrigger>
+            <TabsTrigger value="banners" className="text-xs sm:text-sm">
+              <Settings2 className="h-3 w-3 mr-1" />Banners
             </TabsTrigger>
           </TabsList>
 
@@ -1740,6 +1744,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="keyword-suggestions">
             <KeywordSuggestionsManager />
+          </TabsContent>
+
+          <TabsContent value="banners">
+            <BannerImagesManager />
           </TabsContent>
         </Tabs>
 
