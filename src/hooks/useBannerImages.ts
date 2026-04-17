@@ -7,41 +7,98 @@ export interface BannerImage {
   alt_text: string | null;
 }
 
+const BANNER_CACHE_KEY = "codonyx-home-banner-cache-v1";
+const AUTH_EVENTS_TO_REFRESH = new Set(["INITIAL_SESSION", "SIGNED_IN", "SIGNED_OUT", "TOKEN_REFRESHED"]);
+
+function readCachedBanners(): BannerImage[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = window.localStorage.getItem(BANNER_CACHE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter(
+      (banner): banner is BannerImage =>
+        typeof banner?.id === "string" &&
+        typeof banner?.image_url === "string" &&
+        (typeof banner?.alt_text === "string" || banner?.alt_text === null)
+    );
+  } catch {
+    return [];
+  }
+}
+
+function cacheBanners(banners: BannerImage[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(BANNER_CACHE_KEY, JSON.stringify(banners));
+  } catch {
+    // Ignore storage failures and keep runtime state only.
+  }
+}
+
 export function useBannerImages() {
-  const [banners, setBanners] = useState<BannerImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState<BannerImage[]>(() => readCachedBanners());
+  const [loading, setLoading] = useState(() => readCachedBanners().length === 0);
 
   const fetchBanners = useCallback(async () => {
-    const { data } = await supabase
-      .from("banner_images")
-      .select("id, image_url, alt_text")
-      .eq("is_active", true)
-      .order("display_order", { ascending: true })
-      .order("created_at", { ascending: true });
-    setBanners(data || []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("banner_images")
+        .select("id, image_url, alt_text")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      const nextBanners = (data || []).filter((banner) => banner.image_url?.trim());
+      setBanners(nextBanners);
+      cacheBanners(nextBanners);
+    } catch {
+      setBanners((current) => (current.length > 0 ? current : readCachedBanners()));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    fetchBanners();
+    void fetchBanners();
 
-    // Listen for realtime changes so newly added banners show up without a hard refresh
     const channel = supabase
       .channel("banner_images_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "banner_images" },
-        () => fetchBanners()
+        () => void fetchBanners()
       )
       .subscribe();
 
-    // Also refetch when the tab regains focus (covers cache/edge cases)
-    const onFocus = () => fetchBanners();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (AUTH_EVENTS_TO_REFRESH.has(event)) {
+        void fetchBanners();
+      }
+    });
+
+    const onFocus = () => void fetchBanners();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void fetchBanners();
+      }
+    };
+
     window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       supabase.removeChannel(channel);
+      subscription.unsubscribe();
       window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [fetchBanners]);
 
