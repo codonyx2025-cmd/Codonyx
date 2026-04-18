@@ -8,7 +8,9 @@ import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAccountGuard } from "@/hooks/useAccountGuard";
+import { useAuthReady } from "@/hooks/useAuthReady";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { fetchOwnProfile } from "@/lib/auth";
 
 interface Profile {
   full_name: string;
@@ -119,21 +121,24 @@ const quickLinks = {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { isReady, user } = useAuthReady();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasChecked = useRef(false);
   useAccountGuard();
 
   useEffect(() => {
+    if (!isReady || !user || hasChecked.current) return;
+
     if (hasChecked.current) return;
     hasChecked.current = true;
 
     const loadProfile = async (userId: string) => {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("full_name, email, user_type, organisation, approval_status, headline, avatar_url")
-        .eq("user_id", userId)
-        .maybeSingle();
+      const { data: profileData } = await fetchOwnProfile<Profile>(
+        userId,
+        "full_name, email, user_type, organisation, approval_status, headline, avatar_url",
+        2
+      );
 
       if (!profileData || profileData.approval_status !== "approved") {
         await supabase.auth.signOut({ scope: "local" });
@@ -150,32 +155,28 @@ export default function DashboardPage() {
       setIsLoading(false);
     };
 
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session) {
-        await loadProfile(session.user.id);
-        return;
-      }
-
-      navigate("/auth", { replace: true });
-    };
-
-    checkAuth();
+    void loadProfile(user.id);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
         navigate("/auth", { replace: true });
       }
-      if (event === "SIGNED_IN" && session) {
-        loadProfile(session.user.id);
+      if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+        void loadProfile(session.user.id);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [isReady, navigate, user]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [isReady, navigate, user]);
 
   if (isLoading) {
     return (
