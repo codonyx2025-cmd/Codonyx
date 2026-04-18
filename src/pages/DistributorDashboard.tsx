@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Loader2, TrendingUp, DollarSign, Briefcase, Target, Pencil, FileText, Users, Building2, ArrowRight, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { useAuthReady } from "@/hooks/useAuthReady";
+import { fetchOwnProfile } from "@/lib/auth";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +66,7 @@ interface AggregateStats {
 
 export default function DistributorDashboard() {
   const navigate = useNavigate();
+  const { isReady, user } = useAuthReady();
   useAccountGuard();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -113,8 +116,14 @@ export default function DistributorDashboard() {
   }, [myBids, bidSearchTerm, bidStatusFilter, bidCurrencyFilter, allDeals]);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!isReady) return;
+    if (!user) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+
+    void loadData(user.id);
+  }, [isReady, navigate, user]);
 
   // Realtime subscriptions
   useEffect(() => {
@@ -123,34 +132,22 @@ export default function DistributorDashboard() {
     const channel = supabase
       .channel('distributor-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'deals' }, () => {
-        loadData();
+        if (user) void loadData(user.id);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'deal_bids' }, () => {
-        loadData();
+        if (user) void loadData(user.id);
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [profile]);
+  }, [profile, user]);
 
-  const loadData = async () => {
-    let userId: string | null = null;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      userId = session.user.id;
-    } else {
-      // Session null during token refresh — verify with getUser
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate("/auth"); return; }
-      userId = user.id;
-    }
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("id, full_name, organisation, user_type, approval_status")
-      .eq("user_id", userId)
-      .maybeSingle();
+  const loadData = async (userId: string) => {
+    const { data: profileData } = await fetchOwnProfile<Profile>(
+      userId,
+      "id, full_name, organisation, user_type, approval_status",
+      2
+    );
 
     if (!profileData || profileData.approval_status !== "approved" || profileData.user_type !== "distributor") {
       navigate("/dashboard");
@@ -252,7 +249,7 @@ export default function DistributorDashboard() {
       setSelectedDeal(null);
       setBidAmount("");
       setBidNotes("");
-      loadData();
+      if (user) void loadData(user.id);
     }
     setIsSubmittingBid(false);
   };
@@ -267,7 +264,7 @@ export default function DistributorDashboard() {
       toast({ title: "Failed to withdraw", variant: "destructive" });
     } else {
       toast({ title: "Bid withdrawn" });
-      loadData();
+      if (user) void loadData(user.id);
     }
   };
 
@@ -309,7 +306,7 @@ export default function DistributorDashboard() {
     } else {
       toast({ title: "Bid updated successfully!" });
       setEditingBid(null);
-      loadData();
+      if (user) void loadData(user.id);
     }
     setIsUpdatingBid(false);
   };
