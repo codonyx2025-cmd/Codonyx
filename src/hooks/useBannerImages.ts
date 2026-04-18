@@ -85,6 +85,11 @@ export function useBannerImages() {
     });
 
     const onFocus = () => void fetchBanners();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === BANNER_CACHE_KEY) {
+        setBanners(readCachedBanners());
+      }
+    };
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         void fetchBanners();
@@ -92,12 +97,14 @@ export function useBannerImages() {
     };
 
     window.addEventListener("focus", onFocus);
+    window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       supabase.removeChannel(channel);
       subscription.unsubscribe();
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [fetchBanners]);

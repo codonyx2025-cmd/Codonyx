@@ -91,10 +91,10 @@ export function Navbar() {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION")) {
-        await fetchProfile(session.user.id);
+        void fetchProfile(session.user.id);
       } else if (event === "SIGNED_OUT") {
         profileFetched.current = false;
         cachedProfile = null;
