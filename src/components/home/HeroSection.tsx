@@ -209,7 +209,7 @@ export function HeroSection() {
 
       {/* Slide indicators */}
       {heroImages.length > 1 && (
-        <div className="absolute bottom-8 sm:bottom-10 lg:bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+        <div className="absolute bottom-16 sm:bottom-20 lg:bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
           {heroImages.map((_, i) => (
             <button
               key={i}

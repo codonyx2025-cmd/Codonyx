@@ -150,6 +150,9 @@ export default function ConnectionsPage() {
 
   const handleAccept = async (connectionId: string) => {
     try {
+      const connection = [...pendingReceived, ...acceptedConnections, ...pendingSent].find(c => c.id === connectionId);
+      const senderId = connection?.sender_id;
+
       const { error } = await supabase
         .from("connections")
         .update({ status: "accepted" })
@@ -161,6 +164,48 @@ export default function ConnectionsPage() {
         title: "Connection Accepted",
         description: "You are now connected!",
       });
+
+      // Notify the sender (in-app + email)
+      (async () => {
+        try {
+          if (!senderId || !currentProfileId) return;
+
+          const [acceptorResult, senderResult] = await Promise.all([
+            supabase.from("profiles").select("full_name, headline, organisation, user_type, avatar_url").eq("id", currentProfileId).single(),
+            supabase.from("profiles").select("full_name, email").eq("id", senderId).single(),
+          ]);
+
+          if (acceptorResult.data?.full_name) {
+            const { error: notifError } = await supabase.from("notifications").insert({
+              profile_id: senderId,
+              type: "connection_accepted",
+              title: "Connection Accepted",
+              message: `${acceptorResult.data.full_name} accepted your connection request.`,
+              link: `/profile/${currentProfileId}`,
+              related_profile_id: currentProfileId,
+            });
+            if (notifError) console.error("Error creating acceptance notification:", notifError);
+          }
+
+          if (senderResult.data?.email && acceptorResult.data?.full_name) {
+            await supabase.functions.invoke("send-notification-email", {
+              body: {
+                type: "connection_accepted",
+                recipientEmail: senderResult.data.email,
+                recipientName: senderResult.data.full_name,
+                senderName: acceptorResult.data.full_name,
+                senderHeadline: acceptorResult.data.headline || "",
+                senderOrganisation: acceptorResult.data.organisation || "",
+                senderUserType: acceptorResult.data.user_type || "",
+                senderAvatarUrl: acceptorResult.data.avatar_url || "",
+                loginUrl: window.location.origin + "/auth",
+              },
+            });
+          }
+        } catch (e) {
+          console.error("Error sending acceptance notification:", e);
+        }
+      })();
 
       loadConnections();
     } catch (error) {

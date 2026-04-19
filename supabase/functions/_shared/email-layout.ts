@@ -47,12 +47,20 @@ export function renderEmailLayout(opts: LayoutOptions): string {
         <tr><td style="height:6px;background:linear-gradient(90deg,#10b981 0%,#059669 50%,#065f46 100%);line-height:6px;font-size:0;">&nbsp;</td></tr>
 
         <!-- Header -->
-        <tr><td style="background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:44px 32px 40px;text-align:center;">
-          <div style="margin:0 auto 18px;width:64px;height:64px;background-color:rgba(255,255,255,0.16);border-radius:18px;display:inline-block;line-height:64px;text-align:center;backdrop-filter:blur(8px);">
-            <span style="font-size:32px;line-height:64px;">${opts.headerEmoji || "✨"}</span>
-          </div>
-          <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.3px;line-height:1.25;">${escapeHtml(opts.headerTitle)}</h1>
-          ${opts.headerSubtitle ? `<p style="color:rgba(255,255,255,0.88);margin:10px 0 0;font-size:15px;line-height:1.5;">${escapeHtml(opts.headerSubtitle)}</p>` : ""}
+        <tr><td align="center" style="background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:48px 32px 44px;text-align:center;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+            <tr><td align="center" style="padding-bottom:20px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+                <tr><td align="center" valign="middle" width="64" height="64" style="width:64px;height:64px;background-color:rgba(255,255,255,0.16);border-radius:18px;text-align:center;vertical-align:middle;">
+                  <span style="font-size:32px;line-height:1;display:inline-block;">${opts.headerEmoji || "✨"}</span>
+                </td></tr>
+              </table>
+            </td></tr>
+            <tr><td align="center" style="text-align:center;">
+              <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.3px;line-height:1.25;text-align:center;">${escapeHtml(opts.headerTitle)}</h1>
+              ${opts.headerSubtitle ? `<p style="color:rgba(255,255,255,0.88);margin:10px 0 0;font-size:15px;line-height:1.5;text-align:center;">${escapeHtml(opts.headerSubtitle)}</p>` : ""}
+            </td></tr>
+          </table>
         </td></tr>
 
         <!-- Body -->
