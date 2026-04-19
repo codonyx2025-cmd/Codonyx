@@ -1100,6 +1100,9 @@ const AdminDashboard = () => {
                           color={greenColor}
                         />
                       </div>
+                      <p className="text-center text-xs text-muted-foreground mt-4">
+                        Includes INR and USD (converted to INR)
+                      </p>
                     </CardContent>
                   </Card>
                 );

@@ -657,6 +657,12 @@ export type Database = {
     }
     Functions: {
       check_email_exists: { Args: { check_email: string }; Returns: boolean }
+      get_admin_profile_ids: {
+        Args: never
+        Returns: {
+          profile_id: string
+        }[]
+      }
       get_deal_aggregate_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
