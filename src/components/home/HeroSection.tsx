@@ -199,7 +199,7 @@ export function HeroSection() {
           </div>
 
           {/* Stats row */}
-          <div ref={statsRef} className="flex justify-start divide-x divide-white/15 -mx-3 sm:-mx-6">
+          <div ref={statsRef} className="flex justify-start divide-x divide-white/15 -mx-3 sm:-mx-6 pr-16 sm:pr-24 lg:pr-32">
             <StatCounter end={80} suffix="%" label="Clinical Decisions via Diagnostics" enabled={statsVisible} />
             <StatCounter end={150} suffix="B+" label="AI Healthcare Market by 2030" enabled={statsVisible} />
             <StatCounter end={8} suffix="B+" label="Lives Impacted Globally" enabled={statsVisible} />
