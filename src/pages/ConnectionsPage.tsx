@@ -187,21 +187,8 @@ export default function ConnectionsPage() {
             if (notifError) console.error("Error creating acceptance notification:", notifError);
           }
 
-          if (senderResult.data?.email && acceptorResult.data?.full_name) {
-            await supabase.functions.invoke("send-notification-email", {
-              body: {
-                type: "connection_accepted",
-                recipientEmail: senderResult.data.email,
-                recipientName: senderResult.data.full_name,
-                senderName: acceptorResult.data.full_name,
-                senderHeadline: acceptorResult.data.headline || "",
-                senderOrganisation: acceptorResult.data.organisation || "",
-                senderUserType: acceptorResult.data.user_type || "",
-                senderAvatarUrl: acceptorResult.data.avatar_url || "",
-                loginUrl: window.location.origin + "/auth",
-              },
-            });
-          }
+          // Email notification intentionally removed — in-app notification only.
+          void senderResult;
         } catch (e) {
           console.error("Error sending acceptance notification:", e);
         }

@@ -11,8 +11,6 @@ const prefetchRoutes = () => {
   const routes = [
     () => import("./ServicesPage"),
     () => import("./TechnologyPage"),
-    () => import("./AboutPage"),
-    () => import("./ContactPage"),
     () => import("./AuthPage"),
     () => import("./AdvisorsPage"),
     () => import("./DashboardPage"),

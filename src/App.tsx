@@ -17,6 +17,10 @@ import ProfileDetailPage from "./pages/ProfileDetailPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import ConnectionsPage from "./pages/ConnectionsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsConditionsPage from "./pages/TermsConditionsPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 // Lazy-loaded pages (less frequently visited)
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -24,13 +28,9 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdvisorsPage = lazy(() => import("./pages/AdvisorsPage"));
 const LaboratoriesPage = lazy(() => import("./pages/LaboratoriesPage"));
 const PublicationsPage = lazy(() => import("./pages/PublicationsPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
 const InvestmentsPage = lazy(() => import("./pages/InvestmentsPage"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const TechnologyPage = lazy(() => import("./pages/TechnologyPage"));
-const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
-const TermsConditionsPage = lazy(() => import("./pages/TermsConditionsPage"));
 const BecomeAdvisorPage = lazy(() => import("./pages/BecomeAdvisorPage"));
 const RegisterLaboratoryPage = lazy(() => import("./pages/RegisterLaboratoryPage"));
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
