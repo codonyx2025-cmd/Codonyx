@@ -199,29 +199,31 @@ export function HeroSection() {
           </div>
 
           {/* Stats row */}
-          <div ref={statsRef} className="flex justify-start divide-x divide-white/15 -mx-3 sm:-mx-6 pr-16 sm:pr-24 lg:pr-32">
+          <div ref={statsRef} className="flex justify-start divide-x divide-white/15 -mx-3 sm:-mx-6">
             <StatCounter end={80} suffix="%" label="Clinical Decisions via Diagnostics" enabled={statsVisible} />
             <StatCounter end={150} suffix="B+" label="AI Healthcare Market by 2030" enabled={statsVisible} />
             <StatCounter end={8} suffix="B+" label="Lives Impacted Globally" enabled={statsVisible} />
           </div>
+
+          {/* Slide indicators */}
+          {heroImages.length > 1 && (
+            <div className="mt-6 sm:mt-8 lg:mt-10 flex justify-center">
+              <div className="z-20 flex gap-1.5">
+                {heroImages.map((_, i) => (
+                  <button
+                    key={i}
+                    aria-label={`Go to slide ${i + 1}`}
+                    onClick={() => setCurrentImage(i)}
+                    className={`h-1 rounded-full transition-all ${
+                      i === currentImage ? "w-8 bg-emerald-glow" : "w-4 bg-white/40 hover:bg-white/60"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Slide indicators */}
-      {heroImages.length > 1 && (
-        <div className="absolute bottom-16 sm:bottom-20 lg:bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-          {heroImages.map((_, i) => (
-            <button
-              key={i}
-              aria-label={`Go to slide ${i + 1}`}
-              onClick={() => setCurrentImage(i)}
-              className={`h-1 rounded-full transition-all ${
-                i === currentImage ? "w-8 bg-emerald-glow" : "w-4 bg-white/40 hover:bg-white/60"
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </section>
   );
 }
