@@ -1090,13 +1090,13 @@ const AdminDashboard = () => {
                         <CircleIndicator
                           percent={subscriptionPercent}
                           label="Subscription"
-                          value={totalSubscription > 0 ? formatCurrency(totalSubscription) : "INR\n20.18 Cr"}
+                          value={formatCurrency(totalSubscription)}
                           color={greenColor}
                         />
                         <CircleIndicator
                           percent={overPercent}
                           label="Over Committed"
-                          value={overCommitted > 0 ? formatCurrency(overCommitted) : "INR\n17.50 L"}
+                          value={formatCurrency(overCommitted)}
                           color={greenColor}
                         />
                       </div>

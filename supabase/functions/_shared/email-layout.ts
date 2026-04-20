@@ -43,11 +43,8 @@ export function renderEmailLayout(opts: LayoutOptions): string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.04);">
 
-        <!-- Top gradient accent bar -->
-        <tr><td style="height:6px;background:linear-gradient(90deg,#10b981 0%,#059669 50%,#065f46 100%);line-height:6px;font-size:0;">&nbsp;</td></tr>
-
-        <!-- Header -->
-        <tr><td align="center" style="background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:48px 32px 44px;text-align:center;">
+        <!-- Header (gradient merged, no separate accent bar to prevent overlap) -->
+        <tr><td align="center" style="background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:54px 32px 44px;text-align:center;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
             <tr><td align="center" style="padding-bottom:20px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
