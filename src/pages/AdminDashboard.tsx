@@ -1037,21 +1037,24 @@ const AdminDashboard = () => {
             <div className="space-y-6">
               {/* Deal Indicators */}
               {(() => {
+                // Fixed subscription target: 20 Cr (₹20,00,00,000)
+                const FIXED_TARGET = 20 * 10000000;
                 const approvedDistributors = aggregateStats.approved_distributors;
                 const totalBidders = 34 + approvedDistributors;
                 const totalSubscription = aggregateStats.total_subscription;
-                const totalTarget = aggregateStats.total_target;
-                const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
+                const overCommitted = Math.max(0, totalSubscription - FIXED_TARGET);
                 // Investors: full circle at 250
                 const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-                const subscriptionPercent = totalTarget > 0 ? Math.min(100, (totalSubscription / totalTarget) * 100) : 0;
-                const overPercent = totalTarget > 0 ? Math.min(100, (overCommitted / totalTarget) * 100) : 0;
+                const subscriptionPercent = Math.min(100, (totalSubscription / FIXED_TARGET) * 100);
+                const overPercent = Math.min(100, (overCommitted / FIXED_TARGET) * 100);
 
                 const formatCurrency = (val: number) => {
-                  if (val >= 10000000) return `INR\n${(val / 10000000).toFixed(2)} Cr`;
-                  if (val >= 100000) return `INR\n${(val / 100000).toFixed(2)} L`;
+                  if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
+                  if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
                   return `₹${val.toLocaleString()}`;
                 };
+                const subscriptionDisplay = `INR\n${formatCurrency(totalSubscription).replace('₹','')}/20 Cr`;
+                const overDisplay = `INR\n${formatCurrency(overCommitted).replace('₹','')}`;
 
                 const greenColor = "hsl(142, 71%, 29%)";
 
@@ -1090,13 +1093,13 @@ const AdminDashboard = () => {
                         <CircleIndicator
                           percent={subscriptionPercent}
                           label="Subscription"
-                          value={formatCurrency(totalSubscription)}
+                          value={subscriptionDisplay}
                           color={greenColor}
                         />
                         <CircleIndicator
                           percent={overPercent}
                           label="Over Committed"
-                          value={formatCurrency(overCommitted)}
+                          value={overDisplay}
                           color={greenColor}
                         />
                       </div>
