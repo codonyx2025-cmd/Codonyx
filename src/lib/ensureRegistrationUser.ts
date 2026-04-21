@@ -39,6 +39,14 @@ export const ensureRegistrationUser = async (
   );
 
   if (!existingAuthError && existingAuthData?.user_id) {
+    // Sign in so auth.uid() matches for the subsequent profile insert (RLS).
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+    if (signInError) {
+      return { userId: null, error: signInError.message };
+    }
     return { userId: existingAuthData.user_id, error: null };
   }
 
@@ -69,6 +77,18 @@ export const ensureRegistrationUser = async (
       userId: null,
       error: authError?.message || "Could not create account.",
     };
+  }
+
+  // If signup didn't return a session (email confirmation required), sign in explicitly
+  // so auth.uid() is available for the profile insert RLS check.
+  if (!authData.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password,
+    });
+    if (signInError) {
+      return { userId: null, error: signInError.message };
+    }
   }
 
   return { userId: authData.user.id, error: null };
