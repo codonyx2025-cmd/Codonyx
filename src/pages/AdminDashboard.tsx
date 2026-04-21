@@ -1053,7 +1053,7 @@ const AdminDashboard = () => {
                   if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
                   return `₹${val.toLocaleString()}`;
                 };
-                const subscriptionDisplay = `INR\n${formatCurrency(totalSubscription).replace('₹','')}/20 Cr`;
+                const subscriptionDisplay = `INR\n${formatCurrency(totalSubscription).replace('₹','')}`;
                 const overDisplay = `INR\n${formatCurrency(overCommitted).replace('₹','')}`;
 
                 const greenColor = "hsl(142, 71%, 29%)";
