@@ -510,20 +510,23 @@ export default function DistributorDashboard() {
 
             {/* Deal Indicators */}
             {(() => {
-               const approvedDistributors = aggregateStats.approved_distributors;
-               const totalBidders = 34 + approvedDistributors;
+              // Fixed subscription target: 20 Cr (₹20,00,00,000) — same as admin
+              const FIXED_TARGET = 20 * 10000000;
+              const approvedDistributors = aggregateStats.approved_distributors;
+              const totalBidders = 34 + approvedDistributors;
               const totalSubscription = aggregateStats.total_subscription;
-              const totalTarget = aggregateStats.total_target;
-              const overCommitted = totalTarget > 0 ? Math.max(0, totalSubscription - totalTarget) : 0;
+              const overCommitted = Math.max(0, totalSubscription - FIXED_TARGET);
               const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-               const subscriptionPercent = totalTarget > 0 ? Math.min(100, (totalSubscription / totalTarget) * 100) : 0;
-               const overPercent = totalTarget > 0 ? Math.min(100, (overCommitted / totalTarget) * 100) : 0;
+              const subscriptionPercent = Math.min(100, (totalSubscription / FIXED_TARGET) * 100);
+              const overPercent = Math.min(100, (overCommitted / FIXED_TARGET) * 100);
 
               const fmtCurrency = (val: number) => {
-                if (val >= 10000000) return `INR\n${(val / 10000000).toFixed(2)} Cr`;
-                if (val >= 100000) return `INR\n${(val / 100000).toFixed(2)} L`;
-                return `₹${val.toLocaleString()}`;
+                if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
+                if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
+                return val.toLocaleString();
               };
+              const subscriptionDisplay = `INR\n${fmtCurrency(totalSubscription)}/20 Cr`;
+              const overDisplay = `INR\n${fmtCurrency(overCommitted)}`;
 
               const greenColor = "hsl(142, 71%, 29%)";
 
@@ -562,16 +565,19 @@ export default function DistributorDashboard() {
                       <CircleIndicator
                         percent={subscriptionPercent}
                         label="Subscription"
-                        value={totalSubscription > 0 ? fmtCurrency(totalSubscription) : "INR\n20.18 Cr"}
+                        value={subscriptionDisplay}
                         color={greenColor}
                       />
                       <CircleIndicator
                         percent={overPercent}
                         label="Over Committed"
-                        value={overCommitted > 0 ? fmtCurrency(overCommitted) : "INR\n17.50 L"}
+                        value={overDisplay}
                         color={greenColor}
                       />
                     </div>
+                    <p className="text-center text-xs text-muted-foreground mt-4">
+                      Includes INR and USD (converted to INR) • Target: 20 Cr
+                    </p>
                   </CardContent>
                 </Card>
               );
