@@ -63,7 +63,7 @@ export default function AboutPage() {
                     <strong className="text-primary">Onyx</strong> symbolizes Earth's depth, strength, and enduring energy.
                   </p>
                   <p>
-                    The embedded <strong className="text-emerald-glow">"YX"</strong> subtly echoes the chromosomes that shape biological identity — honouring diversity, balance, and life itself.
+                    The embedded <strong className="text-emerald-600">"YX"</strong> subtly echoes the chromosomes that shape biological identity — honouring diversity, balance, and life itself.
                   </p>
                   <p>
                     Together, CODONYX stands where <strong className="text-foreground">life's code meets planetary responsibility</strong>.
