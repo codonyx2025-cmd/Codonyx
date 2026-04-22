@@ -525,7 +525,7 @@ export default function DistributorDashboard() {
                 if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
                 return val.toLocaleString();
               };
-              const subscriptionDisplay = `INR\n${fmtCurrency(totalSubscription)}/20 Cr`;
+              const subscriptionDisplay = `INR\n${fmtCurrency(totalSubscription)}`;
               const overDisplay = `INR\n${fmtCurrency(overCommitted)}`;
 
               const greenColor = "hsl(142, 71%, 29%)";
