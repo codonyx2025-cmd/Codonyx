@@ -21,9 +21,13 @@ export interface Notification {
 export function useNotifications(profileId: string | null) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async () => {
-    if (!profileId) return;
+    if (!profileId) {
+      setLoading(false);
+      return;
+    }
 
     const { data } = await supabase
       .from("notifications")
@@ -55,6 +59,7 @@ export function useNotifications(profileId: string | null) {
       setNotifications(enriched);
       setUnreadCount(enriched.filter(n => !n.is_read).length);
     }
+    setLoading(false);
   }, [profileId]);
 
   useEffect(() => {
@@ -114,6 +119,7 @@ export function useNotifications(profileId: string | null) {
   return {
     notifications,
     unreadCount,
+    loading,
     markAsRead,
     markAllAsRead,
     refetch: fetchNotifications,

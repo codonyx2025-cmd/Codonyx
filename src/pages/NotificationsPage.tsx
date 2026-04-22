@@ -45,7 +45,7 @@ export default function NotificationsPage() {
     })();
   }, [navigate]);
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(profileId);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, loading: notificationsLoading } = useNotifications(profileId);
 
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -56,7 +56,7 @@ export default function NotificationsPage() {
     else if (n.related_profile_id) navigate(`/profile/${n.related_profile_id}`);
   };
 
-  if (loading) {
+  if (loading || (profileId && notificationsLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
