@@ -393,7 +393,7 @@ const AdminDashboard = () => {
             profile_id: pid,
             type: "deal_closed",
             title: "Deal closed",
-            message: `The deal "${dealTitle}" you bid on has been closed.`,
+            message: `Deal Closed: The deal "${dealTitle}" you bid on has been closed.`,
             link: "/distributor-dashboard",
           }));
           await supabase.from("notifications").insert(rows);
