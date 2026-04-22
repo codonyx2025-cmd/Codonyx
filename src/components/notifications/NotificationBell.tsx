@@ -133,67 +133,82 @@ export function NotificationBell({ profileId }: NotificationBellProps) {
             </button>
           )}
         </div>
-        <ScrollArea className="max-h-[min(70vh,26rem)]">
-          {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-4 py-10 text-center text-muted-foreground">
-              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                <Bell className="h-6 w-6 opacity-40" />
+        <div className="relative">
+          <div
+            data-notifications-scroll-viewport
+            className="max-h-[22rem] overflow-y-auto overscroll-contain"
+          >
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center px-4 py-10 text-center text-muted-foreground">
+                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                  <Bell className="h-6 w-6 opacity-40" />
+                </div>
+                <p className="text-sm font-medium">No notifications yet</p>
+                <p className="text-xs mt-1 opacity-70">You're all caught up!</p>
               </div>
-              <p className="text-sm font-medium">No notifications yet</p>
-              <p className="text-xs mt-1 opacity-70">You're all caught up!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border/50">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-2.5 px-3 py-3 cursor-pointer hover:bg-muted/60 transition-all duration-200 sm:gap-3 sm:px-4 sm:py-3.5 ${
-                    !notification.is_read
-                      ? "bg-primary/5 border-l-2 border-l-primary"
-                      : "border-l-2 border-l-transparent"
-                  }`}
-                >
-                  {notification.related_profile ? (
-                    <div className="relative shrink-0">
-                      <Avatar
-                        className="h-9 w-9 cursor-pointer ring-2 ring-background sm:h-10 sm:w-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpen(false);
-                          navigate(`/profile/${notification.related_profile!.id}`);
-                        }}
-                      >
-                        <AvatarImage src={notification.related_profile.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                          {getInitials(notification.related_profile.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-background">
+            ) : (
+              <div className="divide-y divide-border/50">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`flex items-start gap-2.5 px-3 py-3 cursor-pointer hover:bg-muted/60 transition-all duration-200 sm:gap-3 sm:px-4 sm:py-3.5 ${
+                      !notification.is_read
+                        ? "bg-primary/5 border-l-2 border-l-primary"
+                        : "border-l-2 border-l-transparent"
+                    }`}
+                  >
+                    {notification.related_profile ? (
+                      <div className="relative shrink-0">
+                        <Avatar
+                          className="h-9 w-9 cursor-pointer ring-2 ring-background sm:h-10 sm:w-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpen(false);
+                            navigate(`/profile/${notification.related_profile!.id}`);
+                          }}
+                        >
+                          <AvatarImage src={notification.related_profile.avatar_url || undefined} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                            {getInitials(notification.related_profile.full_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-background">
+                          {notificationIcon(notification.type)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted sm:h-10 sm:w-10">
                         {notificationIcon(notification.type)}
                       </div>
+                    )}
+                    <div className="min-w-0 flex-1 pr-1">
+                      <p className="break-words text-sm leading-snug text-foreground">
+                        {notification.message}
+                      </p>
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                      </p>
                     </div>
-                  ) : (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted sm:h-10 sm:w-10">
-                      {notificationIcon(notification.type)}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1 pr-1">
-                    <p className="break-words text-sm leading-snug text-foreground">
-                      {notification.message}
-                    </p>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                    </p>
+                    {!notification.is_read && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 mt-2 animate-pulse" />
+                    )}
                   </div>
-                  {!notification.is_read && (
-                    <div className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 mt-2 animate-pulse" />
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {showScrollTop && (
+            <button
+              type="button"
+              onClick={scrollListToTop}
+              aria-label="Scroll to top"
+              className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform animate-fade-in"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </button>
           )}
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );
