@@ -1556,18 +1556,33 @@ const AdminDashboard = () => {
                       <DialogTitle>Bid Details</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={selectedBidDetail.profiles?.avatar_url || undefined} />
-                          <AvatarFallback>{(selectedBidDetail.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold text-lg">{selectedBidDetail.profiles?.full_name || "Unknown"}</p>
-                          {selectedBidDetail.profiles?.organisation && (
-                            <p className="text-sm text-muted-foreground">{selectedBidDetail.profiles.organisation}</p>
-                          )}
-                        </div>
-                      </div>
+                      {(() => {
+                        const profileId = selectedBidDetail.profiles?.id || selectedBidDetail.distributor_profile_id;
+                        const goToProfile = () => {
+                          if (!profileId) return;
+                          setSelectedBidDetail(null);
+                          navigate(`/profile/${profileId}`);
+                        };
+                        return (
+                          <div
+                            className={`flex items-center gap-3 ${profileId ? "cursor-pointer group" : ""}`}
+                            onClick={goToProfile}
+                            role={profileId ? "button" : undefined}
+                            title={profileId ? "View profile" : undefined}
+                          >
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={selectedBidDetail.profiles?.avatar_url || undefined} />
+                              <AvatarFallback>{(selectedBidDetail.profiles?.full_name || "?").slice(0,2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-semibold text-lg group-hover:underline">{selectedBidDetail.profiles?.full_name || "Unknown"}</p>
+                              {selectedBidDetail.profiles?.organisation && (
+                                <p className="text-sm text-muted-foreground group-hover:underline">{selectedBidDetail.profiles.organisation}</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Deal</p>
