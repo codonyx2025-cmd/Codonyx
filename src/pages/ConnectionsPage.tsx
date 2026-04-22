@@ -470,11 +470,26 @@ export default function ConnectionsPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState
-                  icon={Users}
-                  title="No connections yet"
-                  description={getEmptyMessage()}
-                />
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="rounded-full bg-muted p-4 mb-4">
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No connections yet</h3>
+                  <p className="text-muted-foreground max-w-md">{getEmptyMessage()}</p>
+                  <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                    {getBrowseTargets().map((t) => (
+                      <Button
+                        key={t.path}
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => navigate(t.path)}
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Browse {t.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               )}
             </TabsContent>
 
