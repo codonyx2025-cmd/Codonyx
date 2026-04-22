@@ -363,13 +363,47 @@ const AdminDashboard = () => {
   };
 
   const handleDealStatusChange = async (dealId: string, status: string) => {
+    // Capture previous status to detect transition into "closed"
+    const prevDeal = deals.find((d) => d.id === dealId);
+    const prevStatus = prevDeal?.deal_status;
+
     const { error } = await supabase.from("deals").update({ deal_status: status }).eq("id", dealId);
     if (error) {
       toast({ title: "Error", description: "Failed to update deal.", variant: "destructive" });
-    } else {
-      toast({ title: `Deal status updated to ${status}` });
-      fetchDeals();
+      return;
     }
+
+    toast({ title: `Deal status updated to ${status}` });
+
+    // If the deal was just closed, notify every distributor who bid on it
+    if (status === "closed" && prevStatus !== "closed") {
+      try {
+        const { data: bids } = await supabase
+          .from("deal_bids")
+          .select("distributor_profile_id")
+          .eq("deal_id", dealId);
+
+        const dealTitle = prevDeal?.title || "a deal";
+        const uniqueProfileIds = Array.from(
+          new Set((bids || []).map((b: any) => b.distributor_profile_id).filter(Boolean))
+        );
+
+        if (uniqueProfileIds.length > 0) {
+          const rows = uniqueProfileIds.map((pid) => ({
+            profile_id: pid,
+            type: "deal_closed",
+            title: "Deal closed",
+            message: `The deal "${dealTitle}" you bid on has been closed.`,
+            link: "/distributor-dashboard",
+          }));
+          await supabase.from("notifications").insert(rows);
+        }
+      } catch (e) {
+        console.error("Failed to send deal-closed notifications", e);
+      }
+    }
+
+    fetchDeals();
   };
 
   const fetchPendingUsers = async () => {
