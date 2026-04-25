@@ -9,20 +9,14 @@ const parseFunctionError = async (fnError: any, fallback: string) => {
   try {
     const body = await fnError?.context?.json?.();
     if (body?.error) return body.error as string;
-  } catch {
-    // ignore
-  }
-
+  } catch { /* ignore */ }
   try {
     const text = await fnError?.context?.text?.();
     if (text) {
       const parsed = JSON.parse(text);
       if (parsed?.error) return parsed.error as string;
     }
-  } catch {
-    // ignore
-  }
-
+  } catch { /* ignore */ }
   return fallback;
 };
 
@@ -32,14 +26,14 @@ export const ensureRegistrationUser = async (
 ): Promise<EnsureRegistrationUserResult> => {
   const normalizedEmail = email.trim().toLowerCase();
 
-  // First handle OAuth-created auth users with no profile.
+  // Handle OAuth-created auth users with no profile yet
   const { data: existingAuthData, error: existingAuthError } = await supabase.functions.invoke(
     "handle-existing-auth-user",
     { body: { email: normalizedEmail, password } }
   );
 
   if (!existingAuthError && existingAuthData?.user_id) {
-    // Sign in so auth.uid() matches for the subsequent profile insert (RLS).
+    // Existing OAuth user — sign them in for RLS on profile insert
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
@@ -52,8 +46,7 @@ export const ensureRegistrationUser = async (
 
   if (existingAuthError) {
     const status = (existingAuthError as any)?.context?.status;
-
-    // 404 means no auth user exists yet, continue with normal signup.
+    // 404 = no existing auth user, continue to normal signup
     if (status !== 404) {
       return {
         userId: null,
@@ -65,7 +58,6 @@ export const ensureRegistrationUser = async (
     }
   }
 
-  // Normal registration flow for truly new users.
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: normalizedEmail,
     password,
@@ -78,18 +70,5 @@ export const ensureRegistrationUser = async (
       error: authError?.message || "Could not create account.",
     };
   }
-
-  // If signup didn't return a session (email confirmation required), sign in explicitly
-  // so auth.uid() is available for the profile insert RLS check.
-  if (!authData.session) {
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: normalizedEmail,
-      password,
-    });
-    if (signInError) {
-      return { userId: null, error: signInError.message };
-    }
-  }
-
   return { userId: authData.user.id, error: null };
 };
