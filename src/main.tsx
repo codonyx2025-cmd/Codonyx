@@ -2,6 +2,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { initMonitoring } from "./lib/monitoring";
+import { restoreSessionStorageToken } from "./lib/rememberMe";
+
+// Restore session-only token (Remember Me = off) BEFORE Supabase client reads it.
+restoreSessionStorageToken();
+
 import { supabase } from "./integrations/supabase/client";
 
 // Initialize production error monitoring
