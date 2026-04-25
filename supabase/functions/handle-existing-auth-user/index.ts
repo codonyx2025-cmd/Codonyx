@@ -5,13 +5,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// --- In-memory rate limiter ---
+// --- In-memory rate limiter (no setInterval - inline cleanup) ---
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 5; // max 5 attempts per minute per IP
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 5;
 
 function isRateLimited(key: string): boolean {
   const now = Date.now();
+
+  // ✅ Inline cleanup instead of setInterval
+  for (const [k, v] of rateLimitMap) {
+    if (now > v.resetAt) rateLimitMap.delete(k);
+  }
+
   const entry = rateLimitMap.get(key);
   if (!entry || now > entry.resetAt) {
     rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
@@ -20,13 +26,6 @@ function isRateLimited(key: string): boolean {
   entry.count++;
   return entry.count > RATE_LIMIT_MAX;
 }
-
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitMap) {
-    if (now > entry.resetAt) rateLimitMap.delete(key);
-  }
-}, 5 * 60_000);
 // --- End rate limiter ---
 
 Deno.serve(async (req) => {
@@ -34,8 +33,8 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  // Rate limit by IP
-  const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const clientIP =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (isRateLimited(`auth:${clientIP}`)) {
     return new Response(
       JSON.stringify({ error: "Too many requests. Please try again later." }),
@@ -58,17 +57,14 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check if user exists in auth (paginate to avoid missing users beyond first page)
     const normalizedEmail = email.toLowerCase();
     let existingUser: { id: string; email?: string } | undefined;
     let page = 1;
     const perPage = 200;
 
     while (!existingUser) {
-      const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage,
-      });
+      const { data: usersData, error: listError } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage });
 
       if (listError) {
         return new Response(
@@ -92,7 +88,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user already has a profile
     const { data: profileData } = await supabaseAdmin
       .from("profiles")
       .select("id")
@@ -106,10 +101,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // User exists in auth but has no profile - update their password
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       existingUser.id,
-      { password }
+      { password, email_confirm: true }
     );
 
     if (updateError) {
