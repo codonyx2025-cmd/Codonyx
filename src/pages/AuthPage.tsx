@@ -11,6 +11,8 @@ import { ArrowRight, Target, MessageCircle, Handshake, Loader2, Eye, EyeOff } fr
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import googleIcon from "@/assets/google-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { applyRememberMePreference, REMEMBER_ME_KEY } from "@/lib/rememberMe";
 
 const features = [
   {
@@ -39,6 +41,9 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [rememberMe, setRememberMe] = useState(() => {
+    try { return localStorage.getItem(REMEMBER_ME_KEY) !== "false"; } catch { return true; }
+  });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [isSendingReset, setIsSendingReset] = useState(false);
@@ -203,6 +208,8 @@ export default function AuthPage() {
           await signOutUnauthorized(deactivated);
           return;
         }
+        // Persist the user's "Remember Me" choice for this session.
+        applyRememberMePreference(rememberMe);
         // Navigate immediately - don't wait for onAuthStateChange
         navigate("/dashboard", { replace: true });
       } else {
@@ -527,7 +534,15 @@ export default function AuthPage() {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              <div className="flex justify-end">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(v) => setRememberMe(v === true)}
+                  />
+                  <span className="text-sm text-muted-foreground">Remember me</span>
+                </label>
                 <button
                   type="button"
                   onClick={() => setShowForgotPassword(true)}
