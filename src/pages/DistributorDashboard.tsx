@@ -749,16 +749,16 @@ export default function DistributorDashboard() {
                   <>
                     <div className="space-y-3">
                       {filteredMyBids.slice(0, bidShowCount).map((bid) => (
-                        <div key={bid.id} className="flex items-center justify-between p-4 border border-divider rounded-xl">
-                          <div>
-                            <p className="font-medium text-foreground">{bid.deal_title}</p>
+                        <div key={bid.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-divider rounded-xl">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground break-words">{bid.deal_title}</p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(bid.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-semibold text-foreground">{formatCurrency(bid.bid_amount, allDeals.find(d => d.id === bid.deal_id)?.currency)}</span>
-                            <Badge className={getStatusColor(bid.bid_status)}>{getBidDisplayStatus(bid)}</Badge>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
+                            <span className="font-semibold text-foreground whitespace-nowrap">{formatCurrency(bid.bid_amount, allDeals.find(d => d.id === bid.deal_id)?.currency)}</span>
+                            <Badge className={`${getStatusColor(bid.bid_status)} whitespace-nowrap`}>{getBidDisplayStatus(bid)}</Badge>
                             {canEditBid(bid) && (
                               <Button variant="outline" size="sm" onClick={() => handleEditBid(bid)}>
                                 <Pencil className="w-3 h-3 mr-1" /> Edit
