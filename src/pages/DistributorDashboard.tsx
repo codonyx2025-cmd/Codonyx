@@ -60,8 +60,10 @@ interface Profile {
 interface AggregateStats {
   unique_bidders: number;
   approved_distributors: number;
-  total_subscription: number;
-  total_target: number;
+  total_subscription_inr: number;
+  total_subscription_usd: number;
+  total_target_inr: number;
+  total_target_usd: number;
 }
 
 export default function DistributorDashboard() {
@@ -72,7 +74,7 @@ export default function DistributorDashboard() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [myBids, setMyBids] = useState<Bid[]>([]);
-  const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, approved_distributors: 0, total_subscription: 0, total_target: 0 });
+  const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, approved_distributors: 0, total_subscription_inr: 0, total_subscription_usd: 0, total_target_inr: 0, total_target_usd: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [bidAmount, setBidAmount] = useState("");
@@ -510,25 +512,33 @@ export default function DistributorDashboard() {
 
             {/* Deal Indicators */}
             {(() => {
-              // Fixed subscription target: 20 Cr (₹20,00,00,000) — same as admin
-              const FIXED_TARGET = 20 * 10000000;
-              const approvedDistributors = aggregateStats.approved_distributors;
-              const totalBidders = 34 + approvedDistributors;
-              const totalSubscription = aggregateStats.total_subscription;
-              const overCommitted = Math.max(0, totalSubscription - FIXED_TARGET);
-              const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-              const subscriptionPercent = Math.min(100, (totalSubscription / FIXED_TARGET) * 100);
-              const overPercent = Math.min(100, (overCommitted / FIXED_TARGET) * 100);
+              const targetInr = aggregateStats.total_target_inr || (20 * 10000000);
+              const targetUsd = aggregateStats.total_target_usd || 1000000;
+              const totalBidders = aggregateStats.approved_distributors;
+              const subInr = aggregateStats.total_subscription_inr;
+              const subUsd = aggregateStats.total_subscription_usd;
+              const overInr = Math.max(0, subInr - targetInr);
+              const overUsd = Math.max(0, subUsd - targetUsd);
 
-              const fmtCurrency = (val: number) => {
+              const investorPercent = Math.min(100, (totalBidders / 250) * 100);
+              const subInrPercent = targetInr > 0 ? Math.min(100, (subInr / targetInr) * 100) : 0;
+              const subUsdPercent = targetUsd > 0 ? Math.min(100, (subUsd / targetUsd) * 100) : 0;
+              const overInrPercent = targetInr > 0 ? Math.min(100, (overInr / targetInr) * 100) : 0;
+              const overUsdPercent = targetUsd > 0 ? Math.min(100, (overUsd / targetUsd) * 100) : 0;
+
+              const formatInr = (val: number) => {
                 if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
                 if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
                 return val.toLocaleString();
               };
-              const subscriptionDisplay = `INR\n${fmtCurrency(totalSubscription)}`;
-              const overDisplay = `INR\n${fmtCurrency(overCommitted)}`;
+              const formatUsd = (val: number) => {
+                if (val >= 1000000) return `${(val / 1000000).toFixed(2)} M`;
+                if (val >= 1000) return `${(val / 1000).toFixed(2)} K`;
+                return val.toLocaleString();
+              };
 
               const greenColor = "hsl(142, 71%, 29%)";
+              const blueColor = "hsl(217, 91%, 45%)";
 
               const CircleIndicator = ({ percent, label, value, color }: { percent: number; label: string; value: string; color: string }) => {
                 const radius = 54;
@@ -563,21 +573,30 @@ export default function DistributorDashboard() {
                         color="hsl(var(--muted-foreground))"
                       />
                       <CircleIndicator
-                        percent={subscriptionPercent}
-                        label="Subscription"
-                        value={subscriptionDisplay}
+                        percent={subInrPercent}
+                        label="Subscription (INR)"
+                        value={`INR\n${formatInr(subInr)}`}
                         color={greenColor}
                       />
                       <CircleIndicator
-                        percent={overPercent}
-                        label="Over Committed"
-                        value={overDisplay}
+                        percent={subUsdPercent}
+                        label="Subscription (USD)"
+                        value={`USD\n${formatUsd(subUsd)}`}
+                        color={blueColor}
+                      />
+                      <CircleIndicator
+                        percent={overInrPercent}
+                        label="Over Committed (INR)"
+                        value={`INR\n${formatInr(overInr)}`}
                         color={greenColor}
                       />
+                      <CircleIndicator
+                        percent={overUsdPercent}
+                        label="Over Committed (USD)"
+                        value={`USD\n${formatUsd(overUsd)}`}
+                        color={blueColor}
+                      />
                     </div>
-                    <p className="text-center text-xs text-muted-foreground mt-4">
-                      Includes INR and USD (converted to INR) • Target: 20 Cr
-                    </p>
                   </CardContent>
                 </Card>
               );
