@@ -75,6 +75,7 @@ export default function DistributorDashboard() {
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [myBids, setMyBids] = useState<Bid[]>([]);
   const [aggregateStats, setAggregateStats] = useState<AggregateStats>({ unique_bidders: 0, approved_distributors: 0, total_subscription_inr: 0, total_subscription_usd: 0, total_target_inr: 0, total_target_usd: 0 });
+  const [indicatorLimits, setIndicatorLimits] = useState<{ limit_subscription_inr: number; limit_subscription_usd: number; limit_over_committed_inr: number; limit_over_committed_usd: number }>({ limit_subscription_inr: 0, limit_subscription_usd: 0, limit_over_committed_inr: 0, limit_over_committed_usd: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [bidAmount, setBidAmount] = useState("");
@@ -139,10 +140,24 @@ export default function DistributorDashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'deal_bids' }, () => {
         if (user) void loadData(user.id);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dashboard_settings' }, () => {
+        void fetchIndicatorLimits();
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [profile, user]);
+
+  const fetchIndicatorLimits = async () => {
+    const { data } = await supabase.from("dashboard_settings").select("setting_key, setting_value");
+    if (data) {
+      const next = { limit_subscription_inr: 0, limit_subscription_usd: 0, limit_over_committed_inr: 0, limit_over_committed_usd: 0 };
+      data.forEach((row: any) => {
+        if (row.setting_key in next) (next as any)[row.setting_key] = Number(row.setting_value) || 0;
+      });
+      setIndicatorLimits(next);
+    }
+  };
 
   const loadData = async (userId: string) => {
     const { data: profileData } = await fetchOwnProfile<Profile>(
@@ -201,6 +216,9 @@ export default function DistributorDashboard() {
     if (statsData) {
       setAggregateStats(statsData as unknown as AggregateStats);
     }
+
+    // Fetch admin-configured indicator limits
+    await fetchIndicatorLimits();
 
     setIsLoading(false);
   };
@@ -512,19 +530,23 @@ export default function DistributorDashboard() {
 
             {/* Deal Indicators */}
             {(() => {
-              const targetInr = aggregateStats.total_target_inr || (20 * 10000000);
-              const targetUsd = aggregateStats.total_target_usd || 1000000;
+              const targetInrForOver = aggregateStats.total_target_inr || (20 * 10000000);
+              const targetUsdForOver = aggregateStats.total_target_usd || 1000000;
+              const subInrLimit = indicatorLimits.limit_subscription_inr > 0 ? indicatorLimits.limit_subscription_inr : targetInrForOver;
+              const subUsdLimit = indicatorLimits.limit_subscription_usd > 0 ? indicatorLimits.limit_subscription_usd : targetUsdForOver;
+              const overInrLimit = indicatorLimits.limit_over_committed_inr > 0 ? indicatorLimits.limit_over_committed_inr : targetInrForOver;
+              const overUsdLimit = indicatorLimits.limit_over_committed_usd > 0 ? indicatorLimits.limit_over_committed_usd : targetUsdForOver;
               const totalBidders = aggregateStats.approved_distributors;
               const subInr = aggregateStats.total_subscription_inr;
               const subUsd = aggregateStats.total_subscription_usd;
-              const overInr = Math.max(0, subInr - targetInr);
-              const overUsd = Math.max(0, subUsd - targetUsd);
+              const overInr = Math.max(0, subInr - targetInrForOver);
+              const overUsd = Math.max(0, subUsd - targetUsdForOver);
 
               const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-              const subInrPercent = targetInr > 0 ? Math.min(100, (subInr / targetInr) * 100) : 0;
-              const subUsdPercent = targetUsd > 0 ? Math.min(100, (subUsd / targetUsd) * 100) : 0;
-              const overInrPercent = targetInr > 0 ? Math.min(100, (overInr / targetInr) * 100) : 0;
-              const overUsdPercent = targetUsd > 0 ? Math.min(100, (overUsd / targetUsd) * 100) : 0;
+              const subInrPercent = subInrLimit > 0 ? Math.min(100, (subInr / subInrLimit) * 100) : 0;
+              const subUsdPercent = subUsdLimit > 0 ? Math.min(100, (subUsd / subUsdLimit) * 100) : 0;
+              const overInrPercent = overInrLimit > 0 ? Math.min(100, (overInr / overInrLimit) * 100) : 0;
+              const overUsdPercent = overUsdLimit > 0 ? Math.min(100, (overUsd / overUsdLimit) * 100) : 0;
 
               const formatInr = (val: number) => {
                 if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
