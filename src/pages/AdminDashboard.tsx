@@ -1224,7 +1224,6 @@ const AdminDashboard = () => {
                   <CardDescription>
                     Set the maximum value (denominator) used to calculate the circle progress for each indicator.
                     Example: if Subscription (INR) value = 20,00,000 and limit = 2,00,00,000 → fill shows 10%.
-                    Leave 0 to fall back to the sum of deal targets.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
