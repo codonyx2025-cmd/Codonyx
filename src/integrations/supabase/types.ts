@@ -687,6 +687,13 @@ export type Database = {
           profile_id: string
         }[]
       }
+      get_deal_active_bid_counts: {
+        Args: never
+        Returns: {
+          active_bids: number
+          deal_id: string
+        }[]
+      }
       get_deal_aggregate_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
