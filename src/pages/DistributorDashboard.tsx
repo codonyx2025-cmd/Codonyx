@@ -92,6 +92,8 @@ export default function DistributorDashboard() {
   const [bidSearchTerm, setBidSearchTerm] = useState("");
   const [bidStatusFilter, setBidStatusFilter] = useState("all");
   const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
+  const [dealBidCounts, setDealBidCounts] = useState<Record<string, number>>({});
+  const [viewDealDetail, setViewDealDetail] = useState<Deal | null>(null);
 
   const filteredDeals = useMemo(() => {
     return deals.filter(deal => {
@@ -219,6 +221,16 @@ export default function DistributorDashboard() {
 
     // Fetch admin-configured indicator limits
     await fetchIndicatorLimits();
+
+    // Fetch active bid counts per deal (so distributors see total participants)
+    const { data: bidCountsData } = await supabase.rpc('get_deal_active_bid_counts');
+    if (bidCountsData) {
+      const counts: Record<string, number> = {};
+      (bidCountsData as any[]).forEach((row) => {
+        counts[row.deal_id] = Number(row.active_bids) || 0;
+      });
+      setDealBidCounts(counts);
+    }
 
     setIsLoading(false);
   };
@@ -660,13 +672,22 @@ export default function DistributorDashboard() {
                         const progress = deal.target_amount > 0 ? (deal.raised_amount / deal.target_amount) * 100 : 0;
                         const existingBid = myBids.find(b => b.deal_id === deal.id && b.bid_status !== "withdrawn");
                         return (
-                          <Card key={deal.id} className="border border-divider">
+                          <Card
+                            key={deal.id}
+                            className="border border-divider cursor-pointer hover:shadow-md hover:border-primary/40 transition-all"
+                            onClick={() => setViewDealDetail(deal)}
+                          >
                             <CardContent className="p-5">
-                              <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-start justify-between mb-3 gap-2">
                                 <h3 className="font-heading text-lg font-semibold text-foreground">{deal.title}</h3>
-                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                                  Open
-                                </Badge>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <Badge className="bg-orange-500/15 text-orange-600 border border-orange-500/30 hover:bg-orange-500/20">
+                                    {dealBidCounts[deal.id] || 0} BIDS
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                                    Open
+                                  </Badge>
+                                </div>
                               </div>
                               {deal.description && (
                                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{deal.description}</p>
@@ -688,7 +709,7 @@ export default function DistributorDashboard() {
                                 </div>
                                 <p className="text-xs text-muted-foreground text-right">{progress.toFixed(1)}% funded</p>
                               </div>
-                              <div className="mt-4 flex flex-col gap-2">
+                              <div className="mt-4 flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                                 {deal.document_url && (
                                   <Button
                                     variant="outline"
@@ -888,6 +909,71 @@ export default function DistributorDashboard() {
               {isUpdatingBid ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Update Bid
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deal Details Dialog */}
+      <Dialog open={!!viewDealDetail} onOpenChange={() => setViewDealDetail(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="break-words">{viewDealDetail?.title}</DialogTitle>
+            <DialogDescription>Deal details and current activity</DialogDescription>
+          </DialogHeader>
+          {viewDealDetail && (
+            <div className="space-y-4 py-2">
+              {viewDealDetail.description && (
+                <div>
+                  <Label className="text-muted-foreground">Description</Label>
+                  <p className="text-sm text-foreground mt-1 whitespace-pre-wrap break-words">{viewDealDetail.description}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Target</Label>
+                  <p className="font-semibold text-foreground">{formatCurrency(viewDealDetail.target_amount, viewDealDetail.currency)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Raised</Label>
+                  <p className="font-semibold text-primary">{formatCurrency(viewDealDetail.raised_amount, viewDealDetail.currency)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Currency</Label>
+                  <p className="font-medium">{viewDealDetail.currency || "INR"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Active Bids</Label>
+                  <p className="font-semibold text-orange-600">{dealBidCounts[viewDealDetail.id] || 0}</p>
+                </div>
+                {viewDealDetail.min_bid_amount != null && (
+                  <div>
+                    <Label className="text-muted-foreground">Minimum Bid</Label>
+                    <p className="font-medium">{(viewDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(viewDealDetail.min_bid_amount).toLocaleString()}</p>
+                  </div>
+                )}
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <p>
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 capitalize">
+                      {viewDealDetail.deal_status}
+                    </Badge>
+                  </p>
+                </div>
+              </div>
+              {viewDealDetail.document_url && (
+                <Button variant="outline" className="w-full" onClick={() => window.open(viewDealDetail.document_url!, '_blank')}>
+                  <FileText className="w-4 h-4 mr-2" /> View Document
+                </Button>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewDealDetail(null)}>Close</Button>
+            {viewDealDetail && !myBids.find(b => b.deal_id === viewDealDetail.id && b.bid_status !== "withdrawn") && (
+              <Button onClick={() => { setSelectedDeal(viewDealDetail); setViewDealDetail(null); }}>
+                Place Bid
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
