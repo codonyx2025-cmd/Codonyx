@@ -90,6 +90,9 @@ const AdminDashboard = () => {
   const [deals, setDeals] = useState<any[]>([]);
   const [dealBids, setDealBids] = useState<any[]>([]);
   const [aggregateStats, setAggregateStats] = useState<{ approved_distributors: number; unique_bidders: number; total_subscription_inr: number; total_subscription_usd: number; total_target_inr: number; total_target_usd: number }>({ approved_distributors: 0, unique_bidders: 0, total_subscription_inr: 0, total_subscription_usd: 0, total_target_inr: 0, total_target_usd: 0 });
+  const [indicatorLimits, setIndicatorLimits] = useState<{ limit_subscription_inr: number; limit_subscription_usd: number; limit_over_committed_inr: number; limit_over_committed_usd: number }>({ limit_subscription_inr: 0, limit_subscription_usd: 0, limit_over_committed_inr: 0, limit_over_committed_usd: 0 });
+  const [editingLimits, setEditingLimits] = useState<{ limit_subscription_inr: string; limit_subscription_usd: string; limit_over_committed_inr: string; limit_over_committed_usd: string }>({ limit_subscription_inr: "", limit_subscription_usd: "", limit_over_committed_inr: "", limit_over_committed_usd: "" });
+  const [savingLimits, setSavingLimits] = useState(false);
   const [loading, setLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -177,6 +180,9 @@ const AdminDashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'invite_tokens' }, () => {
         fetchInviteConfig();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dashboard_settings' }, () => {
+        fetchIndicatorLimits();
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -210,6 +216,50 @@ const AdminDashboard = () => {
     fetchInviteConfig();
     fetchAllUsers();
     fetchDeals();
+    fetchIndicatorLimits();
+  };
+
+  const fetchIndicatorLimits = async () => {
+    const { data } = await supabase.from("dashboard_settings").select("setting_key, setting_value");
+    if (data) {
+      const next = { limit_subscription_inr: 0, limit_subscription_usd: 0, limit_over_committed_inr: 0, limit_over_committed_usd: 0 };
+      data.forEach((row: any) => {
+        if (row.setting_key in next) (next as any)[row.setting_key] = Number(row.setting_value) || 0;
+      });
+      setIndicatorLimits(next);
+      setEditingLimits({
+        limit_subscription_inr: next.limit_subscription_inr ? String(next.limit_subscription_inr) : "",
+        limit_subscription_usd: next.limit_subscription_usd ? String(next.limit_subscription_usd) : "",
+        limit_over_committed_inr: next.limit_over_committed_inr ? String(next.limit_over_committed_inr) : "",
+        limit_over_committed_usd: next.limit_over_committed_usd ? String(next.limit_over_committed_usd) : "",
+      });
+    }
+  };
+
+  const handleSaveIndicatorLimits = async () => {
+    setSavingLimits(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const updates = [
+      { setting_key: "limit_subscription_inr", setting_value: parseFloat(editingLimits.limit_subscription_inr) || 0 },
+      { setting_key: "limit_subscription_usd", setting_value: parseFloat(editingLimits.limit_subscription_usd) || 0 },
+      { setting_key: "limit_over_committed_inr", setting_value: parseFloat(editingLimits.limit_over_committed_inr) || 0 },
+      { setting_key: "limit_over_committed_usd", setting_value: parseFloat(editingLimits.limit_over_committed_usd) || 0 },
+    ];
+    let hasError = false;
+    for (const u of updates) {
+      const { error } = await supabase
+        .from("dashboard_settings")
+        .update({ setting_value: u.setting_value, updated_by: user?.id })
+        .eq("setting_key", u.setting_key);
+      if (error) hasError = true;
+    }
+    setSavingLimits(false);
+    if (hasError) {
+      showErrorToast("Failed to update limits", { description: "Please try again." });
+    } else {
+      showSuccessToast("Indicator limits updated");
+      fetchIndicatorLimits();
+    }
   };
 
   const fetchAllUsers = async () => {
@@ -1072,19 +1122,24 @@ const AdminDashboard = () => {
               {/* Deal Indicators */}
               {(() => {
                 // Targets per currency (fallback if no deals exist yet)
-                const targetInr = aggregateStats.total_target_inr || (20 * 10000000); // 20 Cr default
-                const targetUsd = aggregateStats.total_target_usd || 1000000; // $1M default
+                // Admin-configured limits (fallback to target sums when limit is 0)
+                const subInrLimit = indicatorLimits.limit_subscription_inr > 0 ? indicatorLimits.limit_subscription_inr : (aggregateStats.total_target_inr || (20 * 10000000));
+                const subUsdLimit = indicatorLimits.limit_subscription_usd > 0 ? indicatorLimits.limit_subscription_usd : (aggregateStats.total_target_usd || 1000000);
+                const overInrLimit = indicatorLimits.limit_over_committed_inr > 0 ? indicatorLimits.limit_over_committed_inr : (aggregateStats.total_target_inr || (20 * 10000000));
+                const overUsdLimit = indicatorLimits.limit_over_committed_usd > 0 ? indicatorLimits.limit_over_committed_usd : (aggregateStats.total_target_usd || 1000000);
+                const targetInrForOver = aggregateStats.total_target_inr || (20 * 10000000);
+                const targetUsdForOver = aggregateStats.total_target_usd || 1000000;
                 const totalBidders = aggregateStats.approved_distributors;
                 const subInr = aggregateStats.total_subscription_inr;
                 const subUsd = aggregateStats.total_subscription_usd;
-                const overInr = Math.max(0, subInr - targetInr);
-                const overUsd = Math.max(0, subUsd - targetUsd);
+                const overInr = Math.max(0, subInr - targetInrForOver);
+                const overUsd = Math.max(0, subUsd - targetUsdForOver);
 
                 const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-                const subInrPercent = targetInr > 0 ? Math.min(100, (subInr / targetInr) * 100) : 0;
-                const subUsdPercent = targetUsd > 0 ? Math.min(100, (subUsd / targetUsd) * 100) : 0;
-                const overInrPercent = targetInr > 0 ? Math.min(100, (overInr / targetInr) * 100) : 0;
-                const overUsdPercent = targetUsd > 0 ? Math.min(100, (overUsd / targetUsd) * 100) : 0;
+                const subInrPercent = subInrLimit > 0 ? Math.min(100, (subInr / subInrLimit) * 100) : 0;
+                const subUsdPercent = subUsdLimit > 0 ? Math.min(100, (subUsd / subUsdLimit) * 100) : 0;
+                const overInrPercent = overInrLimit > 0 ? Math.min(100, (overInr / overInrLimit) * 100) : 0;
+                const overUsdPercent = overUsdLimit > 0 ? Math.min(100, (overUsd / overUsdLimit) * 100) : 0;
 
                 const formatInr = (val: number) => {
                   if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
@@ -1161,6 +1216,67 @@ const AdminDashboard = () => {
                   </Card>
                 );
               })()}
+
+              {/* Indicator Limits (Admin only) */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Indicator Limits</CardTitle>
+                  <CardDescription>
+                    Set the maximum value (denominator) used to calculate the circle progress for each indicator.
+                    Example: if Subscription (INR) value = 20,00,000 and limit = 2,00,00,000 → fill shows 10%.
+                    Leave 0 to fall back to the sum of deal targets.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Subscription Limit (INR)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 20000000"
+                        value={editingLimits.limit_subscription_inr}
+                        onChange={(e) => setEditingLimits((p) => ({ ...p, limit_subscription_inr: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Subscription Limit (USD)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 1000000"
+                        value={editingLimits.limit_subscription_usd}
+                        onChange={(e) => setEditingLimits((p) => ({ ...p, limit_subscription_usd: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Over Committed Limit (INR)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 20000000"
+                        value={editingLimits.limit_over_committed_inr}
+                        onChange={(e) => setEditingLimits((p) => ({ ...p, limit_over_committed_inr: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Over Committed Limit (USD)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="e.g. 1000000"
+                        value={editingLimits.limit_over_committed_usd}
+                        onChange={(e) => setEditingLimits((p) => ({ ...p, limit_over_committed_usd: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <Button onClick={handleSaveIndicatorLimits} disabled={savingLimits}>
+                      {savingLimits ? "Saving..." : "Save Limits"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Create Deal */}
               <Card>
