@@ -207,16 +207,20 @@ export default function ConnectionsPage() {
 
   const handleReject = async (connectionId: string) => {
     try {
+      // Decline with cooldown — mark withdrawn_at so the sender can't immediately re-request
       const { error } = await supabase
         .from("connections")
-        .update({ status: "rejected" })
+        .update({
+          status: "rejected" as any,
+          withdrawn_at: new Date().toISOString(),
+        })
         .eq("id", connectionId);
 
       if (error) throw error;
 
       toast({
-        title: "Connection Rejected",
-        description: "The connection request has been rejected.",
+        title: "Connection Declined",
+        description: "The connection request has been declined.",
       });
 
       loadConnections();
