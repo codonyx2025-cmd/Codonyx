@@ -10,6 +10,7 @@ import { CheckCircle, Loader2, Eye, EyeOff, Truck, FileText } from "lucide-react
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
+import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 export default function RegisterDistributorPage() {
@@ -33,6 +34,7 @@ export default function RegisterDistributorPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null);
   const [verificationDoc, setVerificationDoc] = useState<File | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Avatar handled by RegistrationAvatarUpload component
 
@@ -53,6 +55,10 @@ export default function RegisterDistributorPage() {
     }
     if (!distributionCapacity.trim()) {
       toast({ title: "Distribution Capacity required", description: "Please add at least one distribution capacity.", variant: "destructive" });
+      return;
+    }
+    if (!agreedToTerms) {
+      toast({ title: "Terms & Conditions required", description: "Please agree to the Terms & Conditions and Privacy Policy.", variant: "destructive" });
       return;
     }
 
@@ -262,7 +268,9 @@ export default function RegisterDistributorPage() {
               </label>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified || !verificationDoc}>
+            <TermsCheckbox checked={agreedToTerms} onCheckedChange={setAgreedToTerms} />
+
+            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified || !verificationDoc || !agreedToTerms}>
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</> : "Submit Application"}
             </Button>
 
