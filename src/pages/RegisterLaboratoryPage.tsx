@@ -11,6 +11,7 @@ import { CheckCircle, Loader2, Eye, EyeOff, FlaskConical } from "lucide-react";
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
+import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 export default function RegisterLaboratoryPage() {
@@ -38,6 +39,7 @@ export default function RegisterLaboratoryPage() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [researchAreas, setResearchAreas] = useState("");
   const [services, setServices] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // handleAvatarChange removed — using RegistrationAvatarUpload component
 
@@ -62,6 +64,10 @@ export default function RegisterLaboratoryPage() {
     }
     if (!services.trim()) {
       toast({ title: "Services required", description: "Please add at least one service.", variant: "destructive" });
+      return;
+    }
+    if (!agreedToTerms) {
+      toast({ title: "Terms & Conditions required", description: "Please agree to the Terms & Conditions and Privacy Policy.", variant: "destructive" });
       return;
     }
 
@@ -261,7 +267,9 @@ export default function RegisterLaboratoryPage() {
               </div>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified}>
+            <TermsCheckbox checked={agreedToTerms} onCheckedChange={setAgreedToTerms} />
+
+            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified || !agreedToTerms}>
               {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</> : "Submit Registration"}
             </Button>
 
