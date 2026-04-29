@@ -140,12 +140,17 @@ export function useConnections(currentProfileId: string | null) {
         await supabase.from("connections").delete().eq("id", existingConn.id);
       }
 
-      if (existingConn && !existingConn.withdrawn_at) {
+      if (existingConn && !existingConn.withdrawn_at && existingConn.status !== "rejected") {
         toast({
           title: "Already connected",
           description: "You already have an active connection with this person.",
         });
         return false;
+      }
+
+      // Legacy rejected rows without cooldown — delete so a fresh request can be created
+      if (existingConn && existingConn.status === "rejected" && !existingConn.withdrawn_at) {
+        await supabase.from("connections").delete().eq("id", existingConn.id);
       }
 
       // Optimistic update FIRST
@@ -326,19 +331,20 @@ export function useConnections(currentProfileId: string | null) {
   };
 
   const rejectConnection = async (connectionId: string) => {
-    // Optimistic update
-    setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "rejected" as const } : c));
+    const now = new Date().toISOString();
+    // Optimistic update — also set withdrawn_at so a 3-week cooldown applies to the sender
+    setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "rejected" as const, withdrawn_at: now } : c));
     toast({ title: "Request Declined", description: "Connection request has been declined." });
 
     try {
       const { error } = await supabase
         .from("connections")
-        .update({ status: "rejected" })
+        .update({ status: "rejected" as any, withdrawn_at: now })
         .eq("id", connectionId);
 
       if (error) {
         // Rollback
-        setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "pending" as const } : c));
+        setConnections(prev => prev.map(c => c.id === connectionId ? { ...c, status: "pending" as const, withdrawn_at: null } : c));
         console.error("Error rejecting connection:", error);
         toast({ title: "Error", description: "Failed to reject connection request.", variant: "destructive" });
         return false;
