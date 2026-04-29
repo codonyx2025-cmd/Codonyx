@@ -123,6 +123,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { isReady, user } = useAuthReady();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const hasChecked = useRef(false);
   useAccountGuard();
@@ -152,6 +153,13 @@ export default function DashboardPage() {
       }
 
       setProfile(profileData);
+
+      const { data: hasAdminRole } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'admin'
+      });
+      setIsAdmin(hasAdminRole === true);
+
       setIsLoading(false);
     };
 
@@ -213,7 +221,7 @@ export default function DashboardPage() {
                 <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm sm:text-base">
                   <span>You're logged in as</span>
                   <Badge variant="outline" className="capitalize font-medium text-primary border-primary/30 bg-primary/5 text-sm px-3 py-0.5">
-                    {profile?.user_type}
+                    {isAdmin ? "Admin" : profile?.user_type}
                   </Badge>
                   {profile?.organisation && (
                     <span className="text-foreground font-medium">at {profile.organisation}</span>
