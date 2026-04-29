@@ -11,6 +11,7 @@ import { ArrowRight, Target, MessageCircle, Handshake, CheckCircle, Loader2, XCi
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
+import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 const features = [
@@ -61,6 +62,7 @@ export default function RegisterPage() {
   // Advisor-specific fields
   const [expertise, setExpertise] = useState("");
   const [experience, setExperience] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Validate invite token
   useEffect(() => {
@@ -118,6 +120,10 @@ export default function RegisterPage() {
       return;
     }
     // Experience is now optional
+    if (!agreedToTerms) {
+      toast({ title: "Terms & Conditions required", description: "Please agree to the Terms & Conditions and Privacy Policy.", variant: "destructive" });
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -335,7 +341,9 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified}>
+            <TermsCheckbox checked={agreedToTerms} onCheckedChange={setAgreedToTerms} />
+
+            <Button type="submit" variant="primary" className="w-full h-12 text-base" disabled={isSubmitting || !isEmailVerified || !agreedToTerms}>
               {isSubmitting ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Registering...</>
               ) : (
