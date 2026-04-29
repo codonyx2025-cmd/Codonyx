@@ -40,7 +40,9 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  // Don't block the form behind a full-screen spinner. Show it immediately;
+  // background auth check will redirect if a valid session is already present.
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => {
     try { return localStorage.getItem(REMEMBER_ME_KEY) !== "false"; } catch { return true; }
   });
@@ -108,10 +110,11 @@ export default function AuthPage() {
 
     const checkAuth = async () => {
       try {
-        // Race session check with a 3s timeout to prevent hanging
+        // Race session check with a short timeout — we already show the form,
+        // so this just decides whether to redirect an already-signed-in user.
         const sessionResult = await Promise.race([
           supabase.auth.getSession(),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 800)),
         ]);
 
         if (cancelled) return;
@@ -185,16 +188,18 @@ export default function AuthPage() {
 
       if (error) {
         isFormSigningIn.current = false;
+        let errorTitle = "Sign in failed";
         let errorMessage = error.message;
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
           errorMessage = "Network error. Please check your internet connection and try again.";
         } else if (error.message.includes("Invalid login credentials")) {
           errorMessage = "Invalid email or password. Please check your credentials and try again.";
         } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Please check your email to confirm your account before signing in.";
+          errorTitle = "Email not verified";
+          errorMessage = "This email was used to start a registration but was never verified. Please register again from the Sign Up page to receive a new verification code, or contact support at info@codonyx.org.";
         }
         toast({
-          title: "Sign in failed",
+          title: errorTitle,
           description: errorMessage,
           variant: "destructive",
         });
@@ -202,15 +207,10 @@ export default function AuthPage() {
       }
 
       if (data.session) {
-        const { approved, deactivated } = await isSessionApproved(data.session.user.id);
-        if (!approved) {
-          isFormSigningIn.current = false;
-          await signOutUnauthorized(deactivated);
-          return;
-        }
         // Persist the user's "Remember Me" choice for this session.
         applyRememberMePreference(rememberMe);
-        // Navigate immediately - don't wait for onAuthStateChange
+        // Navigate immediately for instant UX. The dashboard's account guard
+        // (useAccountGuard) validates approval status and signs out if needed.
         navigate("/dashboard", { replace: true });
       } else {
         isFormSigningIn.current = false;
@@ -467,22 +467,7 @@ export default function AuthPage() {
     }
   };
 
-  // Fallback: if auth check hangs for 2s, show the form. No auto-reload.
-  useEffect(() => {
-    if (!isCheckingAuth) return;
-    const timer = setTimeout(() => {
-      setIsCheckingAuth(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [isCheckingAuth]);
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // Form renders immediately — no full-screen spinner blocking sign-in.
 
   return (
     <div className="min-h-screen flex bg-muted/30">
