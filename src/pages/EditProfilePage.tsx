@@ -323,11 +323,11 @@ export default function EditProfilePage() {
             </div>
 
             {/* Profile Card */}
-            <div className="bg-background rounded-2xl border border-divider p-8">
+            <div className="bg-background rounded-2xl border border-divider p-4 sm:p-8 overflow-hidden">
               {/* Avatar Section with Upload */}
-              <div className="flex items-center gap-6 mb-8 pb-8 border-b border-divider">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
+              <div className="flex items-center gap-4 sm:gap-6 mb-8 pb-8 border-b border-divider">
+                <div className="relative shrink-0">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                     <AvatarImage src={avatarUrl || undefined} alt={fullName} />
                     <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                       {fullName ? getInitials(fullName) : <User className="h-8 w-8" />}
@@ -354,15 +354,15 @@ export default function EditProfilePage() {
                     )}
                   </Button>
                 </div>
-                <div>
-                  <p className="font-medium text-foreground truncate max-w-[200px] sm:max-w-none" title={profile?.email}>{profile?.email}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground truncate" title={profile?.email}>{profile?.email}</p>
                   <p className="text-sm text-muted-foreground capitalize mb-2">
                     {profile?.user_type}
                   </p>
                   {profile?.created_at && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Member since {format(new Date(profile.created_at), 'MMMM yyyy')}
+                      <Calendar className="h-3 w-3 shrink-0" />
+                      <span className="truncate">Member since {format(new Date(profile.created_at), 'MMMM yyyy')}</span>
                     </p>
                   )}
                 </div>
