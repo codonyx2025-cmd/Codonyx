@@ -12,6 +12,7 @@ import codonyxLogo from "@/assets/codonyx_logo.png";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
 import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
+import { PasswordStrength } from "@/components/registration/PasswordStrength";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 
 export default function RegisterLaboratoryPage() {
@@ -203,6 +204,7 @@ export default function RegisterLaboratoryPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                <PasswordStrength password={password} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-xs uppercase tracking-wider font-medium">Confirm *</Label>
