@@ -13,6 +13,22 @@ import googleIcon from "@/assets/google-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { applyRememberMePreference, REMEMBER_ME_KEY } from "@/lib/rememberMe";
+import { PasswordStrength } from "@/components/registration/PasswordStrength";
+
+// Mirrors PasswordStrength scoring; require "Very Strong" (score >= 4) for resets.
+function getResetPasswordScore(password: string): number {
+  if (!password || password.length < 6) return 0;
+  let s = 0;
+  if (password.length >= 6) s++;
+  if (password.length >= 10) s++;
+  if (/[A-Z]/.test(password) && /[a-z]/.test(password)) s++;
+  if (/\d/.test(password)) s++;
+  if (/[^A-Za-z0-9]/.test(password)) s++;
+  if (s <= 2) return 1;
+  if (s === 3) return 2;
+  if (s === 4) return 3;
+  return 4;
+}
 
 const features = [
   {
@@ -322,6 +338,14 @@ export default function AuthPage() {
         toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
         return;
       }
+      if (getResetPasswordScore(resetPassword) < 4) {
+        toast({
+          title: "Password not strong enough",
+          description: "Password must reach 'Very Strong'. Use 10+ characters with uppercase, lowercase, numbers, and a symbol.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (resetPassword !== resetConfirmPassword) {
         toast({ title: "Passwords don't match", description: "Please make sure both passwords are the same.", variant: "destructive" });
         return;
@@ -509,6 +533,7 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-12 pr-12"
+                  maxLength={16}
                   required
                 />
                 <button
@@ -677,13 +702,14 @@ export default function AuthPage() {
             {resetStep === "password" && (
               <>
                 <div className="space-y-2">
-                  <Label>New Password</Label>
+                  <Label>New Password *</Label>
                   <div className="relative">
                     <Input
                       type={showResetPassword ? "text" : "password"}
                       placeholder="At least 6 characters"
                       value={resetPassword}
                       onChange={(e) => setResetPassword(e.target.value)}
+                      maxLength={16}
                       required
                     />
                     <button
@@ -694,14 +720,16 @@ export default function AuthPage() {
                       {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  <PasswordStrength password={resetPassword} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Confirm New Password</Label>
+                  <Label>Confirm New Password *</Label>
                   <Input
                     type={showResetPassword ? "text" : "password"}
                     placeholder="Re-enter new password"
                     value={resetConfirmPassword}
                     onChange={(e) => setResetConfirmPassword(e.target.value)}
+                    maxLength={16}
                     required
                   />
                 </div>
