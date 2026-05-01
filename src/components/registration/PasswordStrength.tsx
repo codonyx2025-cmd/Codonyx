@@ -11,7 +11,7 @@ type StrengthLevel = {
   textColor: string;
 };
 
-function calculateStrength(password: string): StrengthLevel {
+export function calculateStrength(password: string): StrengthLevel {
   if (!password) {
     return { label: "", score: 0, color: "bg-muted", textColor: "text-muted-foreground" };
   }
@@ -41,10 +41,21 @@ function calculateStrength(password: string): StrengthLevel {
 export function PasswordStrength({ password }: PasswordStrengthProps) {
   const strength = useMemo(() => calculateStrength(password), [password]);
 
+  const checks = useMemo(
+    () => [
+      { label: "10+ characters", ok: password.length >= 10 },
+      { label: "Uppercase (A-Z)", ok: /[A-Z]/.test(password) },
+      { label: "Lowercase (a-z)", ok: /[a-z]/.test(password) },
+      { label: "Number (0-9)", ok: /\d/.test(password) },
+      { label: "Symbol (e.g. !@#$%&*?)", ok: /[^A-Za-z0-9]/.test(password) },
+    ],
+    [password]
+  );
+
   if (!password) return null;
 
   return (
-    <div className="mt-2 space-y-1">
+    <div className="mt-2 space-y-2">
       <div className="grid grid-cols-4 gap-1">
         {[1, 2, 3, 4].map((bar) => (
           <div
@@ -57,6 +68,20 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
       </div>
       <p className={`text-xs font-medium ${strength.textColor}`}>
         Password strength: {strength.label}
+      </p>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 text-[11px] leading-tight">
+        {checks.map((c) => (
+          <li
+            key={c.label}
+            className={`flex items-center gap-1.5 ${c.ok ? "text-emerald-600" : "text-muted-foreground"}`}
+          >
+            <span aria-hidden="true">{c.ok ? "✓" : "•"}</span>
+            <span>{c.label}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[11px] text-muted-foreground">
+        Example: <span className="font-mono">Codonyx@2026!</span> — but don't use this exact password.
       </p>
     </div>
   );
