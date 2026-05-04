@@ -89,6 +89,7 @@ const AdminDashboard = () => {
   const [inviteConfig, setInviteConfig] = useState<InviteConfig | null>(null);
   const [deals, setDeals] = useState<any[]>([]);
   const [dealBids, setDealBids] = useState<any[]>([]);
+  const [dealSubscriptions, setDealSubscriptions] = useState<Record<string, number>>({});
   const [aggregateStats, setAggregateStats] = useState<{ approved_distributors: number; unique_bidders: number; total_subscription_inr: number; total_subscription_usd: number; total_target_inr: number; total_target_usd: number }>({ approved_distributors: 0, unique_bidders: 0, total_subscription_inr: 0, total_subscription_usd: 0, total_target_inr: 0, total_target_usd: 0 });
   const [indicatorLimits, setIndicatorLimits] = useState<{ limit_subscription_inr: number; limit_subscription_usd: number; limit_over_committed_inr: number; limit_over_committed_usd: number }>({ limit_subscription_inr: 0, limit_subscription_usd: 0, limit_over_committed_inr: 0, limit_over_committed_usd: 0 });
   const [editingLimits, setEditingLimits] = useState<{ limit_subscription_inr: string; limit_subscription_usd: string; limit_over_committed_inr: string; limit_over_committed_usd: string }>({ limit_subscription_inr: "", limit_subscription_usd: "", limit_over_committed_inr: "", limit_over_committed_usd: "" });
@@ -315,6 +316,16 @@ const AdminDashboard = () => {
     const { data: statsData } = await supabase.rpc('get_deal_aggregate_stats');
     if (statsData) {
       setAggregateStats(statsData as unknown as typeof aggregateStats);
+    }
+
+    // Fetch live subscription totals per deal (sum of non-withdrawn bids)
+    const { data: subsData } = await supabase.rpc('get_deal_subscription_totals');
+    if (subsData) {
+      const subs: Record<string, number> = {};
+      (subsData as any[]).forEach((row) => {
+        subs[row.deal_id] = Number(row.total_subscription) || 0;
+      });
+      setDealSubscriptions(subs);
     }
   };
 
@@ -763,9 +774,14 @@ const AdminDashboard = () => {
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge 
-                          variant={user.user_type === "advisor" ? "default" : "secondary"}
-                          className="capitalize"
+                        <Badge
+                          className={`capitalize whitespace-nowrap shrink-0 border ${
+                            user.user_type === "laboratory"
+                              ? "bg-blue-500/10 text-blue-600 border-blue-500/30 hover:bg-blue-500/20"
+                              : user.user_type === "distributor"
+                              ? "bg-amber-500/10 text-amber-700 border-amber-500/30 hover:bg-amber-500/20"
+                              : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+                          }`}
                         >
                           {user.user_type}
                         </Badge>
@@ -1404,6 +1420,7 @@ const AdminDashboard = () => {
                               <TableHead className="whitespace-nowrap">Notes</TableHead>
                               <TableHead className="whitespace-nowrap">Target</TableHead>
                               <TableHead className="whitespace-nowrap">Raised</TableHead>
+                              <TableHead className="whitespace-nowrap">Percentage</TableHead>
                               <TableHead className="whitespace-nowrap">Status</TableHead>
                               <TableHead className="whitespace-nowrap">Bids</TableHead>
                               <TableHead className="whitespace-nowrap">Actions</TableHead>
@@ -1413,6 +1430,8 @@ const AdminDashboard = () => {
                             {visible.map((deal: any) => {
                               const bidsForDeal = dealBids.filter((b: any) => b.deal_id === deal.id && b.bid_status !== 'withdrawn');
                               const cs = (deal.currency || "INR") === "USD" ? "$" : "₹";
+                              const liveRaised = dealSubscriptions[deal.id] ?? 0;
+                              const pct = Number(deal.target_amount) > 0 ? (liveRaised / Number(deal.target_amount)) * 100 : 0;
                               return (
                                 <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDealDetail(deal)}>
                                   <TableCell className="font-medium whitespace-nowrap">{deal.title}</TableCell>
@@ -1420,7 +1439,8 @@ const AdminDashboard = () => {
                                     {deal.description || <span className="italic text-muted-foreground/50">No description</span>}
                                   </TableCell>
                                   <TableCell className="whitespace-nowrap">{cs}{Number(deal.target_amount).toLocaleString()} <span className="text-xs text-muted-foreground">{deal.currency || "INR"}</span></TableCell>
-                                  <TableCell className="whitespace-nowrap">{cs}{Number(deal.raised_amount).toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap">{cs}{liveRaised.toLocaleString()}</TableCell>
+                                  <TableCell className="whitespace-nowrap font-medium text-primary">{pct.toFixed(1)}%</TableCell>
                                   <TableCell>
                                     <Badge className="capitalize" variant={deal.deal_status === "published" ? "default" : "secondary"}>
                                       {deal.deal_status}
@@ -1488,7 +1508,11 @@ const AdminDashboard = () => {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Raised Amount</p>
-                          <p className="font-medium">{(selectedDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(selectedDealDetail.raised_amount).toLocaleString()}</p>
+                          <p className="font-medium">{(selectedDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(dealSubscriptions[selectedDealDetail.id] ?? 0).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wider">Percentage</p>
+                          <p className="font-medium text-primary">{(Number(selectedDealDetail.target_amount) > 0 ? ((dealSubscriptions[selectedDealDetail.id] ?? 0) / Number(selectedDealDetail.target_amount)) * 100 : 0).toFixed(1)}%</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground uppercase tracking-wider">Status</p>
