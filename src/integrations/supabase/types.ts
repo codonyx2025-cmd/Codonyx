@@ -695,6 +695,13 @@ export type Database = {
         }[]
       }
       get_deal_aggregate_stats: { Args: never; Returns: Json }
+      get_deal_subscription_totals: {
+        Args: never
+        Returns: {
+          deal_id: string
+          total_subscription: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
