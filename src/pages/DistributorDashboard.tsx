@@ -93,6 +93,7 @@ export default function DistributorDashboard() {
   const [bidStatusFilter, setBidStatusFilter] = useState("all");
   const [bidCurrencyFilter, setBidCurrencyFilter] = useState("all");
   const [dealBidCounts, setDealBidCounts] = useState<Record<string, number>>({});
+  const [dealSubscriptions, setDealSubscriptions] = useState<Record<string, number>>({});
   const [viewDealDetail, setViewDealDetail] = useState<Deal | null>(null);
 
   const filteredDeals = useMemo(() => {
@@ -230,6 +231,16 @@ export default function DistributorDashboard() {
         counts[row.deal_id] = Number(row.active_bids) || 0;
       });
       setDealBidCounts(counts);
+    }
+
+    // Fetch subscription totals per deal (live raised amount per deal)
+    const { data: subsData } = await supabase.rpc('get_deal_subscription_totals');
+    if (subsData) {
+      const subs: Record<string, number> = {};
+      (subsData as any[]).forEach((row) => {
+        subs[row.deal_id] = Number(row.total_subscription) || 0;
+      });
+      setDealSubscriptions(subs);
     }
 
     setIsLoading(false);
@@ -540,101 +551,7 @@ export default function DistributorDashboard() {
               </div>
             </div>
 
-            {/* Deal Indicators */}
-            {(() => {
-              const targetInrForOver = aggregateStats.total_target_inr || (20 * 10000000);
-              const targetUsdForOver = aggregateStats.total_target_usd || 1000000;
-              const subInrLimit = indicatorLimits.limit_subscription_inr > 0 ? indicatorLimits.limit_subscription_inr : targetInrForOver;
-              const subUsdLimit = indicatorLimits.limit_subscription_usd > 0 ? indicatorLimits.limit_subscription_usd : targetUsdForOver;
-              const overInrLimit = indicatorLimits.limit_over_committed_inr > 0 ? indicatorLimits.limit_over_committed_inr : targetInrForOver;
-              const overUsdLimit = indicatorLimits.limit_over_committed_usd > 0 ? indicatorLimits.limit_over_committed_usd : targetUsdForOver;
-              const totalBidders = aggregateStats.approved_distributors;
-              const subInr = aggregateStats.total_subscription_inr;
-              const subUsd = aggregateStats.total_subscription_usd;
-              const overInr = Math.max(0, subInr - targetInrForOver);
-              const overUsd = Math.max(0, subUsd - targetUsdForOver);
-
-              const investorPercent = Math.min(100, (totalBidders / 250) * 100);
-              const subInrPercent = subInrLimit > 0 ? Math.min(100, (subInr / subInrLimit) * 100) : 0;
-              const subUsdPercent = subUsdLimit > 0 ? Math.min(100, (subUsd / subUsdLimit) * 100) : 0;
-              const overInrPercent = overInrLimit > 0 ? Math.min(100, (overInr / overInrLimit) * 100) : 0;
-              const overUsdPercent = overUsdLimit > 0 ? Math.min(100, (overUsd / overUsdLimit) * 100) : 0;
-
-              const formatInr = (val: number) => {
-                if (val >= 10000000) return `${(val / 10000000).toFixed(2)} Cr`;
-                if (val >= 100000) return `${(val / 100000).toFixed(2)} L`;
-                return val.toLocaleString();
-              };
-              const formatUsd = (val: number) => {
-                if (val >= 1000000) return `${(val / 1000000).toFixed(2)} M`;
-                if (val >= 1000) return `${(val / 1000).toFixed(2)} K`;
-                return val.toLocaleString();
-              };
-
-              const greenColor = "hsl(142, 71%, 29%)";
-              const blueColor = "hsl(217, 91%, 45%)";
-
-              const CircleIndicator = ({ percent, label, value, color }: { percent: number; label: string; value: string; color: string }) => {
-                const radius = 54;
-                const circumference = 2 * Math.PI * radius;
-                const offset = circumference - (percent / 100) * circumference;
-                return (
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="relative w-32 h-32">
-                      <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
-                        <circle cx="64" cy="64" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-                        <circle cx="64" cy="64" r={radius} fill="none" stroke={color} strokeWidth="8"
-                          strokeDasharray={circumference} strokeDashoffset={offset}
-                          strokeLinecap="round" className="transition-all duration-1000 ease-out" />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-bold text-foreground text-center leading-tight whitespace-pre-line">{value}</span>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-muted-foreground text-center">{label}</span>
-                  </div>
-                );
-              };
-
-              return (
-                <Card className="mb-8">
-                  <CardContent className="py-6">
-                    <div className="flex justify-around items-center flex-wrap gap-6">
-                      <CircleIndicator
-                        percent={investorPercent}
-                        label="Investors Committed"
-                        value={String(totalBidders)}
-                        color="hsl(var(--muted-foreground))"
-                      />
-                      <CircleIndicator
-                        percent={subInrPercent}
-                        label="Subscription (INR)"
-                        value={`INR\n${formatInr(subInr)}`}
-                        color={greenColor}
-                      />
-                      <CircleIndicator
-                        percent={subUsdPercent}
-                        label="Subscription (USD)"
-                        value={`USD\n${formatUsd(subUsd)}`}
-                        color={blueColor}
-                      />
-                      <CircleIndicator
-                        percent={overInrPercent}
-                        label="Over Committed (INR)"
-                        value={`INR\n${formatInr(overInr)}`}
-                        color={greenColor}
-                      />
-                      <CircleIndicator
-                        percent={overUsdPercent}
-                        label="Over Committed (USD)"
-                        value={`USD\n${formatUsd(overUsd)}`}
-                        color={blueColor}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })()}
+            {/* Deal Indicators removed — now per-deal indicators inside the deal detail dialog */}
 
             {/* Available Deals */}
             <Card id="deals-section" className="mb-8">
@@ -669,7 +586,8 @@ export default function DistributorDashboard() {
                   <>
                     <div className="grid gap-4 md:grid-cols-2">
                       {filteredDeals.slice(0, dealShowCount).map((deal) => {
-                        const progress = deal.target_amount > 0 ? (deal.raised_amount / deal.target_amount) * 100 : 0;
+                        const liveRaised = dealSubscriptions[deal.id] ?? deal.raised_amount;
+                        const progress = deal.target_amount > 0 ? (liveRaised / deal.target_amount) * 100 : 0;
                         const existingBid = myBids.find(b => b.deal_id === deal.id && b.bid_status !== "withdrawn");
                         return (
                           <Card
@@ -699,7 +617,7 @@ export default function DistributorDashboard() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Raised</span>
-                                  <span className="font-semibold text-primary">{formatCurrency(deal.raised_amount, deal.currency)}</span>
+                                  <span className="font-semibold text-primary">{formatCurrency(liveRaised, deal.currency)}</span>
                                 </div>
                                 <div className="w-full bg-muted rounded-full h-2">
                                   <div
@@ -791,16 +709,22 @@ export default function DistributorDashboard() {
                 ) : (
                   <>
                     <div className="space-y-3">
-                      {filteredMyBids.slice(0, bidShowCount).map((bid) => (
-                        <div key={bid.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-divider rounded-xl">
+                      {filteredMyBids.slice(0, bidShowCount).map((bid) => {
+                        const bidDeal = allDeals.find(d => d.id === bid.deal_id);
+                        return (
+                        <div
+                          key={bid.id}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-divider rounded-xl cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all"
+                          onClick={() => bidDeal && setViewDealDetail(bidDeal)}
+                        >
                           <div className="min-w-0 flex-1">
                             <p className="font-medium text-foreground break-words">{bid.deal_title}</p>
                             <p className="text-sm text-muted-foreground">
                               {new Date(bid.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end">
-                            <span className="font-semibold text-foreground whitespace-nowrap">{formatCurrency(bid.bid_amount, allDeals.find(d => d.id === bid.deal_id)?.currency)}</span>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:justify-end" onClick={(e) => e.stopPropagation()}>
+                            <span className="font-semibold text-foreground whitespace-nowrap">{formatCurrency(bid.bid_amount, bidDeal?.currency)}</span>
                             <Badge className={`${getStatusColor(bid.bid_status)} whitespace-nowrap`}>{getBidDisplayStatus(bid)}</Badge>
                             {canEditBid(bid) && (
                               <Button variant="outline" size="sm" onClick={() => handleEditBid(bid)}>
@@ -814,7 +738,8 @@ export default function DistributorDashboard() {
                             )}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     {filteredMyBids.length > bidShowCount && (
                       <div className="flex justify-center gap-2 mt-4">
@@ -920,53 +845,89 @@ export default function DistributorDashboard() {
             <DialogTitle className="break-words">{viewDealDetail?.title}</DialogTitle>
             <DialogDescription>Deal details and current activity</DialogDescription>
           </DialogHeader>
-          {viewDealDetail && (
-            <div className="space-y-4 py-2">
-              {viewDealDetail.description && (
-                <div>
-                  <Label className="text-muted-foreground">Description</Label>
-                  <p className="text-sm text-foreground mt-1 whitespace-pre-wrap break-words">{viewDealDetail.description}</p>
+          {viewDealDetail && (() => {
+            const dealCurr = viewDealDetail.currency || "INR";
+            const sym = dealCurr === "USD" ? "$" : "₹";
+            const liveSubscription = dealSubscriptions[viewDealDetail.id] ?? 0;
+            const investorsCommitted = dealBidCounts[viewDealDetail.id] || 0;
+            const target = Number(viewDealDetail.target_amount) || 0;
+            const overSubscription = Math.max(0, liveSubscription - target);
+            const pct = target > 0 ? (liveSubscription / target) * 100 : 0;
+            return (
+              <div className="space-y-5 py-2">
+                {/* Deal-specific indicators */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-divider bg-amber-500/5 p-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Investors Committed</p>
+                    <p className="text-2xl font-bold text-amber-600">{investorsCommitted}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Active bids on this deal</p>
+                  </div>
+                  <div className="rounded-xl border border-divider bg-primary/5 p-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Subscription ({dealCurr})</p>
+                    <p className="text-2xl font-bold text-primary break-all">{sym}{liveSubscription.toLocaleString()}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">{pct.toFixed(1)}% of target</p>
+                  </div>
+                  <div className="rounded-xl border border-divider bg-emerald-500/5 p-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Over Subscription ({dealCurr})</p>
+                    <p className={`text-2xl font-bold break-all ${overSubscription > 0 ? "text-emerald-600" : "text-muted-foreground"}`}>
+                      {sym}{overSubscription.toLocaleString()}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Above target amount</p>
+                  </div>
                 </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
+
+                {/* Subscription progress bar */}
                 <div>
-                  <Label className="text-muted-foreground">Target</Label>
-                  <p className="font-semibold text-foreground">{formatCurrency(viewDealDetail.target_amount, viewDealDetail.currency)}</p>
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Subscription Progress</span>
+                    <span>{pct.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-primary h-2 transition-all"
+                      style={{ width: `${Math.min(pct, 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-muted-foreground">Raised</Label>
-                  <p className="font-semibold text-primary">{formatCurrency(viewDealDetail.raised_amount, viewDealDetail.currency)}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Currency</Label>
-                  <p className="font-medium">{viewDealDetail.currency || "INR"}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Active Bids</Label>
-                  <p className="font-semibold text-orange-600">{dealBidCounts[viewDealDetail.id] || 0}</p>
-                </div>
-                {viewDealDetail.min_bid_amount != null && (
+
+                {viewDealDetail.description && (
                   <div>
-                    <Label className="text-muted-foreground">Minimum Bid</Label>
-                    <p className="font-medium">{(viewDealDetail.currency || "INR") === "USD" ? "$" : "₹"}{Number(viewDealDetail.min_bid_amount).toLocaleString()}</p>
+                    <Label className="text-muted-foreground">Description</Label>
+                    <p className="text-sm text-foreground mt-1 whitespace-pre-wrap break-words">{viewDealDetail.description}</p>
                   </div>
                 )}
-                <div>
-                  <Label className="text-muted-foreground">Status</Label>
-                  <p>
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 capitalize">
-                      {viewDealDetail.deal_status}
-                    </Badge>
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground">Target</Label>
+                    <p className="font-semibold text-foreground">{formatCurrency(target, dealCurr)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Currency</Label>
+                    <p className="font-medium">{dealCurr}</p>
+                  </div>
+                  {viewDealDetail.min_bid_amount != null && (
+                    <div>
+                      <Label className="text-muted-foreground">Minimum Bid</Label>
+                      <p className="font-medium">{sym}{Number(viewDealDetail.min_bid_amount).toLocaleString()}</p>
+                    </div>
+                  )}
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <p>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 capitalize">
+                        {viewDealDetail.deal_status}
+                      </Badge>
+                    </p>
+                  </div>
                 </div>
+                {viewDealDetail.document_url && (
+                  <Button variant="outline" className="w-full" onClick={() => window.open(viewDealDetail.document_url!, '_blank')}>
+                    <FileText className="w-4 h-4 mr-2" /> View Document
+                  </Button>
+                )}
               </div>
-              {viewDealDetail.document_url && (
-                <Button variant="outline" className="w-full" onClick={() => window.open(viewDealDetail.document_url!, '_blank')}>
-                  <FileText className="w-4 h-4 mr-2" /> View Document
-                </Button>
-              )}
-            </div>
-          )}
+            );
+          })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewDealDetail(null)}>Close</Button>
             {viewDealDetail && !myBids.find(b => b.deal_id === viewDealDetail.id && b.bid_status !== "withdrawn") && (
