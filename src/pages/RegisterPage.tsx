@@ -252,7 +252,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col px-8 lg:px-16 xl:px-24 py-12 bg-background overflow-y-auto max-h-screen">
+      <div className="w-full xl:w-1/2 flex flex-col px-6 sm:px-8 lg:px-16 xl:px-24 py-12 bg-background xl:overflow-y-auto xl:max-h-screen">
         <div className="max-w-md mx-auto w-full">
           <Link to="/" className="inline-block mb-8">
             <img src={codonyxLogo} alt="Codonyx" className="h-12 w-auto" />
@@ -363,9 +363,9 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className="hidden lg:flex w-1/2 bg-foreground text-background p-12 xl:p-16 flex-col justify-center fixed right-0 top-0 bottom-0">
-        <div className="max-w-md">
+      {/* Right Panel - Fixed (non-scrolling) */}
+      <div className="hidden xl:flex w-1/2 bg-foreground text-background p-12 xl:p-16 flex-col justify-center fixed right-0 top-0 bottom-0">
+        <div className="max-w-md mx-auto">
           <div className="space-y-8">
             {features.map((feature, index) => (
               <div key={feature.title} className="flex items-start gap-4 group cursor-pointer" style={{ animationDelay: `${index * 0.1}s` }}>
