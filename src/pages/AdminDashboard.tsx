@@ -1143,8 +1143,9 @@ const AdminDashboard = () => {
                 const subUsdLimit = indicatorLimits.limit_subscription_usd > 0 ? indicatorLimits.limit_subscription_usd : (aggregateStats.total_target_usd || 1000000);
                 const overInrLimit = indicatorLimits.limit_over_committed_inr > 0 ? indicatorLimits.limit_over_committed_inr : (aggregateStats.total_target_inr || (20 * 10000000));
                 const overUsdLimit = indicatorLimits.limit_over_committed_usd > 0 ? indicatorLimits.limit_over_committed_usd : (aggregateStats.total_target_usd || 1000000);
-                const targetInrForOver = aggregateStats.total_target_inr || (20 * 10000000);
-                const targetUsdForOver = aggregateStats.total_target_usd || 1000000;
+                // Over Committed only kicks in once Subscription reaches its 100% limit
+                const targetInrForOver = subInrLimit;
+                const targetUsdForOver = subUsdLimit;
                 const totalBidders = aggregateStats.approved_distributors;
                 const subInr = aggregateStats.total_subscription_inr;
                 const subUsd = aggregateStats.total_subscription_usd;
