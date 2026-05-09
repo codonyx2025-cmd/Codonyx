@@ -646,7 +646,7 @@ export default function AuthPage() {
                 ? "Enter your email address and we'll send you a verification code."
                 : resetStep === "otp"
                 ? <span>Enter the 6-digit code sent to <strong className="font-semibold text-foreground">{forgotEmail.trim().toLowerCase()}</strong>.</span>
-                : "Choose a new password for your account."}
+                : <span>Choose a new password for <strong className="font-semibold text-foreground">{forgotEmail.trim().toLowerCase()}</strong>.</span>}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleForgotPassword} className="space-y-4 mt-2">
