@@ -377,3 +377,9 @@ html, body {
     transform: scale(1);
   }
 }
+
+/* Hide native browser password reveal buttons (Edge/IE) to avoid duplicate eye icons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
