@@ -157,7 +157,7 @@ export default function PublicationsPage() {
       <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-6 max-w-4xl">
           <BackButton />
-          <div className="flex items-start justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-heading font-bold text-foreground mb-2">
                 Publications & Work
@@ -166,7 +166,7 @@ export default function PublicationsPage() {
                 Upload and manage your published papers, presentations, and research work
               </p>
             </div>
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Button onClick={() => setDialogOpen(true)} className="gap-2 w-full sm:w-auto self-start">
               <Plus className="h-4 w-4" />
               Add Publication
             </Button>
