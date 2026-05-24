@@ -213,13 +213,22 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile: Sign In + Menu Button */}
+          <div className="lg:hidden flex items-center gap-2">
+            {!isLoggedIn && (
+              <Link to="/auth">
+                <Button variant="primary" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
+            <button
+              className="p-2 text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -265,13 +274,7 @@ export function Navbar() {
                   Sign Out
                 </Button>
               </>
-            ) : (
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" className="w-full mt-4">
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       )}
