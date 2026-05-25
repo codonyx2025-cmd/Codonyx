@@ -217,7 +217,7 @@ export function Navbar() {
           <div className="lg:hidden flex items-center gap-2">
             {!isLoggedIn && (
               <Link to="/auth">
-                <Button variant="primary" size="sm">
+                <Button variant="primary" size="sm" className="px-6 min-w-[110px]">
                   Sign In
                 </Button>
               </Link>
