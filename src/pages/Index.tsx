@@ -1,12 +1,12 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { PhilosophySection } from "@/components/home/PhilosophySection";
-
 import { IndustryTrustSection } from "@/components/home/IndustryTrustSection";
 
-// Prefetch key routes after home page loads for instant navigation
 const prefetchRoutes = () => {
   const routes = [
     () => import("./ServicesPage"),
@@ -21,8 +21,27 @@ const prefetchRoutes = () => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Prefetch after initial render + idle time
+    // Check if user is already logged in and redirect to dashboard
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("approval_status")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (profile?.approval_status === "approved") {
+          navigate("/dashboard", { replace: true });
+        }
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
+  useEffect(() => {
     if ("requestIdleCallback" in window) {
       (window as any).requestIdleCallback(prefetchRoutes);
     } else {
