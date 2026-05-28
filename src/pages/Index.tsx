@@ -23,30 +23,27 @@ const prefetchRoutes = () => {
 const Index = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const navigationEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
-      const isReload = navigationEntries[0]?.type === "reload";
-      const isBackNavigation = navigationEntries[0]?.type === "back_forward";
+useEffect(() => {
+  const checkSession = async () => {
+    // If user has already been redirected once in this session, don't redirect again
+    const hasRedirected = sessionStorage.getItem('auth_redirected');
+    if (hasRedirected) return;
 
-      if (isBackNavigation) return;
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("approval_status")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        if (profile?.approval_status === "approved") {
-          if (!isReload && !isBackNavigation) {
-            navigate("/dashboard", { replace: true });
-          }
-        }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("approval_status")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (profile?.approval_status === "approved") {
+        sessionStorage.setItem('auth_redirected', 'true');
+        navigate("/dashboard", { replace: true });
       }
-    };
-    checkSession();
-  }, [navigate]);
+    }
+  };
+  checkSession();
+}, [navigate]);
 
   useEffect(() => {
     if ("requestIdleCallback" in window) {
