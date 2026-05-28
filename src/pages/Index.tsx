@@ -24,8 +24,13 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in and redirect to dashboard
     const checkSession = async () => {
+      const navigationEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+      const isReload = navigationEntries[0]?.type === "reload";
+      const isBackNavigation = navigationEntries[0]?.type === "back_forward";
+
+      if (isBackNavigation) return;
+
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         const { data: profile } = await supabase
@@ -34,7 +39,9 @@ const Index = () => {
           .eq("user_id", session.user.id)
           .maybeSingle();
         if (profile?.approval_status === "approved") {
-          navigate("/dashboard", { replace: true });
+          if (!isReload && !isBackNavigation) {
+            navigate("/dashboard", { replace: true });
+          }
         }
       }
     };
