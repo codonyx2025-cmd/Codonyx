@@ -1478,12 +1478,20 @@ const AdminDashboard = () => {
                           </TableBody>
                         </Table>
                         </div>
-                        {filtered.length > dealShowCount && (
+                        {(filtered.length > dealShowCount || dealShowCount > 15) && (
                           <div className="flex justify-center gap-2 mt-4">
-                            <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
-                            <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                            {filtered.length > dealShowCount && (
+                              <>
+                                <Button variant="outline" size="sm" onClick={() => setDealShowCount(c => c + 15)}>Show More</Button>
+                                <Button variant="ghost" size="sm" onClick={() => setDealShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                              </>
+                            )}
+                            {dealShowCount > 15 && (
+                              <Button variant="ghost" size="sm" onClick={() => setDealShowCount(15)}>Show Less</Button>
+                            )}
                           </div>
                         )}
+
                       </>
                     );
                   })()}
@@ -1755,12 +1763,20 @@ const AdminDashboard = () => {
                           </TableBody>
                         </Table>
                         </div>
-                        {filtered.length > bidShowCount && (
+                        {(filtered.length > bidShowCount || bidShowCount > 15) && (
                           <div className="flex justify-center gap-2 mt-4">
-                            <Button variant="outline" size="sm" onClick={() => setBidShowCount(c => c + 15)}>Show More</Button>
-                            <Button variant="ghost" size="sm" onClick={() => setBidShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                            {filtered.length > bidShowCount && (
+                              <>
+                                <Button variant="outline" size="sm" onClick={() => setBidShowCount(c => c + 15)}>Show More</Button>
+                                <Button variant="ghost" size="sm" onClick={() => setBidShowCount(filtered.length)}>Show All ({filtered.length})</Button>
+                              </>
+                            )}
+                            {bidShowCount > 15 && (
+                              <Button variant="ghost" size="sm" onClick={() => setBidShowCount(15)}>Show Less</Button>
+                            )}
                           </div>
                         )}
+
                       </>
                     );
                   })()}
