@@ -86,8 +86,17 @@ export function Navbar() {
     let mounted = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && mounted) {
+      if (!mounted) return;
+      if (session) {
         fetchProfile(session.user.id);
+      } else {
+        // No active session — clear any stale cached profile so we don't
+        // show a previously-signed-in user's info after logging out elsewhere.
+        profileFetched.current = false;
+        cachedProfile = null;
+        cachedUserId = null;
+        setProfile(null);
+        setIsLoggedIn(false);
       }
     });
 
