@@ -314,7 +314,7 @@ export function useConnections(currentProfileId: string | null) {
                 senderOrganisation: acceptorResult.data.organisation || "",
                 senderUserType: acceptorResult.data.user_type || "",
                 senderAvatarUrl: acceptorResult.data.avatar_url || "",
-                loginUrl: window.location.origin + "/auth",
+                loginUrl: "https://codonyx.org/auth",
               },
             });
           }
