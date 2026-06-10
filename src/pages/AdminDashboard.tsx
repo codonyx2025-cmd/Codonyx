@@ -516,7 +516,7 @@ const AdminDashboard = () => {
           recipientEmail: targetUser.email,
           recipientName: targetUser.full_name,
           userType: targetUser.user_type,
-          loginUrl: window.location.origin + "/auth",
+          loginUrl: "https://codonyx.org/auth",
         },
       }).catch(emailError => {
         console.error("Error sending notification email:", emailError);
