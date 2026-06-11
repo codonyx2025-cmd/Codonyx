@@ -9,7 +9,7 @@ export const BRAND = {
   primaryDeep: "#065f46",
   contactEmail: "info@codonyx.org",
   websiteUrl: "https://codonyx.org",
-  logoUrl: "https://codonyx.lovable.ap/icon.png",
+  logoUrl: "https://codonyx.org/icon.png",
 };
 
 export interface LayoutOptions {
