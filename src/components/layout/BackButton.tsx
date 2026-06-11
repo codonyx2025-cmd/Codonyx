@@ -2,17 +2,25 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-export function BackButton() {
+interface BackButtonProps {
+  to?: string;
+}
+
+export function BackButton({ to }: BackButtonProps) {
   const navigate = useNavigate();
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Scroll to top first, then navigate back to prevent scroll restoration issues
+
     window.scrollTo(0, 0);
-    // Use requestAnimationFrame to ensure scroll completes before navigation
+
     requestAnimationFrame(() => {
-      navigate(-1);
+      if (to) {
+        navigate(to);
+      } else {
+        navigate(-1);
+      }
     });
   };
 
