@@ -205,7 +205,7 @@ export default function DashboardPage() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <BackButton />
+          <BackButton to="/" />
           <div className="max-w-5xl mx-auto">
             {/* Welcome Section */}
             <div className="relative bg-gradient-to-br from-primary/8 via-background to-primary/5 rounded-3xl p-6 sm:p-8 md:p-10 mb-8 border border-divider overflow-hidden">
