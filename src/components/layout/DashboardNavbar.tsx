@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { Menu, X, LogOut, User, Shield, Users, FileText, Pencil } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, Users, FileText, Pencil, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface Profile {
   id: string;
@@ -28,6 +29,7 @@ export function DashboardNavbar() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingConnectionCount, setPendingConnectionCount] = useState(0);
+  const { unreadCount } = useNotifications(profile?.id || null);
 
   const navLinks = [
     { name: "HOME", href: "/" },
@@ -235,10 +237,6 @@ export function DashboardNavbar() {
                 </div>
               </Link>
             )}
-            {/* Mobile notification bell */}
-            <div className="flex items-center py-2">
-              <NotificationBell profileId={profile?.id || null} />
-            </div>
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -269,6 +267,19 @@ export function DashboardNavbar() {
               {pendingConnectionCount > 0 && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                   {pendingConnectionCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/notifications"
+              className="flex items-center gap-2 text-sm font-medium tracking-wide uppercase text-muted-foreground hover:text-primary transition-colors py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Bell className="h-4 w-4" />
+              Notifications
+              {unreadCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </Link>
