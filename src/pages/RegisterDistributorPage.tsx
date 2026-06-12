@@ -13,6 +13,7 @@ import { RegistrationAvatarUpload } from "@/components/registration/Registration
 import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
 import { PasswordStrength, calculateStrength } from "@/components/registration/PasswordStrength";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
+import { notifyAdminsOfNewRegistration } from "@/lib/notifyAdmins";
 
 export default function RegisterDistributorPage() {
   const navigate = useNavigate();
@@ -133,6 +134,8 @@ export default function RegisterDistributorPage() {
         },
       }).catch((err) => console.error("Failed to send confirmation email:", err));
 
+      await notifyAdminsOfNewRegistration({ fullName, userType: "distributor" });
+
       await supabase.auth.signOut({ scope: "local" });
       setIsRegistered(true);
     } catch (error) {
@@ -246,7 +249,7 @@ export default function RegisterDistributorPage() {
 
             <div className="space-y-2">
               <Label htmlFor="bio" className="text-xs uppercase tracking-wider font-medium">About Your Business</Label>
-              <TagInput id="bio" value={bio} onChange={setBio} placeholder="Search or add keyword (e.g., Logistics, Cold Chain)" suggestionField="distribution_capacity" />
+              <TagInput id="bio" value={bio} onChange={setBio} placeholder="Search or add keyword (e.g., Logistics, Cold Chain)" suggestionField="about_business" />
             </div>
 
             <div className="space-y-2">
