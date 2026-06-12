@@ -14,6 +14,7 @@ import { RegistrationAvatarUpload } from "@/components/registration/Registration
 import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
 import { PasswordStrength, calculateStrength } from "@/components/registration/PasswordStrength";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
+import { notifyAdminsOfNewRegistration } from "@/lib/notifyAdmins";
 
 export default function RegisterLaboratoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +137,8 @@ export default function RegisterLaboratoryPage() {
           userType: "laboratory",
         },
       }).catch((err) => console.error("Failed to send confirmation email:", err));
+
+      await notifyAdminsOfNewRegistration({ fullName, userType: "laboratory" });
 
       await supabase.auth.signOut({ scope: "local" });
       setIsRegistered(true);
