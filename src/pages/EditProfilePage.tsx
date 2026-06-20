@@ -15,6 +15,7 @@ import { BackButton } from "@/components/layout/BackButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ImageCropper } from "@/components/ui/image-cropper";
 import { format } from "date-fns";
+import { validateImage, compressImage, IMAGE_ACCEPT_ATTR, TEXT_LIMITS } from "@/lib/uploadValidation";
 
 interface Profile {
   full_name: string;
@@ -139,13 +140,10 @@ export default function EditProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast({ title: "Invalid file type", description: "Please upload an image file.", variant: "destructive" });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Please upload an image smaller than 5MB.", variant: "destructive" });
+    const v = validateImage(file);
+    if (!v.ok) {
+      toast({ title: "Invalid image", description: v.error, variant: "destructive" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -166,8 +164,10 @@ export default function EditProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
+      // Compress before upload (saves bandwidth + storage). Falls back to original on failure.
+      const optimized = await compressImage(croppedBlob, { maxDimension: 800, quality: 0.85 });
       const fileName = `${session.user.id}/avatar.jpg`;
-      const file = new File([croppedBlob], "avatar.jpg", { type: "image/jpeg" });
+      const file = new File([optimized], "avatar.jpg", { type: "image/jpeg" });
 
       // Attempt upload with automatic retry on first failure (handles first-time path creation)
       let uploadError: any = null;
@@ -336,7 +336,7 @@ export default function EditProfilePage() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept={IMAGE_ACCEPT_ATTR}
                     className="hidden"
                     onChange={handleAvatarSelect}
                   />
@@ -379,6 +379,7 @@ export default function EditProfilePage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Enter your full name"
+                      maxLength={TEXT_LIMITS.fullName}
                       required
                     />
                   </div>
@@ -390,6 +391,7 @@ export default function EditProfilePage() {
                       value={headline}
                       onChange={(e) => setHeadline(e.target.value)}
                       placeholder="e.g., CEO at TechCorp"
+                      maxLength={TEXT_LIMITS.headline}
                     />
                   </div>
                 </div>
@@ -402,6 +404,7 @@ export default function EditProfilePage() {
                       value={organisation}
                       onChange={(e) => setOrganisation(e.target.value)}
                       placeholder="Company or institution"
+                      maxLength={TEXT_LIMITS.organisation}
                     />
                   </div>
 
@@ -412,6 +415,7 @@ export default function EditProfilePage() {
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="e.g., New York City"
+                      maxLength={TEXT_LIMITS.location}
                     />
                   </div>
                 </div>
@@ -424,6 +428,7 @@ export default function EditProfilePage() {
                       value={contactNumber}
                       onChange={(e) => setContactNumber(e.target.value)}
                       placeholder="Your phone number"
+                      maxLength={TEXT_LIMITS.contactNumber}
                     />
                   </div>
 
@@ -436,6 +441,7 @@ export default function EditProfilePage() {
                       value={linkedinUrl}
                       onChange={(e) => setLinkedinUrl(e.target.value)}
                       placeholder="https://linkedin.com/in/yourprofile"
+                      maxLength={TEXT_LIMITS.url}
                     />
                   </div>
                 </div>
@@ -448,7 +454,9 @@ export default function EditProfilePage() {
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Tell others about yourself, your experience, and expertise..."
                     rows={4}
+                    maxLength={TEXT_LIMITS.bio}
                   />
+                  <p className="text-xs text-muted-foreground text-right">{bio.length}/{TEXT_LIMITS.bio}</p>
                 </div>
 
                 {/* Advisor Specific Fields */}
