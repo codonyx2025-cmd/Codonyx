@@ -394,6 +394,7 @@ const AdminDashboard = () => {
               title: "New Deal Available",
               message: `New deal "${newDealTitle}" is now available. ${currencySymbol}${parseFloat(newDealTarget).toLocaleString()} ${newDealCurrency}.`,
               link: "/distributor-dashboard",
+              action_label: "View",
             }));
             await supabase.from("notifications").insert(notifications);
           }
@@ -456,6 +457,7 @@ const AdminDashboard = () => {
             title: "Deal closed",
             message: `Deal Closed: The deal "${dealTitle}" you bid on has been closed.`,
             link: "/distributor-dashboard",
+            action_label: "View",
           }));
           await supabase.from("notifications").insert(rows);
         }
