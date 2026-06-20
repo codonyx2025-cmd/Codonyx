@@ -183,6 +183,7 @@ export default function ConnectionsPage() {
               message: `${acceptorResult.data.full_name} accepted your connection request.`,
               link: `/profile/${currentProfileId}`,
               related_profile_id: currentProfileId,
+              action_label: "View Profile",
             });
             if (notifError) console.error("Error creating acceptance notification:", notifError);
           }
