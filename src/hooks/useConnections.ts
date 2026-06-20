@@ -213,6 +213,7 @@ export function useConnections(currentProfileId: string | null) {
               message: `${senderProfile.full_name}${userTypeLabel ? ` (${userTypeLabel})` : ""} sent you a connection request.`,
               link: `/profile/${currentProfileId}`,
               action_label: "View Profile",
+              related_profile_id: currentProfileId,
             });
           }
 
