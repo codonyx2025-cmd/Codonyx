@@ -305,6 +305,7 @@ export default function DistributorDashboard() {
           title: "New Bid Placed",
           message,
           link: "/admin",
+          action_label: "View",
           related_profile_id: profile.id,
         }));
         if (rows.length > 0) {
