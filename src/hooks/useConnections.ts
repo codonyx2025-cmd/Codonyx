@@ -211,8 +211,8 @@ export function useConnections(currentProfileId: string | null) {
               type: "connection_request",
               title: "New Connection Request",
               message: `${senderProfile.full_name}${userTypeLabel ? ` (${userTypeLabel})` : ""} sent you a connection request.`,
-              link: `/connections`,
-              related_profile_id: currentProfileId,
+              link: `/profile/${currentProfileId}`,
+              action_label: "View Profile",
             });
           }
 
