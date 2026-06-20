@@ -29,6 +29,7 @@ export async function notifyAdminsOfNewRegistration(opts: {
       title: `New ${role} registration`,
       message: `${opts.fullName} has registered as a ${role} and is awaiting review.`,
       link: "/admin",
+      action_label: "View",
       related_profile_id: opts.newProfileId ?? null,
       is_read: false,
     }));
