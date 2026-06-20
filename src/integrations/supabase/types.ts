@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -346,6 +346,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          action_label: string | null
           created_at: string
           id: string
           is_read: boolean
@@ -357,6 +358,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          action_label?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -368,6 +370,7 @@ export type Database = {
           type: string
         }
         Update: {
+          action_label?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -576,15 +579,7 @@ export type Database = {
           website_url?: string | null
           years_of_experience?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_invite_token_id_fkey"
-            columns: ["invite_token_id"]
-            isOneToOne: false
-            referencedRelation: "invite_tokens"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       publications: {
         Row: {
@@ -623,6 +618,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "publications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_tokens: {
+        Row: {
+          created_at: string | null
+          id: string
+          platform: string | null
+          profile_id: string | null
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          platform?: string | null
+          profile_id?: string | null
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          platform?: string | null
+          profile_id?: string | null
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
