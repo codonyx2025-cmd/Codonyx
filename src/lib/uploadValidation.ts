@@ -1,5 +1,5 @@
 export const IMAGE_MAX_BYTES = 4 * 1024 * 1024; // 4 MB
-export const DOCUMENT_MAX_BYTES = 30 * 1024 * 1024; // 30 MB
+export const DOCUMENT_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 
 export const IMAGE_MIME_TYPES = [
   "image/jpeg",
@@ -62,7 +62,7 @@ export function validateDocument(file: File): ValidationResult {
   if (file.size > DOCUMENT_MAX_BYTES) {
     return {
       ok: false,
-      error: "Document is too large. Maximum size is 30 MB.",
+      error: "Document is too large. Maximum size is 20 MB.",
     };
   }
   return { ok: true };
