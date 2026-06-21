@@ -28,6 +28,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdvisorsPage = lazy(() => import("./pages/AdvisorsPage"));
 const LaboratoriesPage = lazy(() => import("./pages/LaboratoriesPage"));
 const PublicationsPage = lazy(() => import("./pages/PublicationsPage"));
+const PublicationDetailPage = lazy(() => import("./pages/PublicationDetailPage"));
 const InvestmentsPage = lazy(() => import("./pages/InvestmentsPage"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const TechnologyPage = lazy(() => import("./pages/TechnologyPage"));
@@ -88,6 +89,7 @@ const App = () => (
                 <Route path="/advisors" element={<AdvisorsPage />} />
                 <Route path="/laboratories" element={<LaboratoriesPage />} />
                 <Route path="/publications" element={<PublicationsPage />} />
+                <Route path="/publications/:id" element={<PublicationDetailPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/investments" element={<InvestmentsPage />} />
