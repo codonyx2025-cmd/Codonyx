@@ -261,7 +261,7 @@ export function AddPublicationDialog({
             <Label htmlFor="file">
               <span className="flex items-center gap-1.5">
                 <Upload className="h-3.5 w-3.5" />
-                Attachment (PDF, DOC, DOCX, PPT, PPTX · max 30 MB)
+                Attachment (PDF, DOC, DOCX, PPT, PPTX · max 20 MB)
               </span>
             </Label>
             {existingFileUrl && !file && (
