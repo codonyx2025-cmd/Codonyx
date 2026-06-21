@@ -1,7 +1,7 @@
 # Codonyx
 
 <p align="center">
-  <img src="public/icon.png" alt="Codonyx Logo" width="120" />
+  <img src="public/favicon.png" alt="Codonyx Logo" width="120" />
 </p>
 
 <p align="center">
