@@ -255,7 +255,7 @@ export default function RegisterDistributorPage() {
 
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider font-medium">Verification Document *</Label>
-              <p className="text-xs text-muted-foreground">Upload a business registration certificate, GST certificate, or company ID for verification. PDF, DOC, DOCX, PPT, PPTX · max 30 MB.</p>
+              <p className="text-xs text-muted-foreground">Upload a business registration certificate, GST certificate, or company ID for verification. PDF, DOC, DOCX, PPT, PPTX · max 20 MB.</p>
               <label className="cursor-pointer">
                 <input type="file" accept={DOCUMENT_ACCEPT_ATTR} className="hidden" onChange={(e) => {
                   const file = e.target.files?.[0];
