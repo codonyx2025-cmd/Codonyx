@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,14 +59,29 @@ export function PublicationCard({
   getTypeLabel,
   isOwner = false,
 }: PublicationCardProps) {
+  const navigate = useNavigate();
   const formattedDate = new Date(publication.created_at).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
 
+  const goToDetail = () => navigate(`/publications/${publication.id}`);
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
   return (
-    <Card className="group hover:shadow-md transition-shadow border-border">
+    <Card
+      onClick={goToDetail}
+      role="link"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToDetail();
+        }
+      }}
+      className="group hover:shadow-md hover:border-primary/30 transition-all border-border cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -102,6 +118,7 @@ export function PublicationCard({
                     href={publication.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={stop}
                     className="flex items-center gap-1 text-xs text-primary hover:underline"
                   >
                     <Paperclip className="h-3.5 w-3.5" />
@@ -114,6 +131,7 @@ export function PublicationCard({
                     href={publication.external_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={stop}
                     className="flex items-center gap-1 text-xs text-primary hover:underline"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -125,12 +143,15 @@ export function PublicationCard({
           </div>
 
           {isOwner && (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 shrink-0" onClick={stop}>
               <Button
                 size="icon"
                 variant="ghost"
                 className="h-9 w-9 text-muted-foreground hover:text-foreground"
-                onClick={() => onEdit?.(publication)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(publication);
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -140,11 +161,12 @@ export function PublicationCard({
                     size="icon"
                     variant="ghost"
                     className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                    onClick={stop}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent onClick={stop}>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Publication</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -154,7 +176,10 @@ export function PublicationCard({
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => onDelete?.(publication.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.(publication.id);
+                      }}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       Delete
