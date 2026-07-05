@@ -1,6 +1,10 @@
 
 # Codonyx
 
+<p align="center">
+  <img src="public/favicon.png" alt="Codonyx Logo" width="120" />
+</p>
+
 Codonyx is a curated global network that connects **Expert Advisors**, **Laboratories**, and **Distribution Partners** across molecular science, biotech, AI healthcare, and life sciences. The platform is a private, admin-approved ecosystem where verified professionals collaborate, publish work, and run a dual-currency marketplace for distribution deals.
 
 Live: <https://codonyx.org>
