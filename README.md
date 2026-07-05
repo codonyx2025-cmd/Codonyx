@@ -187,19 +187,18 @@ The Supabase client is auto-generated at `src/integrations/supabase/client.ts` â
 
 ## Environment Variables
 
-Managed automatically by Lovable Cloud and stored in `.env` (do not edit by hand):
+Managed the communication between the website and database which is stored in `.env`:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 - `VITE_SUPABASE_PROJECT_ID`
 
-Secrets used by edge functions (Resend API key, etc.) are managed through the Lovable **Backend** panel.
+Secrets used by edge functions (Resend API key, etc.) are managed through the Supabase **Backend** panel.
 
 ## Deployment
 
-- Preview deploys ship on every change via Lovable.
-- Production custom domain: `codonyx.org` (Render/Lovable hosting).
-- Publish from the Lovable editor via **Publish**.
+- Preview deploys ship on every change via Github.
+- Production custom domain: `codonyx.org` (CloudFlare hosting).
 
 ---
 
