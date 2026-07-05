@@ -99,7 +99,7 @@ supabase/
 └── functions/               Edge functions (see below)
 ```
 
-## Backend (Lovable Cloud / Supabase)
+## Backend (Supabase)
 
 Key tables (all in the `public` schema, all with RLS enabled and explicit GRANTs):
 
