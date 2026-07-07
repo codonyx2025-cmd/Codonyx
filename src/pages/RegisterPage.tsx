@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import codonyxLogo from "@/assets/codonyx_logo.png";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
 import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
-import { PasswordStrength, calculateStrength } from "@/components/registration/PasswordStrength";
+import { PasswordStrength, calculateStrength, MIN_PASSWORD_SCORE, PASSWORD_REQUIREMENT_MESSAGE } from "@/components/registration/PasswordStrength";
 import { ensureRegistrationUser } from "@/lib/ensureRegistrationUser";
 import { notifyAdminsOfNewRegistration } from "@/lib/notifyAdmins";
 
@@ -102,6 +102,18 @@ export default function RegisterPage() {
     validateToken();
   }, [inviteToken]);
 
+  const invalidToastRef = useRef(false);
+  const handleInvalid = (_e: React.FormEvent<HTMLFormElement>) => {
+    if (invalidToastRef.current) return;
+    invalidToastRef.current = true;
+    toast({
+      title: "Missing required fields",
+      description: "Please fill all fields marked with * to submit the registration.",
+      variant: "destructive",
+    });
+    setTimeout(() => { invalidToastRef.current = false; }, 1500);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -113,8 +125,8 @@ export default function RegisterPage() {
       toast({ title: "Passwords don't match", variant: "destructive" });
       return;
     }
-    if (calculateStrength(password).score < 4) {
-      toast({ title: "Password not strong enough", description: "Password must reach 'Very Strong'. Use 10+ characters with uppercase, lowercase, numbers, and a symbol.", variant: "destructive" });
+    if (calculateStrength(password).score < MIN_PASSWORD_SCORE) {
+      toast({ title: "Password not strong enough", description: PASSWORD_REQUIREMENT_MESSAGE, variant: "destructive" });
       return;
     }
     if (!expertise.trim()) {
@@ -268,7 +280,7 @@ export default function RegisterPage() {
             Complete your registration to join the advisor network.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} onInvalid={handleInvalid} className="space-y-5">
             <RegistrationAvatarUpload
               avatarUrl={avatarUrl}
               onAvatarChange={(url, blob) => { setAvatarUrl(url); setAvatarBlob(blob); }}
