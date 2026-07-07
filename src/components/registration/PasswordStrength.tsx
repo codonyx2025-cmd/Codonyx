@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 
+// Minimum acceptable password strength score across the app (Strong = 3, Very Strong = 4).
+export const MIN_PASSWORD_SCORE = 3;
+export const PASSWORD_REQUIREMENT_MESSAGE = "Password must be at least 'Strong'. Use 10+ characters with uppercase, lowercase, and numbers (a symbol makes it Very Strong).";
+
 interface PasswordStrengthProps {
   password: string;
 }
