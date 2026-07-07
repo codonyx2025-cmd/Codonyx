@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { applyRememberMePreference, REMEMBER_ME_KEY } from "@/lib/rememberMe";
 import { PasswordStrength } from "@/components/registration/PasswordStrength";
 
-// Mirrors PasswordStrength scoring; require "Very Strong" (score >= 4) for resets.
+// Mirrors PasswordStrength scoring; require at least "Strong" (score >= 3) for resets.
 function getResetPasswordScore(password: string): number {
   if (!password || password.length < 6) return 0;
   let s = 0;
@@ -338,10 +338,10 @@ export default function AuthPage() {
         toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
         return;
       }
-      if (getResetPasswordScore(resetPassword) < 4) {
+      if (getResetPasswordScore(resetPassword) < 3) {
         toast({
           title: "Password not strong enough",
-          description: "Password must reach 'Very Strong'. Use 10+ characters with uppercase, lowercase, numbers, and a symbol.",
+          description: "Password must be at least 'Strong'. Use 10+ characters with uppercase, lowercase, and numbers (a symbol makes it Very Strong).",
           variant: "destructive",
         });
         return;
