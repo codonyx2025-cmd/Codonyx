@@ -506,8 +506,8 @@ export default function DistributorDashboard() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0">
-                      <p className="text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap">{formatCurrency(totalCommittedINR, "INR")}</p>
-                      <p className="text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap">{formatCurrency(totalCommittedUSD, "USD")}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap" title={formatCurrency(totalCommittedINR, "INR")}>₹{formatCompact(totalCommittedINR, "INR")}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap" title={formatCurrency(totalCommittedUSD, "USD")}>${formatCompact(totalCommittedUSD, "USD")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">Total Committed</p>
                   </div>
@@ -850,26 +850,48 @@ export default function DistributorDashboard() {
               Modify your bid amount or notes
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Bid Amount ({(allDeals.find(d => d.id === editingBid?.deal_id)?.currency || "INR") === "USD" ? "$" : "₹"}) *</Label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="Enter bid amount"
-                value={editBidAmount}
-                onChange={(e) => setEditBidAmount(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Notes (optional)</Label>
-              <Textarea
-                placeholder="Any notes for the admin..."
-                value={editBidNotes}
-                onChange={(e) => setEditBidNotes(e.target.value)}
-              />
-            </div>
-          </div>
+          {(() => {
+            const editDeal = allDeals.find(d => d.id === editingBid?.deal_id);
+            const editCurr = editDeal?.currency || "INR";
+            const editSym = editCurr === "USD" ? "$" : "₹";
+            const editTarget = Number(editDeal?.target_amount || 0);
+            const editMin = editDeal?.min_bid_amount ? Number(editDeal.min_bid_amount) : 0;
+            return (
+              <div className="space-y-4 py-4">
+                {/* Deal transparency: target & min bid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Target Amount</p>
+                    <p className="text-base font-bold text-primary break-words">{editSym}{editTarget.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-lg border border-emerald-600/20 bg-emerald-500/5 p-3">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Minimum Bid</p>
+                    <p className="text-base font-bold text-emerald-600 break-words">
+                      {editMin > 0 ? `${editSym}${editMin.toLocaleString()}` : "—"}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Bid Amount ({editSym}) *</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Enter bid amount"
+                    value={editBidAmount}
+                    onChange={(e) => setEditBidAmount(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Notes (optional)</Label>
+                  <Textarea
+                    placeholder="Any notes for the admin..."
+                    value={editBidNotes}
+                    onChange={(e) => setEditBidNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+            );
+          })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingBid(null)}>Cancel</Button>
             <Button onClick={handleUpdateBid} disabled={isUpdatingBid || !editBidAmount}>
