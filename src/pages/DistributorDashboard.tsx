@@ -943,6 +943,16 @@ export default function DistributorDashboard() {
                       <p className="text-xs uppercase tracking-wider text-muted-foreground">You've Bid</p>
                       <p className="font-bold text-lg text-emerald-600 break-words">{formatCurrency(Number(myBidOnDeal.bid_amount), dealCurr)}</p>
                       <p className="text-[11px] text-muted-foreground capitalize mt-0.5">Status: {myBidOnDeal.bid_status}</p>
+                      {canEditBid(myBidOnDeal) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 h-7 px-2 text-xs"
+                          onClick={() => { handleEditBid(myBidOnDeal); setViewDealDetail(null); }}
+                        >
+                          Edit Amount
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-lg border border-dashed border-muted-foreground/30 p-3 flex items-center justify-center">
