@@ -59,6 +59,13 @@ export function restoreSessionStorageToken() {
     const origRemoveItem = localStorage.removeItem.bind(localStorage);
 
     localStorage.setItem = (key: string, value: string) => {
+      // Block token writes while a sign-out is in progress so a racing token
+      // refresh cannot resurrect the session after the user clicks Sign Out.
+      if (key === SUPABASE_TOKEN_KEY) {
+        try {
+          if (sessionStorage.getItem("codonyx-signing-out") === "1") return;
+        } catch { /* noop */ }
+      }
       origSetItem(key, value);
       if (key === SUPABASE_TOKEN_KEY && localStorage.getItem(REMEMBER_ME_KEY) === "false") {
         try { sessionStorage.setItem(SUPABASE_TOKEN_KEY, value); } catch { /* noop */ }
