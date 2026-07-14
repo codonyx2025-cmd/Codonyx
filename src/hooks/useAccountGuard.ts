@@ -58,9 +58,12 @@ export function useAccountGuard(intervalMs = 30_000) {
     check();
     // Then periodically
     intervalRef.current = setInterval(check, intervalMs);
+    const onFocus = () => { void check(); };
+    window.addEventListener("focus", onFocus);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      window.removeEventListener("focus", onFocus);
     };
   }, [navigate, intervalMs]);
 }
