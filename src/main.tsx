@@ -15,7 +15,7 @@ initMonitoring();
 // Proactively clear corrupted OR expired auth tokens BEFORE the Supabase client
 // initializes. This prevents the slow "Invalid Refresh Token" recovery cycle that
 // stalls sign-in (both Google OAuth and email/password) for several seconds.
-const STORAGE_KEY = "sb-ismtjnkzgfsrcstlyops-auth-token";
+const STORAGE_KEY = "mbalhtajoruhzhraxnxc-auth-token";
 try {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
