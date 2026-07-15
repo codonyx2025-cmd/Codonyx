@@ -169,7 +169,7 @@ export default function AuthPage() {
 
       // IMPORTANT: Do NOT await inside onAuthStateChange to prevent deadlocks.
       // Fire-and-forget the validation.
-      if (event === "SIGNED_IN") {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         isSessionApproved(session.user.id).then(({ approved, deactivated }) => {
           if (cancelled) return;
           if (approved) {
