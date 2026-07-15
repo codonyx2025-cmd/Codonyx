@@ -7,6 +7,11 @@ import { fetchOwnProfile } from "@/lib/auth";
 /**
  * Periodically checks if the logged-in user's account is still approved.
  * If the account is deactivated/deleted, shows a warning and redirects to /auth.
+ *
+ * NOTE: Sign-out is intentionally local-scope only (see signOutEverywhere in
+ * @/lib/auth), so signing out on one device must NOT terminate the session on
+ * another device. We therefore do not probe the server for token revocation
+ * here — that path used to kick the other device out on transient 401s.
  */
 export function useAccountGuard(intervalMs = 30_000) {
   const navigate = useNavigate();
@@ -27,6 +32,8 @@ export function useAccountGuard(intervalMs = 30_000) {
       );
 
       if (error) return; // network error — skip
+
+
 
       if (!profile) {
         isHandlingRef.current = true;
@@ -58,6 +65,8 @@ export function useAccountGuard(intervalMs = 30_000) {
     check();
     // Then periodically
     intervalRef.current = setInterval(check, intervalMs);
+    // Also re-check when the tab regains focus, so a cross-device sign-out is
+    // detected as soon as the user returns to this tab.
     const onFocus = () => { void check(); };
     window.addEventListener("focus", onFocus);
 
