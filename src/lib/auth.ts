@@ -34,7 +34,7 @@ export async function fetchOwnProfile<T>(userId: string, select: string, retryCo
   return { data: null, error: lastError };
 }
 
-const SUPABASE_TOKEN_KEY = "sb-ismtjnkzgfsrcstlyops-auth-token";
+const SUPABASE_TOKEN_KEY = "sb-mbalhtajoruhzhraxnxc-auth-token";
 
 /**
  * Sign the user out from THIS device only. Other devices where the same
