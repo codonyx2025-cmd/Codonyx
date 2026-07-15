@@ -8,7 +8,7 @@
 // and proxy reads/writes so Supabase still finds it during this tab's
 // lifetime, but the token disappears when the browser/tab is closed.
 
-const SUPABASE_TOKEN_KEY = "sb-ismtjnkzgfsrcstlyops-auth-token";
+const SUPABASE_TOKEN_KEY = "sb-mbalhtajoruhzhraxnxc-auth-token";
 export const REMEMBER_ME_KEY = "codonyx-remember-me";
 
 /**
