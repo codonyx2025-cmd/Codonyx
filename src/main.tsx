@@ -1,23 +1,17 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
 import { initMonitoring } from "./lib/monitoring";
 import { restoreSessionStorageToken } from "./lib/rememberMe";
+import { SUPABASE_TOKEN_KEY, clearStoredAuthState, isSignOutInProgress } from "./lib/authStorage";
 
-// Restore session-only token (Remember Me = off) BEFORE Supabase client reads it.
+// Install the storage guard BEFORE any route imports can initialize Supabase.
 restoreSessionStorageToken();
-
-import { supabase } from "./integrations/supabase/client";
-
-// Initialize production error monitoring
-initMonitoring();
 
 // Proactively clear corrupted OR expired auth tokens BEFORE the Supabase client
 // initializes. This prevents the slow "Invalid Refresh Token" recovery cycle that
 // stalls sign-in (both Google OAuth and email/password) for several seconds.
-const STORAGE_KEY = "sb-mbalhtajoruhzhraxnxc-auth-token";
 try {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = localStorage.getItem(SUPABASE_TOKEN_KEY);
   if (stored) {
     const parsed = JSON.parse(stored);
     const expiresAt: number | undefined = parsed?.expires_at;
@@ -25,24 +19,36 @@ try {
     // If the access token already expired AND there's no refresh token, it's dead — clear it.
     // Also clear if the structure is malformed.
     if (!hasRefresh || (expiresAt && expiresAt * 1000 < Date.now() - 1000 * 60 * 60 * 24 * 30)) {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SUPABASE_TOKEN_KEY);
     }
   }
 } catch {
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SUPABASE_TOKEN_KEY);
 }
 
-// Handle invalid refresh token errors globally — clear corrupt session silently.
-// IMPORTANT: Do NOT force a window.location reload on TOKEN_REFRESHED failures —
-// that caused redirect loops that made sign-in feel "stuck". Just clear the bad
-// token; route guards will redirect to /auth on next navigation if needed.
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === "TOKEN_REFRESHED" && !session) {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-  if (event === "SIGNED_OUT") {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-});
+async function bootstrap() {
+  const [{ default: App }, { supabase }] = await Promise.all([
+    import("./App.tsx"),
+    import("./integrations/supabase/client"),
+  ]);
 
-createRoot(document.getElementById("root")!).render(<App />);
+  // Initialize production error monitoring
+  initMonitoring();
+
+  // Handle invalid refresh token errors globally — clear corrupt session silently.
+  // During manual sign-out, also ignore any racing SIGNED_IN/TOKEN_REFRESHED event.
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (isSignOutInProgress()) {
+      clearStoredAuthState();
+      return;
+    }
+
+    if ((event === "TOKEN_REFRESHED" && !session) || event === "SIGNED_OUT") {
+      clearStoredAuthState({ includeRemember: false });
+    }
+  });
+
+  createRoot(document.getElementById("root")!).render(<App />);
+}
+
+void bootstrap();
