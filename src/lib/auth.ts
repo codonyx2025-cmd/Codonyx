@@ -1,5 +1,6 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { clearStoredAuthState, installAuthStorageGuard, markSignOutInProgress } from "@/lib/authStorage";
 
 const PROFILE_RETRY_DELAY_MS = 250;
 
@@ -34,39 +35,28 @@ export async function fetchOwnProfile<T>(userId: string, select: string, retryCo
   return { data: null, error: lastError };
 }
 
-const SUPABASE_TOKEN_KEY = "sb-mbalhtajoruhzhraxnxc-auth-token";
-
 /**
  * Sign the user out from THIS device only. Other devices where the same
  * account is logged in remain signed in. Clears cached tokens from local
  * and session storage on this device.
  */
 export async function signOutEverywhere() {
+  installAuthStorageGuard();
   // Mark sign-out in progress so any in-flight auth events (TOKEN_REFRESHED,
   // SIGNED_IN from a racing tab, etc.) can be ignored by listeners.
-  try { sessionStorage.setItem("codonyx-signing-out", "1"); } catch { /* noop */ }
+  markSignOutInProgress();
+
+  try { supabase.auth.stopAutoRefresh(); } catch { /* noop */ }
+
+  // Clear before and after signOut so even a racing refresh cannot leave a
+  // valid token behind for the next /auth load to pick up.
+  clearStoredAuthState();
 
   try {
     await supabase.auth.signOut({ scope: "local" });
   } catch { /* noop */ }
 
-  // Wipe every Supabase auth token key from both storages. This defeats the
-  // rememberMe proxy that can otherwise re-mirror a stale token back into
-  // localStorage after sign-out.
-  const wipe = (store: Storage) => {
-    try {
-      const keys: string[] = [];
-      for (let i = 0; i < store.length; i += 1) {
-        const k = store.key(i);
-        if (k && (k.startsWith("sb-") || k === SUPABASE_TOKEN_KEY || k === "codonyx-remember-me")) {
-          keys.push(k);
-        }
-      }
-      keys.forEach((k) => store.removeItem(k));
-    } catch { /* noop */ }
-  };
-  wipe(localStorage);
-  wipe(sessionStorage);
+  clearStoredAuthState();
 
   // Hard-reload to /auth so no in-memory Supabase client state (cached user,
   // pending refresh timers) can restore the previous session.
