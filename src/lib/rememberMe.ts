@@ -8,8 +8,15 @@
 // and proxy reads/writes so Supabase still finds it during this tab's
 // lifetime, but the token disappears when the browser/tab is closed.
 
-const SUPABASE_TOKEN_KEY = "sb-mbalhtajoruhzhraxnxc-auth-token";
-export const REMEMBER_ME_KEY = "codonyx-remember-me";
+import {
+  REMEMBER_ME_KEY,
+  SUPABASE_TOKEN_KEY,
+  clearSignOutInProgress,
+  installAuthStorageGuard,
+  restoreSessionStorageToken as restoreSessionStorageTokenInternal,
+} from "./authStorage";
+
+export { REMEMBER_ME_KEY };
 
 /**
  * Call this AFTER a successful sign-in with the user's Remember Me choice.
@@ -17,6 +24,9 @@ export const REMEMBER_ME_KEY = "codonyx-remember-me";
  * - remember = false → move token to sessionStorage (cleared when browser closes)
  */
 export function applyRememberMePreference(remember: boolean) {
+  installAuthStorageGuard();
+  clearSignOutInProgress();
+
   try {
     if (remember) {
       localStorage.setItem(REMEMBER_ME_KEY, "true");
@@ -43,49 +53,5 @@ export function applyRememberMePreference(remember: boolean) {
  * into sessionStorage during the tab's lifetime.
  */
 export function restoreSessionStorageToken() {
-  try {
-    const remember = localStorage.getItem(REMEMBER_ME_KEY);
-    if (remember !== "false") return;
-
-    const sessionToken = sessionStorage.getItem(SUPABASE_TOKEN_KEY);
-    if (sessionToken) {
-      localStorage.setItem(SUPABASE_TOKEN_KEY, sessionToken);
-    }
-
-    // Mirror future writes from localStorage → sessionStorage so refreshed
-    // tokens survive page reloads within the tab. On tab close, sessionStorage
-    // is cleared and the next load will not restore anything.
-    const origSetItem = localStorage.setItem.bind(localStorage);
-    const origRemoveItem = localStorage.removeItem.bind(localStorage);
-
-    localStorage.setItem = (key: string, value: string) => {
-      // Block token writes while a sign-out is in progress so a racing token
-      // refresh cannot resurrect the session after the user clicks Sign Out.
-      if (key === SUPABASE_TOKEN_KEY) {
-        try {
-          if (sessionStorage.getItem("codonyx-signing-out") === "1") return;
-        } catch { /* noop */ }
-      }
-      origSetItem(key, value);
-      if (key === SUPABASE_TOKEN_KEY && localStorage.getItem(REMEMBER_ME_KEY) === "false") {
-        try { sessionStorage.setItem(SUPABASE_TOKEN_KEY, value); } catch { /* noop */ }
-      }
-    };
-    localStorage.removeItem = (key: string) => {
-      origRemoveItem(key);
-      if (key === SUPABASE_TOKEN_KEY) {
-        try { sessionStorage.removeItem(SUPABASE_TOKEN_KEY); } catch { /* noop */ }
-      }
-    };
-
-    // When the tab is hidden/closed, drop the token from localStorage so a
-    // fresh browser launch (with no sessionStorage) starts unauthenticated.
-    window.addEventListener("pagehide", () => {
-      if (localStorage.getItem(REMEMBER_ME_KEY) === "false") {
-        try { localStorage.removeItem(SUPABASE_TOKEN_KEY); } catch { /* noop */ }
-      }
-    });
-  } catch {
-    // ignore
-  }
+  restoreSessionStorageTokenInternal();
 }
