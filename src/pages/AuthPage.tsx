@@ -83,6 +83,7 @@ export default function AuthPage() {
   const hasShownUnauthorizedToast = useRef(false);
 
   const showAccountNotFoundToast = (isDeactivated = false) => {
+    setIsGoogleLoading(false);
     if (hasShownUnauthorizedToast.current) return;
     hasShownUnauthorizedToast.current = true;
     toast({
