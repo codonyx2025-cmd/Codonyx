@@ -42,6 +42,16 @@ export function DashboardNavbar() {
   ];
 
   useEffect(() => {
+    let profileIdForChannel: string | null = null;
+    const fetchPendingCount = async (profileId: string) => {
+      const { count } = await supabase
+        .from("connections")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", profileId)
+        .eq("status", "pending")
+        .is("withdrawn_at", null);
+      setPendingConnectionCount(count || 0);
+    };
     const loadProfileAndCheckAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -52,14 +62,19 @@ export function DashboardNavbar() {
           .maybeSingle();
         if (data) {
           setProfile(data as Profile);
+          profileIdForChannel = data.id;
+          await fetchPendingCount(data.id);
           
-          // Fetch pending received connection requests
-          const { count } = await supabase
-            .from("connections")
-            .select("*", { count: "exact", head: true })
-            .eq("receiver_id", data.id)
-            .eq("status", "pending");
-          setPendingConnectionCount(count || 0);
+          // Live refresh so accept/decline/withdraw clears the badge instantly.
+          const channel = supabase
+            .channel(`nav-connections-${data.id}`)
+            .on(
+              "postgres_changes",
+              { event: "*", schema: "public", table: "connections" },
+              () => fetchPendingCount(data.id)
+            )
+            .subscribe();
+          (loadProfileAndCheckAdmin as any)._channel = channel;
         }
 
         const { data: hasAdminRole } = await supabase.rpc('has_role', {
@@ -70,6 +85,10 @@ export function DashboardNavbar() {
       }
     };
     loadProfileAndCheckAdmin();
+    return () => {
+      const ch = (loadProfileAndCheckAdmin as any)._channel;
+      if (ch) supabase.removeChannel(ch);
+    };
   }, []);
 
   const handleSignOut = async () => {
