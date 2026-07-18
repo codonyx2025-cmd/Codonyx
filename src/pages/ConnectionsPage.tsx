@@ -127,10 +127,10 @@ export default function ConnectionsPage() {
       // Separate by status and type
       const accepted = connectionsWithProfiles.filter((c) => c.status === "accepted");
       const receivedPending = connectionsWithProfiles.filter(
-        (c) => c.status === "pending" && c.receiver_id === profile.id
+        (c) => c.status === "pending" && c.receiver_id === profile.id && !(c as any).withdrawn_at
       );
       const sentPending = connectionsWithProfiles.filter(
-        (c) => c.status === "pending" && c.sender_id === profile.id
+        (c) => c.status === "pending" && c.sender_id === profile.id && !(c as any).withdrawn_at
       );
 
       setAcceptedConnections(accepted);
