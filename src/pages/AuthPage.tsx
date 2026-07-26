@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Checkbox } from "@/components/ui/checkbox";
 import { applyRememberMePreference, REMEMBER_ME_KEY } from "@/lib/rememberMe";
 import { PasswordStrength } from "@/components/registration/PasswordStrength";
-import { clearSignOutInProgress, clearStoredAuthState, markSignOutInProgress } from "@/lib/authStorage";
+import { clearSignOutInProgress, clearStoredAuthState, markSignOutInProgress, isSignOutInProgress } from "@/lib/authStorage";
 
 // Mirrors PasswordStrength scoring; require at least "Strong" (score >= 3) for resets.
 function getResetPasswordScore(password: string): number {
@@ -126,6 +126,10 @@ export default function AuthPage() {
   };
 
   useEffect(() => {
+    clearSignOutInProgress();
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     const checkAuth = async () => {
@@ -138,6 +142,11 @@ export default function AuthPage() {
         ]);
 
         if (cancelled) return;
+
+        if (isSignOutInProgress()) {
+          setIsCheckingAuth(false);
+          return;
+        }
 
         const session = sessionResult && typeof sessionResult === 'object' && 'data' in sessionResult
           ? (sessionResult as any).data.session
@@ -161,6 +170,7 @@ export default function AuthPage() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return;
+      if (isSignOutInProgress()) return;
       // Skip if form-based sign-in is handling navigation
       if (isFormSigningIn.current) return;
 
