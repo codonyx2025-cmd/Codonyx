@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Menu, X, LogOut, User, Shield, Users, FileText, Pencil, Bell } from "lucide-react";
@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useNotifications } from "@/hooks/useNotifications";
+import { signOutEverywhere } from "@/lib/auth";
 
 interface Profile {
   id: string;
@@ -24,7 +25,6 @@ interface Profile {
 
 export function DashboardNavbar() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -92,16 +92,7 @@ export function DashboardNavbar() {
   }, []);
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      try {
-        await supabase.auth.signOut({ scope: "local" });
-      } catch {
-        // ignore
-      }
-    }
-    navigate("/auth", { replace: true });
+    await signOutEverywhere();
   };
 
   const getInitials = (name: string) => {
