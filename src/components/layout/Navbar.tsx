@@ -1,10 +1,11 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
 import codonyxLogo from "@/assets/codonyx_logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { signOutEverywhere } from "@/lib/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +35,6 @@ let cachedUserId: string | null = null;
 
 export function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(cachedProfile);
   const [isLoggedIn, setIsLoggedIn] = useState(!!cachedProfile);
@@ -135,16 +135,7 @@ export function Navbar() {
   }, [location.pathname]);
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      try {
-        await supabase.auth.signOut({ scope: "local" });
-      } catch {
-        // ignore
-      }
-    }
-    navigate("/auth", { replace: true });
+    await signOutEverywhere();
   };
 
   const getInitials = (name: string) =>
