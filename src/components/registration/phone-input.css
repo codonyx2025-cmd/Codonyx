@@ -1,0 +1,56 @@
+/* Codonyx styling for react-phone-number-input to match shadcn inputs */
+.codonyx-phone-input {
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+}
+
+.codonyx-phone-input:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.4);
+  border-color: hsl(var(--ring));
+}
+
+.codonyx-phone-input .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+
+.codonyx-phone-input .PhoneInputInput::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.codonyx-phone-input .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding-right: 0.5rem;
+  border-right: 1px solid hsl(var(--border));
+}
+
+.codonyx-phone-input .PhoneInputCountryIcon {
+  width: 1.5rem;
+  height: 1.1rem;
+  box-shadow: none;
+}
+
+.codonyx-phone-input .PhoneInputCountrySelectArrow {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}
+
+.codonyx-phone-input .PhoneInputCountrySelect option {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
