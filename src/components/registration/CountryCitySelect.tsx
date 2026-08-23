@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
+const MAX_VISIBLE = 100;
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { Country, City } from "country-state-city";
 import { cn } from "@/lib/utils";
@@ -41,11 +42,31 @@ export function SearchableSelect({
   disabled,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
 
   const selected = options.find((o) => o.value === value);
 
+  const visible = useMemo(() => {
+    const q = deferredQuery.trim();
+    if (!q) return options.slice(0, MAX_VISIBLE);
+    const scored: { option: (typeof options)[number]; score: number }[] = [];
+    for (const option of options) {
+      const score = rankedFilter(option.label, q);
+      if (score > 0) scored.push({ option, score });
+    }
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, MAX_VISIBLE).map((s) => s.option);
+  }, [options, deferredQuery]);
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setQuery("");
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -64,12 +85,16 @@ export function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover" align="start">
-        <Command filter={rankedFilter}>
-          <CommandInput placeholder={searchPlaceholder} />
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder={searchPlaceholder}
+            value={query}
+            onValueChange={setQuery}
+          />
           <CommandList className="max-h-64">
-            <CommandEmpty>{emptyText}</CommandEmpty>
+            {visible.length === 0 && <CommandEmpty>{emptyText}</CommandEmpty>}
             <CommandGroup>
-              {options.map((option) => (
+              {visible.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}
