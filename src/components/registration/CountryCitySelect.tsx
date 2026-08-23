@@ -6,6 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
+const rankedFilter = (itemValue: string, search: string) => {
+  const q = search.trim().toLowerCase();
+  if (!q) return 1;
+  // strip leading emoji flag / non-letter characters
+  const text = itemValue.toLowerCase().replace(/^[^a-z]+/i, "");
+  if (text === q) return 1;
+  if (text.startsWith(q)) return 0.9;
+  if (new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(text)) return 0.6;
+  if (text.includes(q)) return 0.3;
+  return 0;
+};
+
 interface SearchableSelectProps {
   id?: string;
   value: string;
@@ -51,7 +63,7 @@ export function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-50 bg-popover" align="start">
-        <Command>
+        <Command filter={rankedFilter}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList className="max-h-64">
             <CommandEmpty>{emptyText}</CommandEmpty>
