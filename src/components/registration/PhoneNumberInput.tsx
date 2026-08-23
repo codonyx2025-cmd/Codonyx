@@ -55,7 +55,9 @@ export function PhoneNumberInput({
       withCountryCallingCode
       country={selectedCountry}
       onCountryChange={(c) => setSelectedCountry(c || undefined)}
-      countrySelectComponent={CountrySelectDropdown}
+      countrySelectComponent={(props: React.ComponentProps<typeof CountrySelectDropdown>) => (
+        <CountrySelectDropdown {...props} value={props.value || selectedCountry} />
+      )}
       value={value || undefined}
       onChange={(v) => onChange(v || "")}
       placeholder={placeholder}
