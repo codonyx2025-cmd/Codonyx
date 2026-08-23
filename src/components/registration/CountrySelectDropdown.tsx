@@ -21,9 +21,22 @@ interface CountrySelectDropdownProps {
   className?: string;
 }
 
+export const emojiFlag = (iso?: string) =>
+  iso && /^[A-Za-z]{2}$/.test(iso)
+    ? iso.toUpperCase().replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
+    : "";
+
 const Flag = ({ country }: { country?: string }) => {
   const FlagComponent = country ? (flags as Record<string, React.ComponentType<{ title?: string }>>)[country] : undefined;
   if (!FlagComponent) {
+    const emoji = emojiFlag(country);
+    if (emoji) {
+      return (
+        <span className="inline-flex w-6 h-4 items-center justify-center text-base leading-none" title={country}>
+          {emoji}
+        </span>
+      );
+    }
     return <span className="inline-block w-6 h-4 rounded-sm bg-muted" aria-hidden />;
   }
   return (
