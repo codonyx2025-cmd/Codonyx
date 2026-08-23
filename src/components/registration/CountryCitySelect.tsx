@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { emojiFlag } from "./CountrySelectDropdown";
 
 const rankedFilter = (itemValue: string, search: string) => {
   const q = search.trim().toLowerCase();
@@ -118,7 +119,7 @@ export function CountryCitySelect({
     () =>
       Country.getAllCountries().map((c) => ({
         value: c.name,
-        label: `${c.flag} ${c.name}`,
+        label: `${c.flag || emojiFlag(c.isoCode)} ${c.name}`,
         iso: c.isoCode,
       })),
     []
