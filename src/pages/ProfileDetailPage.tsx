@@ -11,6 +11,7 @@ import { ConnectionsSection } from "@/components/connections/ConnectionsSection"
 import { ProfilePublications } from "@/components/publications/ProfilePublications";
 import { ProfileCustomFieldsDisplay } from "@/components/profile/ProfileCustomFieldsDisplay";
 import { formatPhoneDisplay, countryIsoFromLocation } from "@/lib/phoneDisplay";
+import { CountryFlag } from "@/components/registration/CountrySelectDropdown";
 import { 
   Loader2, 
   ArrowLeft, 
