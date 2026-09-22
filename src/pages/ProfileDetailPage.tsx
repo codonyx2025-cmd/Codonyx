@@ -10,7 +10,7 @@ import { ConnectButton } from "@/components/connections/ConnectButton";
 import { ConnectionsSection } from "@/components/connections/ConnectionsSection";
 import { ProfilePublications } from "@/components/publications/ProfilePublications";
 import { ProfileCustomFieldsDisplay } from "@/components/profile/ProfileCustomFieldsDisplay";
-import { countryFlagFromLocation } from "@/lib/phoneDisplay";
+import { formatPhoneDisplay, countryIsoFromLocation } from "@/lib/phoneDisplay";
 import { 
   Loader2, 
   ArrowLeft, 
@@ -254,8 +254,8 @@ export default function ProfileDetailPage() {
                           {profile.location && (
                             <span className="flex items-center gap-1 text-sm">
                               <MapPin className="h-4 w-4" />
-                              {countryFlagFromLocation(profile.location) && (
-                                <span aria-hidden>{countryFlagFromLocation(profile.location)}</span>
+                              {countryIsoFromLocation(profile.location) && (
+                                <CountryFlag country={countryIsoFromLocation(profile.location)} />
                               )}
                               {profile.location}
                             </span>
