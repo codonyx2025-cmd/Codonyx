@@ -208,10 +208,10 @@ export default function RegisterLaboratoryPage() {
 
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-xs uppercase tracking-wider font-medium">Full Name *</Label>
-              <Input id="fullName" placeholder="Enter your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12" required />
+              <Input id="fullName" placeholder="Enter Laboratory full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="h-12" required />
             </div>
 
-            <EmailVerificationField email={email} onEmailChange={setEmail} isVerified={isEmailVerified} onVerified={setIsEmailVerified} />
+            <EmailVerificationField email={email} onEmailChange={setEmail} isVerified={isEmailVerified} onVerified={setIsEmailVerified} placeholder="Enter laboratory email" />
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
