@@ -11,6 +11,7 @@ interface EmailVerificationFieldProps {
   onEmailChange: (email: string) => void;
   isVerified: boolean;
   onVerified: (verified: boolean) => void;
+  placeholder?: string;
 }
 
 export default function EmailVerificationField({
@@ -18,6 +19,7 @@ export default function EmailVerificationField({
   onEmailChange,
   isVerified,
   onVerified,
+  placeholder = "Enter your email",
 }: EmailVerificationFieldProps) {
   const [isSending, setIsSending] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
@@ -123,7 +125,7 @@ export default function EmailVerificationField({
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder={placeholder}
             value={email}
             onChange={(e) => {
               onEmailChange(e.target.value);
