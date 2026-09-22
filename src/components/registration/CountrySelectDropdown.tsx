@@ -21,12 +21,13 @@ interface CountrySelectDropdownProps {
   className?: string;
 }
 
+/** Regional-indicator emoji fallback for ISO codes without an SVG flag. */
 export const emojiFlag = (iso?: string) =>
   iso && /^[A-Za-z]{2}$/.test(iso)
     ? iso.toUpperCase().replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
     : "";
 
-const Flag = ({ country }: { country?: string }) => {
+export const CountryFlag = ({ country }: { country?: string }) => {
   const FlagComponent = country ? (flags as Record<string, React.ComponentType<{ title?: string }>>)[country] : undefined;
   if (!FlagComponent) {
     const emoji = emojiFlag(country);
@@ -87,7 +88,7 @@ export function CountrySelectDropdown({
           )}
           aria-label="Select country"
         >
-          <Flag country={value} />
+          <CountryFlag country={value} />
           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
       </PopoverTrigger>
@@ -113,7 +114,7 @@ export function CountrySelectDropdown({
                   }}
                   className="gap-2"
                 >
-                  <Flag country={item.value} />
+                  <CountryFlag country={item.value} />
                   <span className="flex-1 truncate">{item.label}</span>
                   <span className="text-muted-foreground text-xs">{item.dial}</span>
                   {value === item.value && <Check className="w-4 h-4 text-primary" />}
