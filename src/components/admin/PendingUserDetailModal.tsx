@@ -1,3 +1,5 @@
+import { formatPhoneDisplay, countryIsoFromLocation } from "@/lib/phoneDisplay";
+import { CountryFlag } from "@/components/registration/CountrySelectDropdown";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AvatarLightbox } from "@/components/ui/avatar-lightbox";
 import { Check, X, MapPin, Mail, Phone, Building2, GraduationCap, Briefcase, Globe, Users, Calendar, Beaker, Wrench, Linkedin, Clock, FileText, Truck } from "lucide-react";
 import { format } from "date-fns";
-import { formatPhoneDisplay, countryFlagFromLocation } from "@/lib/phoneDisplay";
 
 interface PendingUser {
   id: string;
@@ -141,8 +142,8 @@ export function PendingUserDetailModal({
                   {user.location && (
                     <span className="flex items-center gap-1 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {countryFlagFromLocation(user.location) && (
-                        <span aria-hidden>{countryFlagFromLocation(user.location)}</span>
+                      {countryIsoFromLocation(user.location) && (
+                        <CountryFlag country={countryIsoFromLocation(user.location)} />
                       )}
                       {user.location}
                     </span>
