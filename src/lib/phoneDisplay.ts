@@ -33,3 +33,16 @@ export function countryFlagFromLocation(location?: string | null): string {
   }
   return "";
 }
+
+/** Return the ISO country code stored at the end of a profile location. */
+export function countryIsoFromLocation(location?: string | null): string {
+  if (!location) return "";
+  const parts = location.split(",").map((part) => part.trim()).filter(Boolean);
+  const countries = Country.getAllCountries();
+  for (let index = parts.length - 1; index >= 0; index--) {
+    const part = parts[index].toLowerCase();
+    const match = countries.find((country) => country.name.toLowerCase() === part);
+    if (match) return match.isoCode;
+  }
+  return "";
+}
