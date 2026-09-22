@@ -378,7 +378,7 @@ export default function EditProfilePage() {
                       id="fullName"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
+                      placeholder={isLaboratory ? "Enter Laboratory full name" : "Enter your full name"}
                       maxLength={TEXT_LIMITS.fullName}
                       required
                     />
