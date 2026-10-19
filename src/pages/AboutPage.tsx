@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import chromosomesImage from "@/assets/chromosomes.jpg";
 import dnaHelixBg from "@/assets/dna-helix-bg.jpg";
-import codonyxLogo from "@/assets/codonyx_icon_color.svg";
+import codonyxColorLogo from "@/assets/codonyx_icon_color.svg";
 
 export default function AboutPage() {
   const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation();
@@ -29,7 +29,7 @@ export default function AboutPage() {
           >
             <div className="max-w-3xl">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm mb-6">
-                <img src={codonyxLogo} alt="Codonyx" className="w-12 h-12 object-contain" />
+                <img src={codonyxColorLogo} alt="Codonyx" className="w-12 h-12 object-contain" />
               </div>
               <h1 className="font-display text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 About <span className="text-emerald-glow">CODONYX</span>
