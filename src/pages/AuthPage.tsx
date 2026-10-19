@@ -8,7 +8,7 @@ import { lovable } from "@/integrations/lovable";
 
 import { toast } from "@/hooks/use-toast";
 import { ArrowRight, Target, MessageCircle, Handshake, Loader2, Eye, EyeOff } from "lucide-react";
-import codonyxLogo from "@/assets/codonyx_logo.png";
+import codonyxLogo from "@/assets/codonyx_icon_color.svg";
 import googleIcon from "@/assets/google-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
