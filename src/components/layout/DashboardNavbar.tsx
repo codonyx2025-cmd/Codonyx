@@ -109,7 +109,14 @@ export function DashboardNavbar() {
       <div className="container mx-auto px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src={codonyxColorLogo}
+              alt="Codonyx"
+              className="h-10 w-10 object-contain"
+              fetchPriority="high"
+              decoding="sync"
+            />
             <span className="font-heading text-2xl font-semibold text-foreground tracking-tight">
               Codonyx
             </span>
