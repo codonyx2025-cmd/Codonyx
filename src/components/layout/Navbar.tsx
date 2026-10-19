@@ -1,11 +1,10 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Menu, X, User, LogOut } from "lucide-react";
-import codonyxLogo from "@/assets/codonyx_logo.png";
+import codonyxColorLogo from "@/assets/codonyx_icon_color.svg";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOutEverywhere } from "@/lib/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +34,7 @@ let cachedUserId: string | null = null;
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(cachedProfile);
   const [isLoggedIn, setIsLoggedIn] = useState(!!cachedProfile);
@@ -42,6 +42,9 @@ export function Navbar() {
   const profileFetched = useRef(!!cachedProfile);
 
   const fetchProfile = useCallback(async (userId: string) => {
+    // If we have a cached profile for a DIFFERENT user, wipe it — the account
+    // switched (e.g. sign out + sign in as someone else) and we must not show
+    // the previous user's info.
     if (cachedUserId && cachedUserId !== userId) {
       cachedProfile = null;
       cachedUserId = null;
@@ -49,7 +52,7 @@ export function Navbar() {
       setProfile(null);
       setIsLoggedIn(false);
     }
-    
+
     // Skip if already fetched for this user
     if (cachedUserId === userId && cachedProfile) {
       setProfile(cachedProfile);
@@ -135,19 +138,28 @@ export function Navbar() {
   }, [location.pathname]);
 
   const handleSignOut = async () => {
+    const { signOutEverywhere } = await import("@/lib/auth");
+    // Clear local cache immediately so the UI doesn't show stale profile info
+    // if navigation happens before the auth listener fires.
+    profileFetched.current = false;
+    cachedProfile = null;
+    cachedUserId = null;
+    setProfile(null);
+    setIsLoggedIn(false);
     await signOutEverywhere();
+    navigate("/auth", { replace: true });
   };
 
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-white/10">
+    <nav className="site-navbar fixed top-0 left-0 right-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <Link to="/" onClick={() => handleNavClick("/")} className="flex items-center gap-3">
-            <img src={codonyxLogo} alt="Codonyx" className="h-10 w-10 object-contain" fetchPriority="high" decoding="sync" />
+            <img src={codonyxColorLogo} alt="Codonyx" className="h-10 w-10 object-contain" fetchPriority="high" decoding="sync" />
             <span className="font-heading text-2xl font-semibold text-white tracking-tight">
               Codonyx
             </span>
@@ -176,7 +188,7 @@ export function Navbar() {
             {isLoggedIn && profile ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-transparent p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
@@ -225,17 +237,20 @@ export function Navbar() {
           <div className="lg:hidden flex items-center gap-2">
             {!isLoggedIn && (
               <Link to="/auth">
-                <Button variant="primary" size="sm" className="px-6 min-w-[110px]">
+                <Button variant="primary" size="sm">
                   Sign In
                 </Button>
               </Link>
             )}
-            <button
-              className="p-2 text-white"
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              className="text-primary-foreground"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
