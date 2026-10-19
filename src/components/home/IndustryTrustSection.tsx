@@ -12,26 +12,26 @@ const trustBadges = [
 export function IndustryTrustSection() {
   const { ref, isVisible } = useScrollAnimation();
   return (
-    <section ref={ref} className={`py-24 lg:py-32 bg-navy transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
+    <section ref={ref} className={`py-24 lg:py-32 bg-background transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
       <div className="container mx-auto px-6 lg:px-8">
         {/* Trust Badges */}
         <div className="text-center mb-20">
-          <p className="text-emerald-glow font-body text-sm font-semibold tracking-[0.2em] uppercase mb-4">
+          <p className="text-primary font-body text-sm font-semibold tracking-[0.2em] uppercase mb-4">
             Built on Trust
           </p>
-          <h2 className="font-display text-3xl lg:text-4xl font-bold text-white mb-12">
+          <h2 className="font-display text-3xl lg:text-4xl font-normal text-foreground mb-12">
             Industry Standards We Uphold
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {trustBadges.map((badge) => (
               <div
                 key={badge.label}
-                className="flex flex-col items-center gap-4 p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm"
+                className="flex flex-col items-center gap-4 p-6 rounded-lg border border-divider bg-background"
               >
                 <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
-                  <badge.icon className="w-7 h-7 text-emerald-glow" />
+                  <badge.icon className="w-7 h-7 text-primary" />
                 </div>
-                <span className="text-white/80 font-body text-sm font-medium text-center">
+                <span className="text-muted-foreground font-body text-sm font-medium text-center">
                   {badge.label}
                 </span>
               </div>
@@ -40,11 +40,11 @@ export function IndustryTrustSection() {
         </div>
 
         {/* Collaboration CTA */}
-        <div className="text-center border-t border-white/10 pt-16">
-          <h3 className="font-display text-2xl lg:text-3xl font-bold text-white mb-4">
+        <div className="text-center border-t border-divider pt-16">
+          <h3 className="font-display text-2xl lg:text-3xl font-normal text-foreground mb-4">
             Let's Shape the Future Together
           </h3>
-          <p className="text-white/60 font-body text-lg max-w-2xl mx-auto mb-8">
+          <p className="text-muted-foreground font-body text-lg max-w-2xl mx-auto mb-8">
             We invite laboratories, healthcare systems and research institutions 
             worldwide to explore partnership opportunities with CODONYX.
           </p>
@@ -55,7 +55,7 @@ export function IndustryTrustSection() {
               </Button>
             </Link>
             <Link to="/about">
-              <Button variant="outline" size="xl" className="border-white/30 text-black hover:bg-white/10 hover:text-white">
+              <Button variant="outline" size="xl" className="border-divider text-foreground hover:bg-muted">
                 Learn About Us
               </Button>
             </Link>
