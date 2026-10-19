@@ -7,7 +7,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle, Loader2, Eye, EyeOff, Truck, FileText } from "lucide-react";
-import codonyxLogo from "@/assets/codonyx_logo.png";
+import codonyxLogo from "@/assets/codonyx_icon_color.svg";
 import EmailVerificationField from "@/components/registration/EmailVerificationField";
 import { RegistrationAvatarUpload } from "@/components/registration/RegistrationAvatarUpload";
 import { TermsCheckbox } from "@/components/registration/TermsCheckbox";
