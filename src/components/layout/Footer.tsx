@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Linkedin, Mail } from "lucide-react";
-import codonyxLogo from "@/assets/codonyx_logo.png";
+import codonyxColorLogo from "@/assets/codonyx_icon_color.svg";
 
 const footerLinks = {
   solutions: [
@@ -25,13 +25,13 @@ export function Footer() {
     }
   };
   return (
-    <footer className="bg-navy border-t border-white/10">
+    <footer className="site-footer bg-navy border-t border-white/10 pb-8 md:pb-0">
       <div className="container mx-auto px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3">
-              <img src={codonyxLogo} alt="Codonyx" className="h-10 w-10 object-contain" />
+              <img src={codonyxColorLogo} alt="Codonyx" className="h-10 w-10 object-contain" />
               <span className="font-heading text-2xl font-semibold text-white tracking-tight">
                 Codonyx
               </span>
