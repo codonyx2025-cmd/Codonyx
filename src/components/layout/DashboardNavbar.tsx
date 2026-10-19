@@ -1,4 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import codonyxIcon from "@/assets/codonyx_icon_color.svg";
+import codonyxColorLogo from "@/assets/codonyx_icon_color.svg";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Menu, X, LogOut, User, Shield, Users, FileText, Pencil, Bell } from "lucide-react";
@@ -13,7 +15,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useNotifications } from "@/hooks/useNotifications";
-import { signOutEverywhere } from "@/lib/auth";
 
 interface Profile {
   id: string;
@@ -25,6 +26,7 @@ interface Profile {
 
 export function DashboardNavbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -43,6 +45,7 @@ export function DashboardNavbar() {
 
   useEffect(() => {
     let profileIdForChannel: string | null = null;
+
     const fetchPendingCount = async (profileId: string) => {
       const { count } = await supabase
         .from("connections")
@@ -52,6 +55,7 @@ export function DashboardNavbar() {
         .is("withdrawn_at", null);
       setPendingConnectionCount(count || 0);
     };
+
     const loadProfileAndCheckAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -64,7 +68,7 @@ export function DashboardNavbar() {
           setProfile(data as Profile);
           profileIdForChannel = data.id;
           await fetchPendingCount(data.id);
-          
+
           // Live refresh so accept/decline/withdraw clears the badge instantly.
           const channel = supabase
             .channel(`nav-connections-${data.id}`)
@@ -85,6 +89,7 @@ export function DashboardNavbar() {
       }
     };
     loadProfileAndCheckAdmin();
+
     return () => {
       const ch = (loadProfileAndCheckAdmin as any)._channel;
       if (ch) supabase.removeChannel(ch);
@@ -92,7 +97,9 @@ export function DashboardNavbar() {
   }, []);
 
   const handleSignOut = async () => {
+    const { signOutEverywhere } = await import("@/lib/auth");
     await signOutEverywhere();
+    navigate("/auth", { replace: true });
   };
 
   const getInitials = (name: string) => {
