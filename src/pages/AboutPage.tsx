@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import chromosomesImage from "@/assets/chromosomes.jpg";
 import dnaHelixBg from "@/assets/dna-helix-bg.jpg";
-import codonyxColorLogo from "@/assets/codonyx_icon_color.svg";
+import codonyxColorLogo from "@/assets/codonyx_icon_white.svg";
 
 export default function AboutPage() {
   const { ref: heroRef, isVisible: heroVisible } = useScrollAnimation();
