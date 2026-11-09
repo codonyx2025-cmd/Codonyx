@@ -1,15 +1,20 @@
 // Shared email layout helpers for all Codonyx transactional emails.
 // Provides a consistent premium look across every email template.
+// Brand palette: Navy #0B2D5B (RGB 11,45,91) + Red #E10611 (RGB 225,6,17) on white.
 
 export const BRAND = {
   name: "Codonyx",
   tagline: "Connecting professionals in science and innovation",
-  primary: "#059669",
-  primaryDark: "#047857",
-  primaryDeep: "#065f46",
+  navy: "#0B2D5B",
+  navyDark: "#081F3F",
+  navyMid: "#123E7C",
+  red: "#E10611",
+  navyTintBg: "#EFF4FB",
+  navyTintBorder: "#D7E3F4",
   contactEmail: "info@codonyx.org",
   websiteUrl: "https://codonyx.org",
-  logoUrl: "https://codonyx.org/icon.png",
+  // 192px square PNG hosted on the site — renders reliably in email clients.
+  logoUrl: "https://codonyx.org/favicon-192x192.png",
 };
 
 export interface LayoutOptions {
@@ -22,8 +27,8 @@ export interface LayoutOptions {
 }
 
 /**
- * Master email wrapper — premium gradient header, soft card, brand footer.
- * Use this for ALL outgoing emails so they share one cohesive identity.
+ * Master email wrapper — premium navy header with the Codonyx logo,
+ * soft white card, brand footer. Use this for ALL outgoing emails.
  */
 export function renderEmailLayout(opts: LayoutOptions): string {
   const year = new Date().getFullYear();
@@ -41,22 +46,26 @@ export function renderEmailLayout(opts: LayoutOptions): string {
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(preheader)}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f1f5f9;padding:40px 16px;">
     <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(15,23,42,0.08),0 2px 8px rgba(15,23,42,0.04);">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(11,45,91,0.08),0 2px 8px rgba(11,45,91,0.04);">
 
-        <!-- Header (gradient merged, no separate accent bar to prevent overlap) -->
-        <tr><td align="center" style="background:linear-gradient(135deg,#065f46 0%,#047857 50%,#059669 100%);padding:54px 32px 44px;text-align:center;">
+        <!-- Header (navy brand gradient with logo) -->
+        <tr><td align="center" style="background:linear-gradient(135deg,#081F3F 0%,#0B2D5B 50%,#123E7C 100%);padding:44px 32px 40px;text-align:center;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
-            <tr><td align="center" style="padding-bottom:20px;">
+            <tr><td align="center" style="padding-bottom:18px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
-                <tr><td align="center" valign="middle" width="64" height="64" style="width:64px;height:64px;background-color:rgba(255,255,255,0.16);border-radius:18px;text-align:center;vertical-align:middle;">
-                  <span style="font-size:32px;line-height:1;display:inline-block;">${opts.headerEmoji || "✨"}</span>
+                <tr><td align="center" valign="middle" style="background-color:#ffffff;border-radius:16px;padding:12px;">
+                  <img src="${BRAND.logoUrl}" alt="Codonyx" width="44" height="44" style="display:block;width:44px;height:44px;border-radius:8px;" />
                 </td></tr>
               </table>
             </td></tr>
             <tr><td align="center" style="text-align:center;">
               <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.3px;line-height:1.25;text-align:center;">${escapeHtml(opts.headerTitle)}</h1>
-              ${opts.headerSubtitle ? `<p style="color:rgba(255,255,255,0.88);margin:10px 0 0;font-size:15px;line-height:1.5;text-align:center;">${escapeHtml(opts.headerSubtitle)}</p>` : ""}
+              ${opts.headerSubtitle ? `<p style="color:rgba(255,255,255,0.85);margin:10px 0 0;font-size:15px;line-height:1.5;text-align:center;">${escapeHtml(opts.headerSubtitle)}</p>` : ""}
             </td></tr>
+          </table>
+          <!-- Red accent divider -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:22px auto 0;">
+            <tr><td width="56" height="3" style="width:56px;height:3px;background-color:#E10611;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td></tr>
           </table>
         </td></tr>
 
@@ -66,7 +75,7 @@ export function renderEmailLayout(opts: LayoutOptions): string {
         </td></tr>
 
         ${opts.footerNote ? `<tr><td style="padding:0 36px 28px;">
-          <div style="background-color:#f8fafc;border-left:3px solid #059669;border-radius:8px;padding:14px 18px;">
+          <div style="background-color:#f8fafc;border-left:3px solid #E10611;border-radius:8px;padding:14px 18px;">
             <p style="margin:0;color:#475569;font-size:13px;line-height:1.6;">${opts.footerNote}</p>
           </div>
         </td></tr>` : ""}
@@ -78,11 +87,18 @@ export function renderEmailLayout(opts: LayoutOptions): string {
 
         <!-- Footer -->
         <tr><td style="padding:32px 36px;text-align:center;background-color:#fafbfc;">
-          <p style="margin:0 0 6px;color:#059669;font-size:20px;font-weight:700;letter-spacing:-0.2px;">${BRAND.name}</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 6px;">
+            <tr><td align="center" style="padding-bottom:8px;">
+              <img src="${BRAND.logoUrl}" alt="Codonyx" width="28" height="28" style="display:block;width:28px;height:28px;border-radius:6px;margin:0 auto;" />
+            </td></tr>
+            <tr><td align="center">
+              <p style="margin:0;color:#0B2D5B;font-size:20px;font-weight:700;letter-spacing:-0.2px;">${BRAND.name}</p>
+            </td></tr>
+          </table>
           <p style="margin:0 0 18px;color:#64748b;font-size:13px;line-height:1.5;">${BRAND.tagline}</p>
           <p style="margin:0 0 6px;color:#64748b;font-size:13px;line-height:1.6;">
             For any contact, email us at
-            <a href="mailto:${BRAND.contactEmail}" style="color:#059669;text-decoration:none;font-weight:600;">${BRAND.contactEmail}</a>
+            <a href="mailto:${BRAND.contactEmail}" style="color:#E10611;text-decoration:none;font-weight:600;">${BRAND.contactEmail}</a>
           </p>
           <p style="margin:14px 0 0;color:#94a3b8;font-size:11px;line-height:1.5;">
             © ${year} ${BRAND.name}. All rights reserved.<br/>
@@ -101,7 +117,7 @@ export function renderEmailLayout(opts: LayoutOptions): string {
 export function renderCtaButton(label: string, href: string): string {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0;">
     <tr><td align="center">
-      <a href="${href}" style="display:inline-block;background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#ffffff !important;text-decoration:none;padding:15px 38px;border-radius:10px;font-size:15px;font-weight:600;letter-spacing:0.2px;box-shadow:0 4px 14px rgba(5,150,105,0.35);">
+      <a href="${href}" style="display:inline-block;background:linear-gradient(135deg,#0B2D5B 0%,#123E7C 100%);color:#ffffff !important;text-decoration:none;padding:15px 38px;border-radius:10px;font-size:15px;font-weight:600;letter-spacing:0.2px;box-shadow:0 4px 14px rgba(11,45,91,0.35);">
         ${escapeHtml(label)}
       </a>
     </td></tr>
@@ -109,15 +125,15 @@ export function renderCtaButton(label: string, href: string): string {
 }
 
 /** Render a pill/badge for highlighting role or status. */
-export function renderPill(text: string, color = "#059669"): string {
+export function renderPill(text: string, color = "#E10611"): string {
   return `<span style="display:inline-block;background-color:${color}1a;color:${color};padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:0.3px;text-transform:uppercase;">${escapeHtml(text)}</span>`;
 }
 
 /** Render a styled OTP code display. */
 export function renderOtpCode(code: string): string {
   return `<div style="text-align:center;margin:24px 0 20px;">
-    <div style="display:inline-block;background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 100%);border:2px dashed #059669;border-radius:14px;padding:20px 36px;">
-      <div style="font-family:'SF Mono','Monaco','Courier New',monospace;font-size:36px;font-weight:700;letter-spacing:12px;color:#065f46;line-height:1;">${escapeHtml(code)}</div>
+    <div style="display:inline-block;background:linear-gradient(135deg,#F4F8FD 0%,#EFF4FB 100%);border:2px dashed #0B2D5B;border-radius:14px;padding:20px 36px;">
+      <div style="font-family:'SF Mono','Monaco','Courier New',monospace;font-size:36px;font-weight:700;letter-spacing:12px;color:#0B2D5B;line-height:1;">${escapeHtml(code)}</div>
     </div>
   </div>`;
 }
