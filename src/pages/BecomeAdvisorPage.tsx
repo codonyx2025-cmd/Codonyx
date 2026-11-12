@@ -66,20 +66,18 @@ const BecomeAdvisorPage = () => {
                 or AI-driven healthcare and wish to contribute as an advisor, please reach out to us.
               </p>
               <div className="flex w-full justify-center">
-                <Link
-                  to="/contact"
-                  className="flex w-full justify-center sm:w-auto"
-                >
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="flex w-full max-w-full items-center justify-center gap-2 whitespace-normal text-center sm:w-auto sm:px-8"
-                  >
-                    <Mail className="w-5 h-5 shrink-0" />
-                    <span>Contact Us for Registration</span>
-                  </Button>
-                </Link>
-              </div>
+              <Link to="/contact" className="flex w-full justify-center sm:w-auto">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="!h-auto min-h-[56px] !w-full !whitespace-normal !px-6 !py-2 text-center text-base leading-snug sm:!w-auto sm:!px-8">
+                  <Mail className="!h-5 !w-5 shrink-0" />
+                  <span className="text-center">
+                    Contact Us for Registration
+                  </span>
+                </Button>
+              </Link>
+            </div>
             </div>
           </div>
         </section>
